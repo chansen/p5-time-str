@@ -95,6 +95,8 @@ Croaks if:
 
 =over 4
 
+=item * A named parameter is unknown or out of range
+
 =item * The string cannot be parsed in the specified format
 
 =item * Date or time components are out of valid ranges
@@ -200,6 +202,8 @@ C<[Europe/Stockholm]>). Informational only; does not affect C<tz_offset>.
 Croaks if:
 
 =over 4
+
+=item * A named parameter is unknown or out of range
 
 =item * The string cannot be parsed in the specified format
 
@@ -312,13 +316,7 @@ Croaks if:
 
 =item * C<$time> is outside the supported range
 
-=item * C<format> is unknown
-
-=item * C<offset> is out of range (-1439 to 1439)
-
-=item * C<precision> is out of range (0-9)
-
-=item * C<nanosecond> is out of range (0-999999999)
+=item * A named parameter is unknown or out of range
 
 =back
 
