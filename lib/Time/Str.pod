@@ -234,6 +234,16 @@ Croaks if:
     my %d = str2date('December 24, 2024, 3:30 PM', format => 'generic');
     # (..., hour => 15)
 
+    # Two-digit year
+    my %d = str2date('Monday, 24-Dec-50 15:30:45 GMT',
+                     format => 'RFC2616');
+    # (year => 1950, ...)
+
+    # Two-digit year with custom pivot
+    my %d = str2date('Monday, 24-Dec-50 15:30:45 GMT',
+                     format => 'RFC2616', pivot_year => 1970);
+    # (year => 2050, ...)
+
     # UTC designator
     my %d = str2date('24 Dec 2012 15:30:45 GMT', format => 'RFC2822');
     # (..., tz_utc => 'GMT', tz_offset => 0)
@@ -245,7 +255,7 @@ Croaks if:
 
     # Timezone abbreviation (unresolved)
     my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
-    # (..., tz_abbrev => 'IST') # no tz_offset
+    # (..., tz_abbrev => 'IST')
 
     # RFC 9557 annotation
     my %d = str2date('2024-12-24T15:30:45.500+01:00[Europe/Stockholm]',
