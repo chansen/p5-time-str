@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 
-our $VERSION     = '0.01';
+our $VERSION     = '0.02';
 our @EXPORT_OK   = qw[ time2str str2time str2date ];
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
