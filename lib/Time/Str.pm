@@ -677,11 +677,28 @@ sub str2date {
   @_ & 1 or croak q/Usage: str2date(string [, format => 'RFC3339' ])/;
   my ($string, %p) = @_;
 
-  my $format = $p{format} // 'RFC3339';
-  my $regexp = $RegexpMap{ lc $format };
+  my $format     = 'rfc3339';
+  my $pivot_year = $DefaultPivotYear;
+  my $regexp     = $RFC3339_Rx;
 
-  (defined $regexp)
-    or croak qq/Parameter 'format' is unknown: '$format'/;
+  if (exists $p{format}) {
+    $format = lc delete $p{format};
+    $regexp = $RegexpMap{$format};
+
+    (defined $regexp)
+      or croak qq/Parameter 'format' is unknown: '$format'/;
+  }
+
+  if (exists $p{pivot_year}) {
+    $pivot_year = delete $p{pivot_year};
+
+    ($pivot_year >= 0 && $pivot_year <= 9899)
+      or croak q/Parameter 'pivot_year' is out of range (0-9899)/;
+  }
+
+  if (%p) {
+    croak "Unknown named parameter: " . join ', ', sort keys %p;
+  }
 
   (defined $string && $string =~ $regexp)
     or croak qq/Unable to parse: string does not match the $format format/;
@@ -695,7 +712,6 @@ sub str2date {
   if (exists $r{year}) {
 
     if (length $r{year} == 2) {
-      my $pivot_year = $p{pivot_year} // $DefaultPivotYear;
       $r{year} = expand_two_digit_year($r{year}, $pivot_year);
     }
 
@@ -978,29 +994,35 @@ sub time2str {
   my $formatter = \&format_RFC3339;
 
   if (exists $p{format}) {
-    $formatter = $FormatMap{ lc $p{format} };
+    my $format =  delete $p{format};
+
+    $formatter = $FormatMap{ lc $format };
     (defined $formatter)
-      or croak(qq/Parameter 'format' is unknown: '$p{format}'/);
+      or croak(qq/Parameter 'format' is unknown: '$format'/);
   }
 
   my ($offset, $precision, $nanosecond) = (0);
 
   if (exists $p{offset}) {
-    $offset = $p{offset};
+    $offset = delete $p{offset};
     ($offset >= -1439 && $offset <= 1439)
       or croak(q/Parameter 'offset' is out of range (-1439 to 1439)/);
   }
 
   if (exists $p{precision}) {
-    $precision = $p{precision};
+    $precision = delete $p{precision};
     ($precision >= 0 && $precision <= 9)
       or croak(q/Parameter 'precision' is out of range (0-9)/);
   }
 
   if (exists $p{nanosecond}) {
-    $nanosecond = $p{nanosecond};
+    $nanosecond = delete $p{nanosecond};
     ($nanosecond >= 0 && $nanosecond <= 999_999_999)
       or croak(q/Parameter 'nanosecond' is out of range (0-999999999)/);
+  }
+
+  if (%p) {
+    croak "Unknown named parameter: " . join ', ', sort keys %p;
   }
 
   if (!defined $nanosecond && int $time != $time) {
