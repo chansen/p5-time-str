@@ -30,8 +30,7 @@ Time::Str - Parse and format date/time strings in multiple standard formats
 =head1 DESCRIPTION
 
 Time::Str parses date/time strings from various standard formats into Unix
-timestamps or component key-value pairs, and formats Unix timestamps back 
-into strings.
+timestamps or components, and formats Unix timestamps back into strings.
 
 Supported standards include ISO 8601, RFC 3339, RFC 2822, RFC 2616 (HTTP),
 ISO 9075 (SQL), ASN.1, and others. A permissive L<generic|/GENERIC FORMAT PARSING> 
@@ -95,13 +94,13 @@ Croaks if:
 
 =over 4
 
-=item * A named parameter is unknown or out of range
-
 =item * The string cannot be parsed in the specified format
 
 =item * Date or time components are out of valid ranges
 
 =item * No timezone offset or UTC designator is present
+
+=item * A named parameter is unknown or out of range
 
 =back
 
@@ -166,7 +165,7 @@ C<tz_annotation>. The following components may be present:
 
 =over 4
 
-=item * C<year> - Year (1-9999)
+=item * C<year> - Four-digit year (1-9999)
 
 =item * C<month> - Month (1-12)
 
@@ -183,8 +182,8 @@ C<tz_annotation>. The following components may be present:
 =item * C<tz_offset> - Timezone offset in minutes from UTC (e.g., 60
 for +01:00). Present when a numeric offset or UTC designator was parsed.
 
-=item * C<tz_utc> - The matched UTC designator (C<Z>, C<UTC>, C<GMT>)
-if one was present. When followed by a numeric offset (e.g., C<UTC+05:30>),
+=item * C<tz_utc> - The UTC designator (C<Z>, C<UTC>, C<GMT>) if one was 
+present. When followed by a numeric offset (e.g., C<UTC+05:30>),
 C<tz_offset> reflects that offset rather than zero.
 
 =item * C<tz_abbrev> - The timezone abbreviation as it appeared in the
@@ -203,11 +202,11 @@ Croaks if:
 
 =over 4
 
-=item * A named parameter is unknown or out of range
-
 =item * The string cannot be parsed in the specified format
 
 =item * Date or time components are out of valid ranges
+
+=item * A named parameter is unknown or out of range
 
 =back
 
@@ -227,6 +226,7 @@ Croaks if:
     # Partial dates
     my %d = str2date('2024-12-24', format => 'W3CDTF');
     # (year => 2024, month => 12, day => 24)
+
     my %d = str2date('2024', format => 'W3CDTF');
     # (year => 2024)
 
@@ -494,13 +494,15 @@ B<Parsing>:
 
 Hours are required; minutes and seconds are optional. The fractional part
 may use a period or comma and applies to the least significant time
-component present:
+component present. The timezone designator is optional.
 
-  2024122415Z                  # hour only
+  2024122415                   # hour only, no timezone
+  2024122415Z                  # hour only, UTC
   2024122415,5Z                # decimal hour (30 minutes)
   201212241530Z                # hour and minute
   201212241530,5Z              # decimal minute (30 seconds)
-  20121224153045Z              # full time
+  20121224153045               # full time, no timezone
+  20121224153045Z              # full time, UTC
   20121224153045.500Z          # with fractional seconds
   20121224153045,123456789Z    # nanoseconds, comma separator
   20121224153045+0100          # with numeric offset
@@ -673,11 +675,11 @@ Day name and seconds are optional. Accepts numeric offsets, UTC
 designators (C<UT>, C<UTC>, C<GMT>), and timezone abbreviations.
 Abbreviations are returned in C<tz_abbrev> without resolution.
 
-  Mon, 24 Dec 2012 15:30:45 +0100     # tz_offset => 60
+  Mon, 24 Dec 2012 15:30:45 +0100
   Mon, 24 Dec 2012 15:30 +0100
   24 Dec 2012 15:30:45 +0100
-  24 Dec 2012 15:30:45 GMT            # tz_utc => 'GMT', tz_offset => 0
-  24 Dec 2012 15:30:45 CET            # tz_abbrev => 'CET'
+  24 Dec 2012 15:30:45 GMT
+  24 Dec 2012 15:30:45 CET
 
 Timezone offset format: C<±HHMM>
 
@@ -1085,7 +1087,6 @@ C<CET>, or C<IST> to numeric offsets, as many are ambiguous (e.g.,
 C<IST> could mean India Standard Time UTC+5:30, Israel Standard Time
 UTC+2, or Irish Standard Time UTC+1).
 
-
 =back
 
 C<str2time> requires a resolved offset and will croak if only an
@@ -1093,11 +1094,7 @@ unresolved abbreviation is present. Use C<str2date> to retrieve the
 components including C<tz_abbrev>, then resolve externally:
 
     my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
-    # (..., tz_abbrev => 'IST') # no tz_offset
-
-    my %d = str2date('24 Dec 2012 15:30:45 GMT', format => 'RFC2822');
-    # (..., tz_utc => 'GMT', tz_offset => 0)
-
+    # (..., tz_abbrev => 'IST')
 
 =head1 SEE ALSO
 
