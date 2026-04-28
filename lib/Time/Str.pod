@@ -760,6 +760,42 @@ Timezone offset format: C<±HH:MM>
 
 B<Formatting>: Identical to RFC3339.
 
+=head2 RFC5280 (alias: x509)
+
+PKIX certificate validity times as defined in RFC 5280. Uses constrained
+ASN.1 UTCTime for dates before 2050 and GeneralizedTime for dates 2050
+and after.
+
+constrained  
+
+  YYMMDDhhmmssZ
+  YYYYMMDDhhmmssZ
+
+B<Parsing>:
+
+Two-digit years are expanded using the pivot year (default 1950).
+Four-digit years are used as-is. The C<Z> designator is required.
+
+  121224153045Z                # UTCTime (two-digit year)
+  491231235959Z                # UTCTime, year 49 -> 2049
+  500101000000Z                # UTCTime, year 50 -> 1950
+  20500101000000Z              # GeneralizedTime (four-digit year)
+  99991231235959Z              # GeneralizedTime
+
+B<Formatting>:
+
+Produces UTCTime (two-digit year) for dates before 2050-01-01T00:00:00Z
+and GeneralizedTime (four-digit year) for dates 2050 and after:
+
+  time2str(1356359445, format => 'RFC5280')
+  # '121224143045Z'
+
+  time2str(2524608000, format => 'RFC5280')
+  # '20500101000000Z'
+
+B<Limitations>: Always UTC. Fractional seconds and timezone offsets are
+not supported; the C<offset> parameter is ignored.
+
 =head2 RFC5545 (alias: iCal)
 
 iCalendar date and date-time as defined in RFC 5545.
@@ -1153,6 +1189,8 @@ L<Time::Moment>, L<DateTime>, L<Time::Piece>
 =item * RFC 2616 / RFC 7231 - HTTP/1.1
 
 =item * RFC 4287 - The Atom Syndication Format
+
+=item * RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)
 
 =item * RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
 

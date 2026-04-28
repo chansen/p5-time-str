@@ -398,6 +398,26 @@ my $RFC4287_Rx = qr{
   \z
 }x;
 
+# RFC 5280 PKIX Certificate and CRL Profile (x509)
+# <https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
+#
+#   Validity; constrained ASN.1 UTCTime or GeneralizedTime.
+#
+#   YYMMDDhhmmzzZ
+#   YYYYMMDDhhmmssZ
+#
+my $RFC5280_Rx = qr{
+  \A
+  (?<year>   [0-9]{2}|[0-9]{4})
+  (?<month>  [0-9]{2})
+  (?<day>    [0-9]{2}) 
+  (?<hour>   [0-9]{2})
+  (?<minute> [0-9]{2})
+  (?<second> [0-9]{2})
+  (?<tz_utc> [Z])
+  \z
+}x;
+
 # RFC 5545 iCalendar
 # <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
 # <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.5>
@@ -687,6 +707,7 @@ my %RegexpMap = (
   rfc2822  => $RFC2822_Rx,
   rfc3339  => $RFC3339_Rx,
   rfc4287  => $RFC4287_Rx,
+  rfc5280  => $RFC5280_Rx,
   rfc5322  => $RFC2822_Rx,
   rfc5545  => $RFC5545_Rx,
   rfc7231  => $RFC2616_Rx,
@@ -695,6 +716,7 @@ my %RegexpMap = (
   unix     => $UnixDate_Rx,
   w3c      => $W3CDTF_Rx,
   w3cdtf   => $W3CDTF_Rx,
+  x509     => $RFC5280_Rx,
 );
 
 sub str2date {
@@ -937,6 +959,19 @@ sub str2time {
       $year + 1900, $mon + 1, $mday, $hour, $min, $sec, $fraction, $zstr;
   }
 
+  sub TIME_20500101_000000 () { 2524608000 }
+
+  sub format_RFC5280 {
+    my ($time) = @_;
+
+    if ($time < TIME_20500101_000000) {
+      return format_ASN1UT($time, 0);
+    }
+    else {
+      return format_ASN1GT($time, 0, '');
+    }
+  }
+
   sub format_RFC5545 {
     my ($time) = @_;
 
@@ -1008,6 +1043,7 @@ my %FormatMap = (
   rfc2822  => \&format_RFC2822,
   rfc3339  => \&format_RFC3339,
   rfc4287  => \&format_RFC3339,
+  rfc5280  => \&format_RFC5280,
   rfc5322  => \&format_RFC2822,
   rfc5545  => \&format_RFC5545,
   rfc7231  => \&format_RFC2616,
@@ -1016,6 +1052,7 @@ my %FormatMap = (
   unix     => \&format_UnixDate,
   w3c      => \&format_RFC3339,
   w3cdtf   => \&format_RFC3339,
+  x509     => \&format_RFC5280,
 );
 
 sub time2str {
