@@ -33,7 +33,7 @@ Time::Str parses date/time strings from various standard formats into Unix
 timestamps or components, and formats Unix timestamps back into strings.
 
 Supported standards include ISO 8601, RFC 3339, RFC 2822, RFC 2616 (HTTP),
-ISO 9075 (SQL), ASN.1, and others. A permissive L<generic|/GENERIC FORMAT PARSING> 
+ISO 9075 (SQL), ASN.1, and others. A permissive L<Generic|/GENERIC FORMAT PARSING> 
 parser handles most real-world date/time representations that can be parsed without 
 ambiguity.
 
@@ -765,8 +765,6 @@ B<Formatting>: Identical to RFC3339.
 PKIX certificate validity times as defined in RFC 5280. Uses constrained
 ASN.1 UTCTime for dates before 2050 and GeneralizedTime for dates 2050
 and after.
-
-constrained  
 
   YYMMDDhhmmssZ
   YYYYMMDDhhmmssZ
