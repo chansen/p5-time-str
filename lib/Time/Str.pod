@@ -767,11 +767,10 @@ B<Formatting>: Identical to RFC3339.
 
 =head2 RFC5280 (alias: x509)
 
-X.509 certificate validity times as defined in RFC 5280 section 4.1.2.5.
-Certificates encode validity as ASN.1 UTCTime (two-digit year) for dates
-before 2050 and GeneralizedTime (four-digit year) for dates from 2050
-onward. Both forms require UTC and do not permit fractional seconds or
-timezone offsets.
+X.509 certificate validity times as defined in RFC 5280. Certificates 
+encode validity as ASN.1 UTCTime (two-digit year) for dates before 2050 
+and GeneralizedTime (four-digit year) for dates from 2050 onward. Both 
+forms require UTC and do not permit fractional seconds or timezone offsets.
 
   YYMMDDhhmmssZ           # UTCTime
   YYYYMMDDhhmmssZ         # GeneralizedTime
@@ -921,8 +920,7 @@ may only appear when a time is present.
 
 =head2 Date
 
-A date is always required. Three categories are accepted. Day names,
-month names, Roman numerals, and ordinal suffixes are all case-insensitive.
+A date is always required. Three categories are accepted.
 
 =head3 Numeric Dates (Y-M-D only)
 
@@ -948,8 +946,10 @@ the day and year may appear in any order relative to the month. Month
 names may be abbreviated (C<Jan>, C<Feb>, ...) or written in full
 (C<January>, C<February>, ...).
 
-Roman numerals (C<I> through C<XII>) are accepted only in
-day-month-year order.
+Roman numerals (C<I> through C<XII>) are accepted only in day-month-year 
+order.
+
+Day names, month names and Roman numerals are all case-insensitive.
 
 Separator-based (hyphen, slash, or period, consistent within the date):
 
