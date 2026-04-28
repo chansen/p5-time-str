@@ -24,11 +24,11 @@ SYNOPSIS
 
 DESCRIPTION
     Time::Str parses date/time strings from various standard formats into
-    Unix timestamps or component key-value pairs, and formats Unix
-    timestamps back into strings.
+    Unix timestamps or components, and formats Unix timestamps back into
+    strings.
 
     Supported standards include ISO 8601, RFC 3339, RFC 2822, RFC 2616
-    (HTTP), ISO 9075 (SQL), ASN.1, and others. A permissive generic parser
+    (HTTP), ISO 9075 (SQL), ASN.1, and others. A permissive Generic parser
     handles most real-world date/time representations that can be parsed
     without ambiguity.
 
@@ -78,13 +78,13 @@ FUNCTIONS
    Errors
     Croaks if:
 
-    *   A named parameter is unknown or out of range
-
     *   The string cannot be parsed in the specified format
 
     *   Date or time components are out of valid ranges
 
     *   No timezone offset or UTC designator is present
+
+    *   A named parameter is unknown or out of range
 
    Examples
         # RFC 3339 (default)
@@ -138,7 +138,7 @@ FUNCTIONS
     All values are numeric except "tz_utc", "tz_abbrev", and
     "tz_annotation". The following components may be present:
 
-    *   "year" - Year (1-9999)
+    *   "year" - Four-digit year (1-9999)
 
     *   "month" - Month (1-12)
 
@@ -155,7 +155,7 @@ FUNCTIONS
     *   "tz_offset" - Timezone offset in minutes from UTC (e.g., 60 for
         +01:00). Present when a numeric offset or UTC designator was parsed.
 
-    *   "tz_utc" - The matched UTC designator ("Z", "UTC", "GMT") if one was
+    *   "tz_utc" - The UTC designator ("Z", "UTC", "GMT") if one was
         present. When followed by a numeric offset (e.g., "UTC+05:30"),
         "tz_offset" reflects that offset rather than zero.
 
@@ -171,11 +171,11 @@ FUNCTIONS
    Errors
     Croaks if:
 
-    *   A named parameter is unknown or out of range
-
     *   The string cannot be parsed in the specified format
 
     *   Date or time components are out of valid ranges
+
+    *   A named parameter is unknown or out of range
 
    Examples
         # Full RFC 3339 timestamp
@@ -192,12 +192,23 @@ FUNCTIONS
         # Partial dates
         my %d = str2date('2024-12-24', format => 'W3CDTF');
         # (year => 2024, month => 12, day => 24)
+
         my %d = str2date('2024', format => 'W3CDTF');
         # (year => 2024)
 
         # 12-hour clock
         my %d = str2date('December 24, 2024, 3:30 PM', format => 'generic');
         # (..., hour => 15)
+
+        # Two-digit year
+        my %d = str2date('Monday, 24-Dec-50 15:30:45 GMT',
+                         format => 'RFC2616');
+        # (year => 1950, ...)
+
+        # Two-digit year with custom pivot
+        my %d = str2date('Monday, 24-Dec-50 15:30:45 GMT',
+                         format => 'RFC2616', pivot_year => 1970);
+        # (year => 2050, ...)
 
         # UTC designator
         my %d = str2date('24 Dec 2012 15:30:45 GMT', format => 'RFC2822');
@@ -210,7 +221,7 @@ FUNCTIONS
 
         # Timezone abbreviation (unresolved)
         my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
-        # (..., tz_abbrev => 'IST') # no tz_offset
+        # (..., tz_abbrev => 'IST')
 
         # RFC 9557 annotation
         my %d = str2date('2024-12-24T15:30:45.500+01:00[Europe/Stockholm]',
@@ -430,13 +441,15 @@ SUPPORTED FORMATS
 
     Hours are required; minutes and seconds are optional. The fractional
     part may use a period or comma and applies to the least significant time
-    component present:
+    component present. The timezone designator is optional.
 
-      2024122415Z                  # hour only
+      2024122415                   # hour only, no timezone
+      2024122415Z                  # hour only, UTC
       2024122415,5Z                # decimal hour (30 minutes)
       201212241530Z                # hour and minute
       201212241530,5Z              # decimal minute (30 seconds)
-      20121224153045Z              # full time
+      20121224153045               # full time, no timezone
+      20121224153045Z              # full time, UTC
       20121224153045.500Z          # with fractional seconds
       20121224153045,123456789Z    # nanoseconds, comma separator
       20121224153045+0100          # with numeric offset
@@ -602,11 +615,11 @@ SUPPORTED FORMATS
     designators ("UT", "UTC", "GMT"), and timezone abbreviations.
     Abbreviations are returned in "tz_abbrev" without resolution.
 
-      Mon, 24 Dec 2012 15:30:45 +0100     # tz_offset => 60
+      Mon, 24 Dec 2012 15:30:45 +0100
       Mon, 24 Dec 2012 15:30 +0100
       24 Dec 2012 15:30:45 +0100
-      24 Dec 2012 15:30:45 GMT            # tz_utc => 'GMT', tz_offset => 0
-      24 Dec 2012 15:30:45 CET            # tz_abbrev => 'CET'
+      24 Dec 2012 15:30:45 GMT
+      24 Dec 2012 15:30:45 CET
 
     Timezone offset format: "Â±HHMM"
 
@@ -674,6 +687,63 @@ SUPPORTED FORMATS
     Timezone offset format: "Â±HH:MM"
 
     Formatting: Identical to RFC3339.
+
+  RFC5280 (alias: x509)
+    PKIX certificate validity times as defined in RFC 5280. Uses constrained
+    ASN.1 UTCTime for dates before 2050 and GeneralizedTime for dates 2050
+    and after.
+
+      YYMMDDhhmmssZ
+      YYYYMMDDhhmmssZ
+
+    Parsing:
+
+    Two-digit years are expanded using the pivot year (default 1950).
+    Four-digit years are used as-is. The "Z" designator is required.
+
+      121224153045Z                # UTCTime (two-digit year)
+      491231235959Z                # UTCTime, year 49 -> 2049
+      500101000000Z                # UTCTime, year 50 -> 1950
+      20500101000000Z              # GeneralizedTime (four-digit year)
+      99991231235959Z              # GeneralizedTime
+
+    Formatting:
+
+    Produces UTCTime (two-digit year) for dates before 2050-01-01T00:00:00Z
+    and GeneralizedTime (four-digit year) for dates 2050 and after:
+
+      time2str(1356359445, format => 'RFC5280')
+      # '121224143045Z'
+
+      time2str(2524608000, format => 'RFC5280')
+      # '20500101000000Z'
+
+    Limitations: Always UTC. Fractional seconds and timezone offsets are not
+    supported; the "offset" parameter is ignored.
+
+  RFC5545 (alias: iCal)
+    iCalendar date and date-time as defined in RFC 5545.
+
+      YYYYMMDD
+      YYYYMMDDThhmmss[Z]
+
+    Parsing:
+
+    Date-only, date-time with and without UTC designator.
+
+      20241224                     # date only
+      20241224T153045              # date-time, local time
+      20241224T153045Z             # date-time, UTC
+
+    Formatting:
+
+    Always produces UTC with "Z" designator:
+
+      time2str(1735052445, format => 'RFC5545')
+      # '20241224T153045Z'
+
+    Limitations: Fractional seconds and timezone offsets are not supported.
+    The "offset" parameter is ignored; formatting always produces UTC.
 
   Ruby
     Date format popularized by Ruby on Rails and Twitter.
@@ -761,18 +831,19 @@ SUPPORTED FORMATS
 GENERIC FORMAT PARSING
     The "generic" format parser accepts a wide variety of real-world
     date/time representations, restricted to those that can be parsed
-    deterministically. Parsing only; cannot be used with "time2str". A date
-    is always required. Time and timezone are optional, but a timezone may
-    only appear when a time is present.
+    deterministically. A date is always required. Time and timezone are
+    optional, but a timezone may only appear when a time is present.
 
   Date
-    Three categories of date format are accepted.
+    A date is always required. Three categories are accepted. Day names,
+    month names, Roman numerals, and ordinal suffixes are all
+    case-insensitive.
 
    Numeric Dates (Y-M-D only)
     When all three components are numeric, they must appear in
     year-month-day order to avoid the ambiguity between American (M/D/Y) and
     European (D/M/Y) conventions. The separator must be a hyphen, slash, or
-    period, and must be consistent within the date.
+    period, consistent within the date.
 
       2024-12-24
       2024/12/24
@@ -785,46 +856,55 @@ GENERIC FORMAT PARSING
       2024-12/24  # mixed separators
 
    Dates with Textual Months
-    When the month is a name or Roman numeral it is unambiguous, so the day
-    and year may appear in any order relative to the month. Month names may
-    be abbreviated ("Jan", "Feb", ...) or written in full ("January",
-    "February", ...). Roman numerals "I" through "XII" are accepted.
-    Separators follow the same rules as numeric dates, or spaces may be
-    used.
+    When the month is given as a name or Roman numeral it is unambiguous, so
+    the day and year may appear in any order relative to the month. Month
+    names may be abbreviated ("Jan", "Feb", ...) or written in full
+    ("January", "February", ...).
 
-    Separator-based:
+    Roman numerals ("I" through "XII") are accepted only in day-month-year
+    order.
 
-      2024-Dec-24
-      24-Dec-2024
-      Dec-24-2024
+    Separator-based (hyphen, slash, or period, consistent within the date):
+
+      2024-Dec-24       # Y-M-D
+      24-Dec-2024       # D-M-Y
+      Dec-24-2024       # M-D-Y
       2024/December/24
-      24.XII.2024
+      24.XII.2024       # Roman numeral, D-M-Y only
 
     Space-separated:
 
       24 December 2024
-      24th December 2024
       December 24, 2024
-      December 24th, 2024
       24. XII. 2024
 
+    In space-separated dates, an ordinal suffix ("st", "nd", "rd", "th") or
+    a trailing period may follow the day. A trailing period or comma may
+    follow the month:
+
+      24th December 2024
+      24. December 2024
+      December 24th, 2024
+      24. XII. 2024
+      24 XII. 2024
+      24. XII 2024
+
    Compact Dates (No Separators)
-    Accepted only when the month is textual:
+    Accepted only when the month is textual. Roman numerals are accepted in
+    day-month-year order:
 
       24DEC2024
       24Dec2024
       2024DEC24
       2024Dec24
+      24XII2024
 
-   Day Names and Ordinal Suffixes
+   Day Names
     An optional day name prefix (e.g., "Monday," or "Mon,") is accepted
-    before the date but not validated against the actual date. Ordinal
-    suffixes ("st", "nd", "rd", "th") are accepted after a numeric day but
-    not validated.
+    before the date but not validated against the actual date.
 
       Monday, 24 December 2024
       Mon, 24 Dec 2024
-      December 24th, 2024
 
    Year
     A four-digit year is always required. Two-digit years are not accepted.
@@ -838,41 +918,36 @@ GENERIC FORMAT PARSING
       December 24, 2024, 15:30
       Monday, 24th December 2024 at 3:30 pm
 
-   Hours and Minutes
-    Separated by a colon. Hours may be one or two digits; minutes are always
-    two digits.
+    Either "HH:MM" or "HH" with an AM/PM indicator is required as a minimum.
 
-      9:05
+   24-Hour Time
+    Hours and minutes separated by a colon. Hours may be one or two digits;
+    minutes are always two digits. Seconds are optional (two digits,
+    colon-separated). An optional fractional part may follow the seconds,
+    separated by a period or comma, up to nine digits.
+
       15:30
-
-   Seconds
-    Optional, separated from minutes by a colon, always two digits.
-
+      9:05
       15:30:45
-
-   Fractional Seconds
-    An optional fractional part may follow the seconds, separated by a
-    period or comma. Up to nine digits (nanosecond precision) are accepted.
-
-      15:30:45.5
       15:30:45.500
-      15:30:45.123456789
       15:30:45,500
+      15:30:45.123456789
 
-   12-Hour Clock
-    An AM/PM indicator may follow the time with or without a space:
+   12-Hour Time
+    An AM/PM indicator is required. Hours must be 1-12. Minutes, seconds,
+    and fractional seconds follow the same rules as 24-hour time but are
+    optional. The indicator may appear with or without a separating space.
+
+    Accepted forms: "AM", "am", "PM", "pm", "A.M.", "a.m.", "P.M.", "p.m."
 
       3 PM
       3PM
       3:30 PM
-      3:30:45 PM
-      3:30:45.500 PM
-      3:30 pm
-      3:30 P.M.
-      3:30 p.m.
+      3:30:45 pm
+      3:30:45.500 P.M.
+      12 p.m.
 
-    When present, the hour must be 1-12. Midnight is "12:00 AM", noon is
-    "12:00 PM".
+    Midnight is "12:00 AM", noon is "12:00 PM".
 
   Timezone
     Optional; may only appear when a time is present.
@@ -988,10 +1063,7 @@ TIMEZONE ABBREVIATIONS
     components including "tz_abbrev", then resolve externally:
 
         my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
-        # (..., tz_abbrev => 'IST') # no tz_offset
-
-        my %d = str2date('24 Dec 2012 15:30:45 GMT', format => 'RFC2822');
-        # (..., tz_utc => 'GMT', tz_offset => 0)
+        # (..., tz_abbrev => 'IST')
 
 SEE ALSO
     Time::Moment, DateTime, Time::Piece
@@ -1006,6 +1078,10 @@ STANDARDS
     *   RFC 2616 / RFC 7231 - HTTP/1.1
 
     *   RFC 4287 - The Atom Syndication Format
+
+    *   RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)
+
+    *   RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
 
     *   RFC 9051 - Internet Message Access Protocol (IMAP)
 
