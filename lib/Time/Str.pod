@@ -352,9 +352,13 @@ Croaks if:
     my $str = time2str(1735052445.999999, precision => 3);
     # '2024-12-24T15:30:46.000Z'
 
-    # Nanosecond override (no rounding)
-    my $str = time2str(1735052445, nanosecond => 500_000_000, precision => 9);
-    # '2024-12-24T15:30:45.500000000Z'
+    # Zero-padding
+    my $str = time2str(1735052445, precision => 3);
+    # '2024-12-24T15:30:45.000Z'
+
+    # Nanosecond override (no rounding, auto-detected precision)
+    my $str = time2str(1735052445, nanosecond => 500_000_000);
+    # '2024-12-24T15:30:45.500Z'
 
     # Zero-padding with nanosecond
     my $str = time2str(1735052445, nanosecond => 0, precision => 3);
@@ -424,14 +428,15 @@ is not subject to rounding, giving exact control over the output:
 
 =head1 FLOATING-POINT PRECISION
 
-Perl typically uses IEEE 754 double-precision (64-bit) floating-point,
-providing approximately 15-17 significant decimal digits shared between
-the integer and fractional parts of a number.
+Perl's floating-point type (NV) is typically IEEE 754 double-precision
+(64-bit), providing approximately 15-17 significant decimal digits
+shared between the integer and fractional parts of a number.
 
 =head2 Implications for Timestamps
 
 Whole seconds are always represented exactly within the supported date
 range (0001-01-01 to 9999-12-31).
+
 Fractional precision depends on the magnitude of the timestamp:
 
 =over 4
@@ -452,14 +457,14 @@ sub-microsecond values.
 =head2 Default Precision
 
 When C<time2str> formats a timestamp with fractional seconds and neither
-C<precision> nor C<nanosecond> is specified, it uses a system-dependent
-default determined at compile time:
+C<precision> nor C<nanosecond> is specified, it uses a default based on
+Perl's NV (floating-point) type:
 
 =over 4
 
-=item * B<6 decimal places> on standard 64-bit double-precision systems
+=item * B<6 decimal places> when NV is double-precision (64-bit)
 
-=item * B<9 decimal places> on platforms with extended floating-point
+=item * B<9 decimal places> when NV has extended precision
 (e.g., long double)
 
 =back
@@ -762,37 +767,40 @@ B<Formatting>: Identical to RFC3339.
 
 =head2 RFC5280 (alias: x509)
 
-PKIX certificate validity times as defined in RFC 5280. Uses constrained
-ASN.1 UTCTime for dates before 2050 and GeneralizedTime for dates 2050
-and after.
+X.509 certificate validity times as defined in RFC 5280 section 4.1.2.5.
+Certificates encode validity as ASN.1 UTCTime (two-digit year) for dates
+before 2050 and GeneralizedTime (four-digit year) for dates from 2050
+onward. Both forms require UTC and do not permit fractional seconds or
+timezone offsets.
 
-  YYMMDDhhmmssZ
-  YYYYMMDDhhmmssZ
+  YYMMDDhhmmssZ           # UTCTime
+  YYYYMMDDhhmmssZ         # GeneralizedTime
 
 B<Parsing>:
 
-Two-digit years are expanded using the pivot year (default 1950).
-Four-digit years are used as-is. The C<Z> designator is required.
+Accepts both forms. Two-digit years are expanded using C<pivot_year>
+(default 1950), which matches the RFC 5280 convention: years 00-49 map
+to 2000-2049, years 50-99 map to 1950-1999.
 
-  121224153045Z                # UTCTime (two-digit year)
-  491231235959Z                # UTCTime, year 49 -> 2049
-  500101000000Z                # UTCTime, year 50 -> 1950
-  20500101000000Z              # GeneralizedTime (four-digit year)
-  99991231235959Z              # GeneralizedTime
+  121224153045Z            # UTCTime, year 12 -> 2012
+  491231235959Z            # UTCTime, year 49 -> 2049
+  500101000000Z            # UTCTime, year 50 -> 1950
+  20500101000000Z          # GeneralizedTime
+  99991231235959Z          # GeneralizedTime
 
 B<Formatting>:
 
-Produces UTCTime (two-digit year) for dates before 2050-01-01T00:00:00Z
-and GeneralizedTime (four-digit year) for dates 2050 and after:
+Automatically selects the form based on the timestamp: UTCTime for dates
+before 2050-01-01T00:00:00Z, GeneralizedTime for dates from 2050 onward.
 
   time2str(1356359445, format => 'RFC5280')
-  # '121224143045Z'
+  # '121224143045Z'        - before 2050, UTCTime
 
   time2str(2524608000, format => 'RFC5280')
-  # '20500101000000Z'
+  # '20500101000000Z'      - from 2050, GeneralizedTime
 
-B<Limitations>: Always UTC. Fractional seconds and timezone offsets are
-not supported; the C<offset> parameter is ignored.
+B<Limitations>: Always UTC. The C<offset> parameter is ignored.
+Fractional seconds are not supported.
 
 =head2 RFC5545 (alias: iCal)
 
@@ -803,21 +811,20 @@ iCalendar date and date-time as defined in RFC 5545.
 
 B<Parsing>:
 
-Date-only, date-time with and without UTC designator.
+Date-only and date-time forms are accepted. Without C<Z>, parses as
+local time with no C<tz_offset>.
 
   20241224                     # date only
-  20241224T153045              # date-time, local time
-  20241224T153045Z             # date-time, UTC
+  20241224T153045              # local time
+  20241224T153045Z             # UTC
 
 B<Formatting>:
-
-Always produces UTC with C<Z> designator:
 
   time2str(1735052445, format => 'RFC5545')
   # '20241224T153045Z'
 
-B<Limitations>: Fractional seconds and timezone offsets are not supported.
-The C<offset> parameter is ignored; formatting always produces UTC.
+B<Limitations>: Always UTC. The C<offset> parameter is ignored.
+Fractional seconds are not supported.
 
 =head2 Ruby
 
