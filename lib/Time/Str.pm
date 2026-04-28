@@ -639,7 +639,7 @@ sub expand_two_digit_year {
   my ($yy, $pivot_year) = @_;
 
   ($pivot_year >= 0 && $pivot_year <= 9899)
-    or croak q/Parameter 'pivot_year' is out of range (0-9899)/;
+    or croak q/Parameter 'pivot_year' is out of range [0, 9899]/;
 
   use integer;
   my $century = $pivot_year / 100;
@@ -658,7 +658,7 @@ sub meridiem_to_24h {
   my ($hour, $meridiem) = @_;
 
   ($hour >= 1 && $hour <= 12)
-    or croak q/Parameter 'hour' is out of range (1-12)/;
+    or croak q/Parameter 'hour' is out of range [1, 12]/;
 
   ($meridiem eq 'AM' || $meridiem eq 'PM')
     or croak q/Parameter 'meridiem' is not AM or PM/;
@@ -677,7 +677,7 @@ sub parse_numeric_offset {
 
   $m //= 0;
   valid_hm($h, $m)
-    or croak qq/Unable to parse: timezone offset is out of range ($string)/;
+    or croak qq/Unable to parse: timezone offset is out of range/;
 
   my $offset = $h * 60 + $m;
   if ($sign eq '-') {
@@ -733,7 +733,7 @@ sub str2date {
     elsif ($name eq 'pivot_year') {
       $pivot_year = $v;
       ($pivot_year >= 0 && $pivot_year <= 9899)
-        or croak q/Parameter 'pivot_year' is out of range (0-9899)/;
+        or croak q/Parameter 'pivot_year' is out of range [0, 9899]/;
     }
     else {
       croak qq/Unknown named parameter: '$name'/;
@@ -835,7 +835,7 @@ sub str2time {
   if (exists $p{precision}) {
     $precision = delete $p{precision};
     ($precision >= 0 && $precision <= 9)
-      or croak(q/Parameter 'precision' is out of range (0-9)/);
+      or croak(q/Parameter 'precision' is out of range [0, 9]/);
   }
 
   my $r = str2date($string, %p);
@@ -1054,7 +1054,7 @@ sub time2str {
   my ($time, %p) = @_;
 
   ($time >= MIN_TIME && $time < MAX_TIME + 1)
-    or croak(q/Parameter 'time' is out of range/);
+    or croak q/Parameter 'time' is out of range/;
 
   my ($formatter, $offset, $precision, $nanosecond) = (\&format_RFC3339, 0);
 
@@ -1062,22 +1062,22 @@ sub time2str {
     if ($name eq 'format') {
       $formatter = $FormatMap{lc $v};
       (defined $formatter)
-        or croak(qq/Parameter 'format' is unknown: '$v'/);
+        or croak qq/Parameter 'format' is unknown: '$v'/;
     }
     elsif ($name eq 'precision') {
       $precision = $v;
       ($precision >= 0 && $precision <= 9)
-        or croak(q/Parameter 'precision' is out of range (0-9)/);
+        or croak q/Parameter 'precision' is out of range [0, 9]/;
     }
     elsif ($name eq 'nanosecond') {
       $nanosecond = $v;
       ($nanosecond >= 0 && $nanosecond <= 999_999_999)
-        or croak(q/Parameter 'nanosecond' is out of range (0-999999999)/);
+        or croak q/Parameter 'nanosecond' is out of range [0, 999_999_999]/;
     }
     elsif ($name eq 'offset') {
       $offset = $v;
       ($offset >= -1439 && $offset <= 1439)
-        or croak(q/Parameter 'offset' is out of range (-1439 to 1439)/);
+        or croak q/Parameter 'offset' is out of range [-1439, 1439]/;
     }
     else {
       croak qq/Unknown named parameter: '$name'/;
@@ -1103,7 +1103,7 @@ sub time2str {
     my $local_time = $time + $offset * 60;
 
     ($local_time >= MIN_TIME && $local_time <= MAX_TIME)
-      or croak(q/Parameter 'time' is out of range for the given offset/);
+      or croak q/Parameter 'time' is out of range for the given offset/;
   }
 
   my $fraction = '';
