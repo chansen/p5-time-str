@@ -22,7 +22,7 @@ throws_ok { str2date('2012-12-24T15:30:45Z', 'extra') }
 
 # str2date parameter 'format'
 throws_ok { str2date('2012-12-24', format => 'NOSUCH') }
-  qr/Parameter 'format' is unknown: 'nosuch'/,
+  qr/Parameter 'format' is unknown: 'NOSUCH'/,
   'str2date: unknown format';
 
 # str2date parameter 'pivot_year'
@@ -36,12 +36,8 @@ throws_ok { str2date('121224153045Z', format => 'ASN1UT', pivot_year => 9900) }
 
 # str2date unknown named parameter
 throws_ok { str2date('2012-12-24T15:30:45Z', color => 'red') }
-  qr/Unknown named parameter: color/,
+  qr/Unknown named parameter: 'color'/,
   'str2date: unknown named parameter';
-
-throws_ok { str2date('2012-12-24T15:30:45Z', color => 'red', style => 'bold') }
-  qr/Unknown named parameter: color, style/,
-  'str2date: multiple unknown named parameters';
 
 # str2date parse failure
 throws_ok { str2date('not-a-date') }
@@ -158,12 +154,8 @@ throws_ok { time2str(0, nanosecond => 1_000_000_000) }
 
 # time2str unknown named parameter
 throws_ok { time2str(0, color => 'red') }
-  qr/Unknown named parameter: color/,
+  qr/Unknown named parameter: 'color'/,
   'time2str: unknown named parameter';
-
-throws_ok { time2str(0, color => 'red', style => 'bold') }
-  qr/Unknown named parameter: color, style/,
-  'time2str: multiple unknown named parameters';
 
 # time2str time out of range for given offset
 throws_ok { time2str(Time::Str::MAX_TIME, offset => 1) }

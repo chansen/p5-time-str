@@ -401,8 +401,6 @@ my $RFC4287_Rx = qr{
 # RFC 5280 PKIX Certificate and CRL Profile (x509)
 # <https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
 #
-#   Validity; constrained ASN.1 UTCTime or GeneralizedTime.
-#
 #   YYMMDDhhmmzzZ
 #   YYYYMMDDhhmmssZ
 #
@@ -723,27 +721,23 @@ sub str2date {
   @_ & 1 or croak q/Usage: str2date(string [, format => 'RFC3339' ])/;
   my ($string, %p) = @_;
 
-  my $format     = 'rfc3339';
-  my $pivot_year = $DefaultPivotYear;
-  my $regexp     = $RFC3339_Rx;
+  my ($format, $regexp, $pivot_year) = ('rfc3339', $RFC3339_Rx);
 
-  if (exists $p{format}) {
-    $format = lc delete $p{format};
-    $regexp = $RegexpMap{$format};
-
-    (defined $regexp)
-      or croak qq/Parameter 'format' is unknown: '$format'/;
-  }
-
-  if (exists $p{pivot_year}) {
-    $pivot_year = delete $p{pivot_year};
-
-    ($pivot_year >= 0 && $pivot_year <= 9899)
-      or croak q/Parameter 'pivot_year' is out of range (0-9899)/;
-  }
-
-  if (%p) {
-    croak "Unknown named parameter: " . join ', ', sort keys %p;
+  while (my ($name, $v) = each %p) {
+    if ($name eq 'format') {
+      $format = lc $v;
+      $regexp = $RegexpMap{$format};
+      (defined $regexp)
+        or croak qq/Parameter 'format' is unknown: '$v'/;
+    }
+    elsif ($name eq 'pivot_year') {
+      $pivot_year = $v;
+      ($pivot_year >= 0 && $pivot_year <= 9899)
+        or croak q/Parameter 'pivot_year' is out of range (0-9899)/;
+    }
+    else {
+      croak qq/Unknown named parameter: '$name'/;
+    }
   }
 
   (defined $string && $string =~ $regexp)
@@ -758,7 +752,7 @@ sub str2date {
   if (exists $r{year}) {
 
     if (length $r{year} == 2) {
-      $r{year} = expand_two_digit_year($r{year}, $pivot_year);
+      $r{year} = expand_two_digit_year($r{year}, $pivot_year // $DefaultPivotYear);
     }
 
     valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
@@ -1060,40 +1054,34 @@ sub time2str {
   my ($time, %p) = @_;
 
   ($time >= MIN_TIME && $time < MAX_TIME + 1)
-    or croak(q/Parameter 'time' is out of range (0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z)/);
+    or croak(q/Parameter 'time' is out of range/);
 
-  my $formatter = \&format_RFC3339;
+  my ($formatter, $offset, $precision, $nanosecond) = (\&format_RFC3339, 0);
 
-  if (exists $p{format}) {
-    my $format =  delete $p{format};
-
-    $formatter = $FormatMap{ lc $format };
-    (defined $formatter)
-      or croak(qq/Parameter 'format' is unknown: '$format'/);
-  }
-
-  my ($offset, $precision, $nanosecond) = (0);
-
-  if (exists $p{offset}) {
-    $offset = delete $p{offset};
-    ($offset >= -1439 && $offset <= 1439)
-      or croak(q/Parameter 'offset' is out of range (-1439 to 1439)/);
-  }
-
-  if (exists $p{precision}) {
-    $precision = delete $p{precision};
-    ($precision >= 0 && $precision <= 9)
-      or croak(q/Parameter 'precision' is out of range (0-9)/);
-  }
-
-  if (exists $p{nanosecond}) {
-    $nanosecond = delete $p{nanosecond};
-    ($nanosecond >= 0 && $nanosecond <= 999_999_999)
-      or croak(q/Parameter 'nanosecond' is out of range (0-999999999)/);
-  }
-
-  if (%p) {
-    croak "Unknown named parameter: " . join ', ', sort keys %p;
+  while (my ($name, $v) = each %p) {
+    if ($name eq 'format') {
+      $formatter = $FormatMap{lc $v};
+      (defined $formatter)
+        or croak(qq/Parameter 'format' is unknown: '$v'/);
+    }
+    elsif ($name eq 'precision') {
+      $precision = $v;
+      ($precision >= 0 && $precision <= 9)
+        or croak(q/Parameter 'precision' is out of range (0-9)/);
+    }
+    elsif ($name eq 'nanosecond') {
+      $nanosecond = $v;
+      ($nanosecond >= 0 && $nanosecond <= 999_999_999)
+        or croak(q/Parameter 'nanosecond' is out of range (0-999999999)/);
+    }
+    elsif ($name eq 'offset') {
+      $offset = $v;
+      ($offset >= -1439 && $offset <= 1439)
+        or croak(q/Parameter 'offset' is out of range (-1439 to 1439)/);
+    }
+    else {
+      croak qq/Unknown named parameter: '$name'/;
+    }
   }
 
   if (!defined $nanosecond && int $time != $time) {
