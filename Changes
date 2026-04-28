@@ -1,5 +1,10 @@
+0.03 2026-04-28
+  - Clarified and expanded the Generic format documentation.
+  - Added RFC 5280 (PKIX/x509) format support.
+  - Added RFC 5545 (iCalendar) format support.
+
 0.02 2026-04-27
- - Added missing Test::Number::Delta to test prerequisites.
+  - Added missing Test::Number::Delta to test prerequisites.
 
 0.01 2026-04-26
   - Initial CPAN release.
