@@ -398,6 +398,28 @@ my $RFC4287_Rx = qr{
   \z
 }x;
 
+# RFC 5545 iCalendar
+# <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
+# <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.5>
+#
+#   YYYYMMDD
+#   YYYYMMDDThhmmss[Z]
+#
+my $RFC5545_Rx = qr{
+  \A
+  (?<year>   [0-9]{4})
+  (?<month>  [0-9]{2})
+  (?<day>    [0-9]{2})
+  (?:
+    [T] 
+    (?<hour>   [0-9]{2})
+    (?<minute> [0-9]{2})
+    (?<second> [0-9]{2})
+    (?<tz_utc> [Z])?
+  )?
+  \z
+}x;
+
 # ISO 9075 Database Language SQL — Part 2: Foundation (SQL/Foundation)
 # <https://www.iso.org/standard/76583.html>
 #
@@ -658,6 +680,7 @@ my %RegexpMap = (
   generic  => $GenericDateTime_Rx,
   git      => $GitDate_Rx,
   http     => $RFC2616_Rx,
+  ical     => $RFC5545_Rx,
   imf      => $RFC2822_Rx,
   iso9075  => $ISO9075_Rx,
   rfc2616  => $RFC2616_Rx,
@@ -665,6 +688,7 @@ my %RegexpMap = (
   rfc3339  => $RFC3339_Rx,
   rfc4287  => $RFC4287_Rx,
   rfc5322  => $RFC2822_Rx,
+  rfc5545  => $RFC5545_Rx,
   rfc7231  => $RFC2616_Rx,
   ruby     => $RubyDate_Rx,
   sql      => $ISO9075_Rx,
@@ -913,6 +937,14 @@ sub str2time {
       $year + 1900, $mon + 1, $mday, $hour, $min, $sec, $fraction, $zstr;
   }
 
+  sub format_RFC5545 {
+    my ($time) = @_;
+
+    my ($sec, $min, $hour, $mday, $mon, $year) = gmtime $time;
+    return sprintf '%04d%02d%02dT%02d%02d%02dZ',
+      $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
+  }
+
   sub format_ISO9075 {
     my ($time, $offset, $fraction) = @_;
 
@@ -969,6 +1001,7 @@ my %FormatMap = (
   email    => \&format_RFC2822,
   git      => \&format_GitDate,
   http     => \&format_RFC2616,
+  ical     => \&format_RFC5545,
   imf      => \&format_RFC2822,
   iso9075  => \&format_ISO9075,
   rfc2616  => \&format_RFC2616,
@@ -976,6 +1009,7 @@ my %FormatMap = (
   rfc3339  => \&format_RFC3339,
   rfc4287  => \&format_RFC3339,
   rfc5322  => \&format_RFC2822,
+  rfc5545  => \&format_RFC5545,
   rfc7231  => \&format_RFC2616,
   ruby     => \&format_RubyDate,
   sql      => \&format_ISO9075,

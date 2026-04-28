@@ -760,6 +760,31 @@ Timezone offset format: C<±HH:MM>
 
 B<Formatting>: Identical to RFC3339.
 
+=head2 RFC5545 (alias: iCal)
+
+iCalendar date and date-time as defined in RFC 5545.
+
+  YYYYMMDD
+  YYYYMMDDThhmmss[Z]
+
+B<Parsing>:
+
+Date-only, date-time with and without UTC designator.
+
+  20241224                     # date only
+  20241224T153045              # date-time, local time
+  20241224T153045Z             # date-time, UTC
+
+B<Formatting>:
+
+Always produces UTC with C<Z> designator:
+
+  time2str(1735052445, format => 'RFC5545')
+  # '20241224T153045Z'
+
+B<Limitations>: Fractional seconds and timezone offsets are not supported.
+The C<offset> parameter is ignored; formatting always produces UTC.
+
 =head2 Ruby
 
 Date format popularized by Ruby on Rails and Twitter.
@@ -850,7 +875,6 @@ B<Formatting>: Identical to RFC3339.
 
 The C<generic> format parser accepts a wide variety of real-world date/time
 representations, restricted to those that can be parsed deterministically.
-B<Parsing only>; cannot be used with C<time2str>.
 A date is always required. Time and timezone are optional, but a timezone
 may only appear when a time is present.
 
@@ -1129,6 +1153,8 @@ L<Time::Moment>, L<DateTime>, L<Time::Piece>
 =item * RFC 2616 / RFC 7231 - HTTP/1.1
 
 =item * RFC 4287 - The Atom Syndication Format
+
+=item * RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
 
 =item * RFC 9051 - Internet Message Access Protocol (IMAP)
 
