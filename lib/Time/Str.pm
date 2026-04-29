@@ -830,18 +830,18 @@ sub str2time {
   @_ & 1 or croak q/Usage: str2time(string [, format => 'RFC3339' ])/;
   my ($string, %p) = @_;
 
-  my $precision = DEFAULT_PRECISION;
+  my $precision;
 
   if (exists $p{precision}) {
     $precision = delete $p{precision};
     ($precision >= 0 && $precision <= 9)
-      or croak(q/Parameter 'precision' is out of range [0, 9]/);
+      or croak q/Parameter 'precision' is out of range [0, 9]/;
   }
 
   my $r = str2date($string, %p);
 
   (exists $r->{tz_offset})
-    or croak q/Unable to convert to time: no timezone offset or UTC designator/;
+    or croak q/Unable to convert: no timezone offset or UTC designator/;
 
   my ($Y, $M, $D, $h, $m, $s) = @$r{qw(year month day hour minute second)};
   $m //= 0;
@@ -858,7 +858,7 @@ sub str2time {
   my $sod  = ($h * 60 + $m) * 60 + $s;
   my $time = ($rdn - 719163) * 86400 + $sod - $r->{tz_offset} * 60;
   if (exists $r->{nanosecond}) {
-    my $scale    = 10 ** $precision;
+    my $scale    = 10 ** ($precision // DEFAULT_PRECISION);
     my $fraction = int($r->{nanosecond} * $scale / 1E9);
     $time += $fraction / $scale;
   }
@@ -953,12 +953,12 @@ sub str2time {
       $year + 1900, $mon + 1, $mday, $hour, $min, $sec, $fraction, $zstr;
   }
 
-  sub TIME_20500101_000000 () { 2524608000 }
+  sub TIME_20500101 () { 2524608000 }
 
   sub format_RFC5280 {
     my ($time) = @_;
 
-    if ($time < TIME_20500101_000000) {
+    if ($time < TIME_20500101) {
       return format_ASN1UT($time, 0);
     }
     else {
