@@ -438,6 +438,55 @@ my $RFC5545_Rx = qr{
   \z
 }x;
 
+# ISO 8601
+# <https://www.iso.org/obp/ui/#iso:std:iso:8601>
+#
+#  Calendar date with optional time of day, a profile of ISO 8601.
+#
+#   YYYY-MM-DD
+#   YYYY-MM-DDThh[:mm[:ss]][(.|,)fraction][Z|±hh[:mm]]
+#   YYYYMMDD
+#   YYYYMMDDThh[mm[ss]][(.|,)fraction][Z|±hh[mm]]
+
+my $ISO8601_Rx = qr{
+  \A
+
+  (?<year> [0-9]{4})
+
+  (?: # Extended format
+     (?:
+           [-] (?<month>  [0-9]{2})
+           [-] (?<day>    [0-9]{2})
+       (?: [T] (?<hour>   [0-9]{2}) (?: [:] (?<minute> [0-9]{2})
+                                    (?: [:] (?<second> [0-9]{2}))?)?
+
+         (?: [.,] (?<fraction> [0-9]{1,9}))?
+
+         (?:
+              (?<tz_offset> [+-][0-9]{2} (?: [:][0-9]{2})? )
+           |  (?<tz_utc>    [Z])
+         )?
+       )?
+     )
+   | # Basic format
+     (?:
+               (?<month>  [0-9]{2})
+               (?<day>    [0-9]{2})
+       (?: [T] (?<hour>   [0-9]{2}) (?: (?<minute> [0-9]{2})
+                                    (?: (?<second> [0-9]{2}))?)?
+
+         (?: [.,] (?<fraction> [0-9]{1,9}))?
+
+         (?:
+              (?<tz_offset> [+-][0-9]{2} (?: [0-9]{2})? )
+           |  (?<tz_utc>    [Z])
+         )?
+       )?
+     )
+  )
+  \z
+}x;
+
 # ISO 9075 Database Language SQL — Part 2: Foundation (SQL/Foundation)
 # <https://www.iso.org/standard/76583.html>
 #
@@ -700,6 +749,7 @@ my %RegexpMap = (
   http     => $RFC2616_Rx,
   ical     => $RFC5545_Rx,
   imf      => $RFC2822_Rx,
+  iso8601  => $ISO8601_Rx,
   iso9075  => $ISO9075_Rx,
   rfc2616  => $RFC2616_Rx,
   rfc2822  => $RFC2822_Rx,
@@ -745,19 +795,16 @@ sub str2date {
 
   my %r = %+;
 
+  if (length $r{year} == 2) {
+    $r{year} = expand_two_digit_year($r{year}, $pivot_year // $DefaultPivotYear);
+  }
+
   if (exists $r{month} && $r{month} !~ /^[0-9]/) {
     $r{month} = $MonthIndexMap{ lc $r{month} };
   }
 
-  if (exists $r{year}) {
-
-    if (length $r{year} == 2) {
-      $r{year} = expand_two_digit_year($r{year}, $pivot_year // $DefaultPivotYear);
-    }
-
-    valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
-      or croak q/Unable to parse: date is out of range/;
-  }
+  valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
+    or croak q/Unable to parse: date is out of range/;
 
   if (exists $r{hour}) {
 
@@ -1032,6 +1079,7 @@ my %FormatMap = (
   http     => \&format_RFC2616,
   ical     => \&format_RFC5545,
   imf      => \&format_RFC2822,
+  iso8601  => \&format_RFC3339,
   iso9075  => \&format_ISO9075,
   rfc2616  => \&format_RFC2616,
   rfc2822  => \&format_RFC2822,

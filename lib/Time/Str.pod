@@ -68,8 +68,8 @@ The format specification. See L</SUPPORTED FORMATS>.
 =item * C<precision> (optional, default: 6 or 9 depending on float size)
 
 Number of decimal places to preserve for fractional seconds (0-9).
-Fractional digits beyond the specified precision are B<truncated>, not
-rounded. See L</PRECISION HANDLING>.
+Fractional digits beyond the specified precision are B<truncated>. 
+See L</PRECISION HANDLING>.
 
 =item * C<pivot_year> (optional, default: 1950)
 
@@ -120,12 +120,12 @@ Croaks if:
     my $t = str2time('Mon, 24 Dec 2012 15:30:45 GMT',
                      format => 'RFC2616');
 
-    # Precision (truncation, not rounding)
+    # Precision (truncation)
     my $t = str2time('2024-12-24T15:30:45.123456789Z', precision => 3);
     # 1735052445.123
 
     my $t = str2time('2024-12-24T15:30:45.999999Z', precision => 3);
-    # 1735052445.999 (NOT 1735052446.000)
+    # 1735052445.999
 
 =head2 str2date
 
@@ -387,9 +387,9 @@ formatting.
 
 =head2 Parsing (str2time)
 
-Fractional seconds beyond the specified precision are B<truncated>, not
-rounded. This preserves the exact digits provided in the input up to the
-requested precision:
+Fractional seconds beyond the specified precision are B<truncated>, This 
+preserves the exact digits provided in the input up to the requested 
+precision:
 
     str2time('2024-12-24T15:30:45.123456Z', precision => 3)
     # Returns: 1735052445.123 (digits beyond 3rd truncated)
@@ -619,6 +619,57 @@ B<Formatting>:
   # 'Tue Dec 24 16:30:45 2024 +0100'
 
 B<Limitations>: Fractional seconds are not supported.
+
+=head2 ISO8601
+
+Calendar date and time as defined in ISO 8601. Accepts both extended
+(with separators) and basic (compact) forms. Minutes, seconds,
+fractional seconds, and timezone are all optional when a time is present.
+The fractional part applies to the least significant time component
+present, allowing decimal hours and decimal minutes.
+
+Extended format:
+
+  YYYY-MM-DD
+  YYYY-MM-DDThh[:mm[:ss]][(.|,)fraction][Z|±hh[:mm]]
+
+Basic format:
+
+  YYYYMMDD
+  YYYYMMDDThh[mm[ss]][(.|,)fraction][Z|±hh[mm]]
+
+B<Parsing>:
+
+  2024-12-24                   # date only (extended)
+  20241224                     # date only (basic)
+  2024-12-24T15Z               # hour only
+  2024-12-24T15,5Z             # decimal hour (15:30)
+  2024-12-24T15:30Z            # hour and minute
+  2024-12-24T15:30.5Z          # decimal minute (15:30:30)
+  2024-12-24T15:30:45Z         # full time
+  2024-12-24T15:30:45.500Z     # fractional seconds
+  2024-12-24T15:30:45,500Z     # comma separator
+  20241224T153045Z             # basic
+  20241224T1530,5Z             # basic, decimal minute
+  20241224T153045+0100         # basic with offset
+  2024-12-24T15:30:45+01:00    # extended with offset
+
+B<Formatting>:
+
+Produces extended format, identical to RFC3339.
+
+  time2str(1735052445, format => 'ISO8601')
+  # '2024-12-24T15:30:45Z'
+
+  time2str(1735052445, format => 'ISO8601', offset => 60)
+  # '2024-12-24T16:30:45+01:00'
+
+  time2str(1735052445.5, format => 'ISO8601', precision => 3)
+  # '2024-12-24T15:30:45.500Z'
+
+B<Limitations>: Formatting always produces extended format with full
+time (hours, minutes, seconds). Date-only, basic format, decimal hours,
+and decimal minutes are not produced.
 
 =head2 ISO9075 (alias: SQL)
 
