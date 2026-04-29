@@ -721,8 +721,8 @@ sub parse_numeric_offset {
   @_ == 1 or croak q/Usage: parse_numeric_offset(string)/;
   my ($string) = @_;
 
-  $string =~ s/://; # ±H ±HH ±H:MM ±HH:MM ±HHMM
-  my ($sign, $h, $m) = ($string =~ m/^([+-])([0-9]{1,2})([0-9]{2})?$/)
+  # ±H ±HH ±H:MM ±HH:MM ±HHMM
+  my ($sign, $h, $m) = ($string =~ m/^([+-])([0-9]{1,2})[:]?([0-9]{2})?$/)
     or croak q/Unable to parse: timezone offset is invalid/;
 
   $m //= 0;
