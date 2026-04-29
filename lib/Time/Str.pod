@@ -177,7 +177,7 @@ C<tz_annotation>. The following components may be present:
 
 =item * C<second> - Second (0-60; 60 allows for leap seconds)
 
-=item * C<nanosecond> - Fractional seconds as nanoseconds (0-999999999)
+=item * C<nanosecond> - Fractional seconds as nanoseconds (0-999,999,999)
 
 =item * C<tz_offset> - Timezone offset in minutes from UTC (e.g., 60
 for +01:00). Present when a numeric offset or UTC designator was parsed.
@@ -306,7 +306,7 @@ See L</PRECISION HANDLING>.
 
 =item * C<nanosecond> (optional)
 
-Explicit nanosecond value (0-999999999) for fractional seconds. Overrides
+Explicit nanosecond value (0-999,999,999) for fractional seconds. Overrides
 any fractional part of C<$time> and bypasses rounding. Use this for exact
 control over fractional output or to preserve nanosecond precision that
 floating-point cannot represent. Can be combined with C<precision> to
@@ -387,7 +387,7 @@ formatting.
 
 =head2 Parsing (str2time)
 
-Fractional seconds beyond the specified precision are B<truncated>, This 
+Fractional seconds beyond the specified precision are B<truncated>. This 
 preserves the exact digits provided in the input up to the requested 
 precision:
 
@@ -566,7 +566,7 @@ B<Limitations>: Fractional seconds are not supported.
 
 =head2 CLF
 
-Common Log Format.
+Common Log Format. Used by web servers like Apache and Nginx.
 
   DD/MMM/YYYY:HH:MM:SS[.fraction] ±HHMM
 
@@ -1108,18 +1108,25 @@ C<UTC+05:30>), in which case C<tz_offset> reflects that offset.
 
 =head3 Numeric Offsets
 
-  ±1
-  ±01
-  ±0100
-  ±01:00
-  ±05:30
+Two-digit hours only:
+
+  ±HH
+  ±HHMM
+  ±HH:MM
+
+  +01
+  +0100
+  +01:00
+  +05:30
 
 =head3 Combined UTC and Offset
 
-C<UTC> or C<GMT> followed immediately by a numeric offset. C<tz_utc> is
-set to the designator; C<tz_offset> reflects the numeric part:
+C<UTC> or C<GMT> followed immediately by a numeric offset. Single-digit
+hours are only accepted in this combined form. C<tz_utc> is set to the
+designator; C<tz_offset> reflects the numeric part:
 
   UTC+1
+  UTC+5:30
   UTC+01:00
   GMT+5:30
 
@@ -1128,6 +1135,8 @@ set to the designator; C<tz_offset> reflects the numeric part:
 Abbreviations matching C<[A-Z][A-Za-z][A-Z]{1,4}> are accepted. UTC
 designators are handled as above; all others (e.g., C<EST>, C<CET>,
 C<IST>) are returned in C<tz_abbrev> without resolution.
+
+See L</TIMEZONE ABBREVIATIONS>.
 
 See L</TIMEZONE ABBREVIATIONS>.
 
@@ -1233,8 +1242,8 @@ components including C<tz_abbrev>, then resolve externally:
 
 Nothing is exported by default. Functions can be imported individually or by category:
 
-  use Time::Str qw(time2str str2time);  # individual functions
-  use Time::Str qw(:all);               # all functions
+  use Time::Str qw(time2str str2time str2date);  # individual functions
+  use Time::Str qw(:all);                        # all functions
 
 =head1 SEE ALSO
 
