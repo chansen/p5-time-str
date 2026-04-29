@@ -1244,7 +1244,7 @@ L<Time::Moment>, L<DateTime>, L<Time::Piece>
 
 =over 4
 
-=item * ISO 8601:2004 - Data elements and interchange formats
+=item * ISO 8601:2019 - Data elements and interchange formats
 
 =item * RFC 3339 - Date and Time on the Internet: Timestamps
 
