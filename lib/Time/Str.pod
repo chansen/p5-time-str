@@ -949,7 +949,7 @@ names may be abbreviated (C<Jan>, C<Feb>, ...) or written in full
 Roman numerals (C<I> through C<XII>) are accepted only in day-month-year 
 order.
 
-Day names, month names and Roman numerals are all case-insensitive.
+Month names and Roman numerals are all case-insensitive.
 
 Separator-based (hyphen, slash, or period, consistent within the date):
 
@@ -990,7 +990,8 @@ day-month-year order:
 =head3 Day Names
 
 An optional day name prefix (e.g., C<Monday,> or C<Mon,>) is accepted
-before the date but not validated against the actual date.
+before the date but not validated against the actual date. Day names
+are case-insensitive.
 
   Monday, 24 December 2024
   Mon, 24 Dec 2024
@@ -1176,6 +1177,13 @@ components including C<tz_abbrev>, then resolve externally:
 
     my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
     # (..., tz_abbrev => 'IST')
+
+=head1 EXPORTS
+
+Nothing is exported by default. Functions can be imported individually or by category:
+
+  use Time::Str qw(time2str str2time);  # individual functions
+  use Time::Str qw(:all);               # all functions
 
 =head1 SEE ALSO
 
