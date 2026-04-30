@@ -681,7 +681,7 @@ sub valid_hms {
     my ($h, $m, $s) = @_;
     return ($h >= 0 && $h <= 23
          && $m >= 0 && $m <= 59
-         && $s >= 0 && $s <= 60);
+         && $s >= 0 && ($s <= 59 || ($s == 60 && $h == 23 && $m == 59)));
 }
 
 sub expand_two_digit_year {
