@@ -876,29 +876,6 @@ B<Formatting>:
 B<Limitations>: Always UTC. The C<offset> parameter is ignored.
 Fractional seconds are not supported.
 
-=head2 Ruby
-
-Date format popularized by Ruby on Rails and Twitter.
-
-  DDD MMM DD HH:MM:SS ±HHMM YYYY
-
-B<Parsing>:
-
-  Mon Dec 01 03:04:05 +0100 2024
-  Mon Dec 24 15:30:45 +0100 2012
-
-Timezone offset format: C<±HHMM>
-
-B<Formatting>:
-
-  time2str(1735052445, format => 'Ruby')
-  # 'Tue Dec 24 15:30:45 +0000 2024'
-
-  time2str(1735052445, format => 'Ruby', offset => 60)
-  # 'Tue Dec 24 16:30:45 +0100 2024'
-
-B<Limitations>: Fractional seconds are not supported.
-
 =head2 RFC9557 (alias: IXDTF)
 
 Internet Extended Date/Time Format as defined in RFC 9557. Extends
@@ -924,6 +901,29 @@ character class. Intended for use with C<str2date>.
 Timezone offset format: C<±HH:MM>
 
 B<Formatting>: Identical to RFC3339 (tags are not preserved).
+
+=head2 Ruby
+
+Date format popularized by Ruby on Rails and Twitter.
+
+  DDD MMM DD HH:MM:SS ±HHMM YYYY
+
+B<Parsing>:
+
+  Mon Dec 01 03:04:05 +0100 2024
+  Mon Dec 24 15:30:45 +0100 2012
+
+Timezone offset format: C<±HHMM>
+
+B<Formatting>:
+
+  time2str(1735052445, format => 'Ruby')
+  # 'Tue Dec 24 15:30:45 +0000 2024'
+
+  time2str(1735052445, format => 'Ruby', offset => 60)
+  # 'Tue Dec 24 16:30:45 +0100 2024'
+
+B<Limitations>: Fractional seconds are not supported.
 
 =head2 Unix
 
