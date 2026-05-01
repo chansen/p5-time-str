@@ -9,9 +9,15 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 use Exporter qw[import];
 use Carp     qw[croak];
-use POSIX    qw[floor];
 
-my $DefaultPivotYear = 1950;
+BEGIN {
+  if ($^V ge v5.40) {
+    builtin->import(qw(floor));
+  }
+  else {
+    require POSIX; POSIX->import(qw(floor));
+  }
+}
 
 sub MIN_TIME () { -62135596800 } # 0001-01-01T00:00:00Z
 sub MAX_TIME () { 253402300799 } # 9999-12-31T23:59:59Z
@@ -21,6 +27,8 @@ sub NANOS_PER_SECOND  () { 1_000_000_000 }
 BEGIN {
   *DEFAULT_PRECISION = (length pack('F', 0) > 8) ? sub () {9} : sub () {6};
 }
+
+sub DEFAULT_PIVOT_YEAR () { 1950 }
 
 my %MonthIndexMap = qw(
   i     1 jan  1 january    1
@@ -797,7 +805,7 @@ sub str2date {
   my %r = %+;
 
   if (length $r{year} == 2) {
-    $r{year} = expand_two_digit_year($r{year}, $pivot_year // $DefaultPivotYear);
+    $r{year} = expand_two_digit_year($r{year}, $pivot_year // DEFAULT_PIVOT_YEAR);
   }
 
   if (exists $r{month} && $r{month} !~ /^[0-9]/) {
@@ -907,7 +915,7 @@ sub str2time {
   my $time = ($rdn - 719163) * 86400 + $sod - $r->{tz_offset} * 60;
   if (exists $r->{nanosecond}) {
     my $scale    = 10 ** ($precision // DEFAULT_PRECISION);
-    my $fraction = int($r->{nanosecond} * $scale / 1E9);
+    my $fraction = int($r->{nanosecond} * $scale / NANOS_PER_SECOND);
     $time += $fraction / $scale;
   }
   return $time;
@@ -1102,6 +1110,7 @@ sub time2str {
   @_ & 1 or croak(q/Usage: time2str(time [, format => 'RFC3339' ])/);
   my ($time, %p) = @_;
 
+  # Rejects NaN and Inf
   ($time >= MIN_TIME && $time < MAX_TIME + 1)
     or croak q/Parameter 'time' is out of range/;
 
@@ -1151,6 +1160,8 @@ sub time2str {
   if ($offset) {
     my $local_time = $time + $offset * 60;
 
+    # Most string formats cannot represent years outside 0001-9999;
+    # an offset may shift a valid timestamp beyond that range
     ($local_time >= MIN_TIME && $local_time <= MAX_TIME)
       or croak q/Parameter 'time' is out of range for the given offset/;
   }
