@@ -1245,6 +1245,34 @@ Nothing is exported by default. Functions can be imported individually or by cat
   use Time::Str qw(time2str str2time str2date);  # individual functions
   use Time::Str qw(:all);                        # all functions
 
+=head1 DIAGNOSTICS
+
+=over 4
+
+=item Usage: %s
+
+(F) A function was called with an incorrect number of arguments.
+
+=item Parameter '%s' is out of range
+
+(F) A named parameter is outside its valid range.
+
+=item Parameter '%s' is unknown: '%s'
+
+(F) An unrecognised format specifier or named parameter was given.
+
+=item Unable to parse: %s
+
+(F) C<str2date> or C<str2time> could not parse the input string in the
+specified format.
+
+=item Unable to convert: timestamp string without a UTC designator or numeric offset
+
+(F) C<str2time> successfully parsed the input string but cannot convert
+it to a Unix timestamp without a UTC designator or numeric offset.
+
+=back
+
 =head1 SEE ALSO
 
 L<Time::Moment>, L<DateTime>, L<Time::Piece>

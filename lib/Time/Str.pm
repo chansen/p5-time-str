@@ -897,7 +897,7 @@ sub str2time {
   my $r = str2date($string, %p);
 
   (exists $r->{tz_offset})
-    or croak q/Unable to convert: no timezone offset or UTC designator/;
+    or croak q/Unable to convert: timestamp string without a UTC designator or numeric offset/;
 
   my ($Y, $M, $D, $h, $m, $s) = @$r{qw(year month day hour minute second)};
   $m //= 0;

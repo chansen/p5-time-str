@@ -1073,7 +1073,7 @@ BEGIN {
 
 {
   eval { str2time('2012-12-24T15:30:45', format => 'generic') };
-  like($@, qr/no timezone/, 'str2time croaks without timezone');
+  like($@, qr/timestamp string without a UTC designator or numeric offset/, 'str2time croaks without timezone');
 }
 
 done_testing();
