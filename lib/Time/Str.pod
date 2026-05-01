@@ -1253,18 +1253,21 @@ Nothing is exported by default. Functions can be imported individually or by cat
 
 (F) A function was called with an incorrect number of arguments.
 
+=item Parameter 'format' is unknown: '%s'
+
+(F) The format specifier is not recognised.
+
 =item Parameter '%s' is out of range
 
-(F) A named parameter is outside its valid range.
+(F) A parameter value is outside its valid range.
 
-=item Parameter '%s' is unknown: '%s'
+=item Unknown named parameter: '%s'
 
-(F) An unrecognised format specifier or named parameter was given.
+(F) An unrecognised named parameter was given.
 
 =item Unable to parse: %s
 
-(F) C<str2date> or C<str2time> could not parse the input string in the
-specified format.
+(F) C<str2date> or C<str2time> could not parse the input string.
 
 =item Unable to convert: timestamp string without a UTC designator or numeric offset
 
