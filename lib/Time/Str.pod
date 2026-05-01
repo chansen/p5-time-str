@@ -1130,7 +1130,7 @@ designator; C<tz_offset> reflects the numeric part:
   UTC+01:00
   GMT+5:30
 
-=head3 Timezone Abbreviations
+=head3 Abbreviations
 
 Abbreviations matching C<[A-Z][A-Za-z][A-Z]{1,4}> are accepted. UTC
 designators are handled as above; all others (e.g., C<EST>, C<CET>,
@@ -1138,9 +1138,7 @@ C<IST>) are returned in C<tz_abbrev> without resolution.
 
 See L</TIMEZONE ABBREVIATIONS>.
 
-See L</TIMEZONE ABBREVIATIONS>.
-
-=head3 Timezone Annotations
+=head3 Annotations
 
 RFC 9557 (IXDTF) bracketed tags and Java C<ZoneId> annotations are
 captured in C<tz_annotation>. Parenthesized comments are accepted but
