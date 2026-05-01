@@ -387,6 +387,32 @@ my $RFC3339_Rx = qr{
   \z
 }x;
 
+# RFC 9557 Date and Time on the Internet: Timestamps with Additional Information
+# <https://datatracker.ietf.org/doc/html/rfc9557>
+#
+#   YYYY-MM-DD(T|t|space)hh:mm:ss[.fraction](Z|z|±hh:mm)[TAGS]
+#
+my $RFC9557_Rx = qr{
+  (?(DEFINE)
+    (?<Tag> \[ [0-9A-Za-z!+-._/]+ \])
+  )
+  \A
+        (?<year>   [0-9]{4})
+  [-]   (?<month>  [0-9]{2})
+  [-]   (?<day>    [0-9]{2})
+  [Tt ] (?<hour>   [0-9]{2})
+  [:]   (?<minute> [0-9]{2})
+  [:]   (?<second> [0-9]{2}) (?: [.] (?<fraction> [0-9]{1,9}) )?
+  (?:
+       (?<tz_offset> [+-][0-9]{2}[:][0-9]{2})
+    |  (?<tz_utc>    [Zz])
+  )
+  (?:
+    (?<tz_annotation> (?&Tag)+ )
+  )?
+  \z
+}x;
+
 # RFC 4287 Atom Format
 # <https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
 #
@@ -756,6 +782,7 @@ my %RegexpMap = (
   generic  => $GenericDateTime_Rx,
   git      => $GitDate_Rx,
   http     => $RFC2616_Rx,
+  ixdtf    => $RFC9557_Rx,
   ical     => $RFC5545_Rx,
   imf      => $RFC2822_Rx,
   iso8601  => $ISO8601_Rx,
@@ -768,6 +795,7 @@ my %RegexpMap = (
   rfc5322  => $RFC2822_Rx,
   rfc5545  => $RFC5545_Rx,
   rfc7231  => $RFC2616_Rx,
+  rfc9557  => $RFC9557_Rx,
   ruby     => $RubyDate_Rx,
   sql      => $ISO9075_Rx,
   unix     => $UnixDate_Rx,
@@ -1086,6 +1114,7 @@ my %FormatMap = (
   email    => \&format_RFC2822,
   git      => \&format_GitDate,
   http     => \&format_RFC2616,
+  ixdtf    => \&format_RFC3339,
   ical     => \&format_RFC5545,
   imf      => \&format_RFC2822,
   iso8601  => \&format_RFC3339,
@@ -1098,6 +1127,7 @@ my %FormatMap = (
   rfc5322  => \&format_RFC2822,
   rfc5545  => \&format_RFC5545,
   rfc7231  => \&format_RFC2616,
+  rfc9557  => \&format_RFC3339,
   ruby     => \&format_RubyDate,
   sql      => \&format_ISO9075,
   unix     => \&format_UnixDate,

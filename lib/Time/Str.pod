@@ -899,6 +899,32 @@ B<Formatting>:
 
 B<Limitations>: Fractional seconds are not supported.
 
+=head2 RFC9557 (alias: IXDTF)
+
+Internet Extended Date/Time Format as defined in RFC 9557. Extends
+RFC 3339 with optional bracketed suffix tags for timezone annotations
+and calendar systems.
+
+  YYYY-MM-DD(T|t| )HH:MM:SS[.fraction](Z|z|±HH:MM)[tags]
+
+B<Parsing>:
+
+The base timestamp follows RFC 3339 syntax. One or more bracketed suffix
+tags may follow the timezone. Tag content matches C<[0-9A-Za-z!+-._/]+>.
+Tags are captured verbatim in C<tz_annotation> without validation or
+interpretation; no constraints are enforced on tag content beyond the
+character class. Intended for use with C<str2date>.
+
+  2024-12-24T15:30:45Z
+  2024-12-24T15:30:45+01:00[Europe/Stockholm]
+  2024-12-24T15:30:45Z[Europe/Stockholm]
+  2024-12-24T15:30:45.500+05:30[Asia/Kolkata]
+  2024-12-24T15:30:45Z[Europe/Stockholm][u-ca=gregory]
+
+Timezone offset format: C<±HH:MM>
+
+B<Formatting>: Identical to RFC3339 (tags are not preserved).
+
 =head2 Unix
 
 The C<date(1)> command output format as defined by POSIX.
