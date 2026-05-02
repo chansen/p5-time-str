@@ -1298,6 +1298,8 @@ components including C<tz_abbrev>, then resolve externally:
 
 =head1 RATIONALE
 
+=head2 strftime and strptime
+
 L<strftime|https://pubs.opengroup.org/onlinepubs/9799919799/functions/strftime.html>
 and
 L<strptime|https://pubs.opengroup.org/onlinepubs/9799919799/functions/strptime.html>
@@ -1349,6 +1351,68 @@ values such as month 13, day 32, or hour 25 are silently accepted.
 Time::Str provides named format specifiers that encapsulate the parsing
 and formatting rules for each standard, with strict validation of all
 components.
+
+=head2 Numeric Date Ambiguity
+
+Numeric dates in year-month-day order (C<YYYY-MM-DD>) are unambiguous.
+However, when the year is not the leading component, the interpretation
+depends on convention: C<01/02/2024> is January 2nd in American format
+(MM/DD/YYYY) but February 1st in European format (DD/MM/YYYY).
+
+When both the first and second components are in the range 1-12, either
+interpretation produces a valid date - 144 such combinations exist (12
+months x 12 days), making it impossible to determine the intended format
+from the string alone.
+
+Existing modules handle this differently:
+
+=over 4
+
+=item L<Date::Parse|https://metacpan.org/pod/Date::Parse>
+
+Assumes American (MM/DD). Swaps to year-month-day only if the first
+value exceeds 12. Documents this as a known bug with no workaround.
+
+=item L<Date::Parse::Modern|https://metacpan.org/pod/Date::Parse::Modern>
+
+Assumes European (DD/MM/YYYY) for non-year-leading formats. Swaps
+day and month if the month value exceeds 12.
+
+=item L<Time::ParseDate|https://metacpan.org/pod/Time::ParseDate>
+
+Assumes American (MM/DD) by default. A C<UK> option switches to
+European (DD/MM). Applies heuristics when values exceed 12.
+
+=back
+
+Time::Str avoids this problem entirely: numeric dates must be in
+year-month-day order. Ambiguous formats are rejected. When the month
+is given as a name or Roman numeral, day and year may appear in any
+order since the month is unambiguous.
+
+=head2 Ambiguous Timezone Abbreviations
+
+Timezone abbreviations such as C<EST>, C<IST>, and C<CST> are
+inherently ambiguous. C<IST> may refer to India Standard Time
+(+05:30), Israel Standard Time (+02:00), or Irish Standard Time
+(+01:00). C<CST> may refer to US Central Standard Time (-06:00),
+China Standard Time (+08:00), or Cuba Standard Time (-05:00).
+
+There is no authoritative registry of abbreviations, and existing
+modules resolve them differently:
+L<Date::Parse|https://metacpan.org/pod/Date::Parse>, 
+L<Time::ParseDate|https://metacpan.org/pod/Time::ParseDate>, and
+L<Date::Parse::Modern|https://metacpan.org/pod/Date::Parse::Modern>
+each ship their own lookup tables with conflicting mappings.
+
+Even when a mapping is correct for the present, it may not be
+historically accurate. Timezone rules change: regions adopt new
+offsets, daylight saving rules are revised or abolished, and
+political decisions alter zone boundaries. A static lookup table
+cannot account for these changes across time.
+
+Time::Str captures abbreviations in C<tz_abbrev> without attempting
+to resolve them, leaving interpretation to the caller.
 
 =head1 DIAGNOSTICS
 
