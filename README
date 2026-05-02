@@ -150,7 +150,7 @@ FUNCTIONS
 
     *   "second" - Second (0-60; 60 allows for leap seconds)
 
-    *   "nanosecond" - Fractional seconds as nanoseconds (0-999999999)
+    *   "nanosecond" - Fractional seconds as nanoseconds (0-999,999,999)
 
     *   "tz_offset" - Timezone offset in minutes from UTC (e.g., 60 for
         +01:00). Present when a numeric offset or UTC designator was parsed.
@@ -269,7 +269,7 @@ FUNCTIONS
 
     *   "nanosecond" (optional)
 
-        Explicit nanosecond value (0-999999999) for fractional seconds.
+        Explicit nanosecond value (0-999,999,999) for fractional seconds.
         Overrides any fractional part of $time and bypasses rounding. Use
         this for exact control over fractional output or to preserve
         nanosecond precision that floating-point cannot represent. Can be
@@ -339,7 +339,7 @@ PRECISION HANDLING
     formatting.
 
   Parsing (str2time)
-    Fractional seconds beyond the specified precision are truncated, This
+    Fractional seconds beyond the specified precision are truncated. This
     preserves the exact digits provided in the input up to the requested
     precision:
 
@@ -500,7 +500,7 @@ SUPPORTED FORMATS
     Limitations: Fractional seconds are not supported.
 
   CLF
-    Common Log Format.
+    Common Log Format. Used by web servers like Apache and Nginx.
 
       DD/MMM/YYYY:HH:MM:SS[.fraction] Â±HHMM
 
@@ -801,6 +801,31 @@ SUPPORTED FORMATS
     Limitations: Always UTC. The "offset" parameter is ignored. Fractional
     seconds are not supported.
 
+  RFC9557 (alias: IXDTF)
+    Internet Extended Date/Time Format as defined in RFC 9557. Extends RFC
+    3339 with optional bracketed suffix tags for timezone annotations and
+    calendar systems.
+
+      YYYY-MM-DD(T|t| )HH:MM:SS[.fraction](Z|z|Â±HH:MM)[tags]
+
+    Parsing:
+
+    The base timestamp follows RFC 3339 syntax. One or more bracketed suffix
+    tags may follow the timezone. Tag content matches "[0-9A-Za-z!+-._/]+".
+    Tags are captured verbatim in "tz_annotation" without validation or
+    interpretation; no constraints are enforced on tag content beyond the
+    character class. Intended for use with "str2date".
+
+      2024-12-24T15:30:45Z
+      2024-12-24T15:30:45+01:00[Europe/Stockholm]
+      2024-12-24T15:30:45Z[Europe/Stockholm]
+      2024-12-24T15:30:45.500+05:30[Asia/Kolkata]
+      2024-12-24T15:30:45Z[Europe/Stockholm][u-ca=gregory]
+
+    Timezone offset format: "Â±HH:MM"
+
+    Formatting: Identical to RFC3339 (tags are not preserved).
+
   Ruby
     Date format popularized by Ruby on Rails and Twitter.
 
@@ -1015,28 +1040,35 @@ GENERIC FORMAT PARSING
     "UTC+05:30"), in which case "tz_offset" reflects that offset.
 
    Numeric Offsets
-      Â±1
-      Â±01
-      Â±0100
-      Â±01:00
-      Â±05:30
+    Two-digit hours only:
+
+      Â±HH
+      Â±HHMM
+      Â±HH:MM
+
+      +01
+      +0100
+      +01:00
+      +05:30
 
    Combined UTC and Offset
-    "UTC" or "GMT" followed immediately by a numeric offset. "tz_utc" is set
-    to the designator; "tz_offset" reflects the numeric part:
+    "UTC" or "GMT" followed immediately by a numeric offset. Single-digit
+    hours are only accepted in this combined form. "tz_utc" is set to the
+    designator; "tz_offset" reflects the numeric part:
 
       UTC+1
+      UTC+5:30
       UTC+01:00
       GMT+5:30
 
-   Timezone Abbreviations
+   Abbreviations
     Abbreviations matching "[A-Z][A-Za-z][A-Z]{1,4}" are accepted. UTC
     designators are handled as above; all others (e.g., "EST", "CET", "IST")
     are returned in "tz_abbrev" without resolution.
 
     See "TIMEZONE ABBREVIATIONS".
 
-   Timezone Annotations
+   Annotations
     RFC 9557 (IXDTF) bracketed tags and Java "ZoneId" annotations are
     captured in "tz_annotation". Parenthesized comments are accepted but
     discarded.
@@ -1122,41 +1154,132 @@ TIMEZONE ABBREVIATIONS
         my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
         # (..., tz_abbrev => 'IST')
 
+STANDARDS
+    *   ISO 8601:2019 - Data elements and interchange formats
+        <https://www.iso.org/obp/ui/#iso:std:iso:8601>
+
+    *   RFC 3339 - Date and Time on the Internet: Timestamps
+        <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>
+
+    *   RFC 2822 <https://datatracker.ietf.org/doc/html/rfc2822#section-3.3>
+        / RFC 5322
+        <https://datatracker.ietf.org/doc/html/rfc5322#section-3.3> -
+        Internet Message Format
+
+    *   RFC 2616 <https://datatracker.ietf.org/doc/html/rfc2616#section-3.3>
+        / RFC 7231
+        <https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1> -
+        HTTP/1.1
+
+    *   RFC 4287 - The Atom Syndication Format
+        <https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
+
+    *   RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)
+        <https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
+
+    *   RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
+        <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
+
+    *   RFC 9051 - Internet Message Access Protocol (IMAP)
+        <https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3>
+
+    *   RFC 9557 - Date and Time on the Internet: Timestamps with Additional
+        Information <https://datatracker.ietf.org/doc/html/rfc9557>
+
+    *   ISO 9075 - SQL Database Language
+        <https://www.iso.org/standard/76583.html>
+
+    *   ITU-T X.680 (ISO/IEC 8824-1) - ASN.1
+        <https://www.itu.int/rec/T-REC-X.680-202102-I>
+
+    *   W3C Date and Time Formats <https://www.w3.org/TR/NOTE-datetime>
+
+RATIONALE
+    strftime
+    <https://pubs.opengroup.org/onlinepubs/9799919799/functions/strftime.htm
+    l> and strptime
+    <https://pubs.opengroup.org/onlinepubs/9799919799/functions/strptime.htm
+    l> are the traditional C library interfaces for formatting and parsing
+    date/time strings. While widely available, they have limitations that
+    make them unsuitable for reliable timestamp handling across formats:
+
+    *   Both "strftime" and "strptime" are subject to the current locale.
+        Month and day names vary by locale, making them unreliable for
+        formats that require English names (e.g., RFC 2822, RFC 2616). Even
+        English locales are not consistent â abbreviated month names may
+        differ (e.g., "Sep" vs "Sept"). Using these functions for standard
+        formats requires the C locale; altering the locale in a running
+        process has issues with thread safety, side effects, and slow
+        performance.
+
+    *   "strptime" requires a fixed format string and cannot express
+        optional components (e.g., optional day name in RFC 2822, optional
+        seconds in ISO 8601). Handling variations requires multiple
+        "strptime" calls or manual pre-processing.
+
+    *   "strptime" cannot parse ISO 8601 basic format date-times (e.g.,
+        "20241224T153045Z") where date and time components lack separators.
+
+    *   "strftime" cannot produce ISO 8601 extended timezone offsets
+        ("Â±HH:MM") portably. The %z conversion produces basic format
+        ("Â±HHMM") and there is no standard conversion for the extended form.
+
+    *   Neither interface handles fractional seconds or nanosecond
+        precision.
+
+    *   There is no built-in validation of parsed components â out-of-range
+        values such as month 13, day 32, or hour 25 are silently accepted.
+
+    Time::Str provides named format specifiers that encapsulate the parsing
+    and formatting rules for each standard, with strict validation of all
+    components.
+
+DIAGNOSTICS
+    Usage: %s
+        (F) A function was called with an incorrect number of arguments.
+
+    Parameter 'format' is unknown: '%s'
+        (F) The format specifier is not recognised.
+
+    Parameter '%s' is out of range
+        (F) A parameter value is outside its valid range.
+
+    Unknown named parameter: '%s'
+        (F) An unrecognised named parameter was given.
+
+    Unable to parse: %s
+        (F) "str2date" or "str2time" could not parse the input string.
+
+    Unable to convert: timestamp string without a UTC designator or numeric
+    offset
+        (F) "str2time" successfully parsed the input string but cannot
+        convert it to a Unix timestamp without a UTC designator or numeric
+        offset.
+
+LIMITATIONS
+    *   No support for locale-specific formatting or parsing. Month and day
+        names are English only.
+
+    *   No support for ISO 8601 week-dates (e.g., "2024-W52-2") or ordinal
+        dates (e.g., "2024-359").
+
+    *   Timestamps are limited to the year range 0001-9999. Most string
+        representation formats cannot represent years outside this range.
+
+    *   Timezone abbreviations (e.g., "EST", "IST") are captured in
+        "tz_abbrev" but are not resolved to UTC offsets. "str2time" requires
+        a UTC designator or numeric offset and will croak if only an
+        abbreviation is present.
+
 EXPORTS
     Nothing is exported by default. Functions can be imported individually
     or by category:
 
-      use Time::Str qw(time2str str2time);  # individual functions
-      use Time::Str qw(:all);               # all functions
+      use Time::Str qw(time2str str2time str2date);  # individual functions
+      use Time::Str qw(:all);                        # all functions
 
 SEE ALSO
     Time::Moment, DateTime, Time::Piece
-
-STANDARDS
-    *   ISO 8601:2019 - Data elements and interchange formats
-
-    *   RFC 3339 - Date and Time on the Internet: Timestamps
-
-    *   RFC 2822 / RFC 5322 - Internet Message Format
-
-    *   RFC 2616 / RFC 7231 - HTTP/1.1
-
-    *   RFC 4287 - The Atom Syndication Format
-
-    *   RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)
-
-    *   RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
-
-    *   RFC 9051 - Internet Message Access Protocol (IMAP)
-
-    *   RFC 9557 - Date and Time on the Internet: Timestamps with Additional
-        Information
-
-    *   ISO 9075 - SQL Database Language
-
-    *   ITU-T X.680 (ISO/IEC 8824-1) - ASN.1
-
-    *   W3C Date and Time Formats
 
 AUTHOR
     Christian Hansen
