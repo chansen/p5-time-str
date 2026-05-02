@@ -1,6 +1,6 @@
 =pod
 
-=encoding =UTF-8
+=encoding UTF-8
 
 =head1 NAME
 
@@ -1292,12 +1292,59 @@ components including C<tz_abbrev>, then resolve externally:
 
 =back
 
-=head1 EXPORTS
+=head1 RATIONALE
 
-Nothing is exported by default. Functions can be imported individually or by category:
+L<strftime|https://pubs.opengroup.org/onlinepubs/9799919799/functions/strftime.html>
+and
+L<strptime|https://pubs.opengroup.org/onlinepubs/9799919799/functions/strptime.html>
+are the traditional C library interfaces for formatting and parsing
+date/time strings. While widely available, they have limitations that
+make them unsuitable for reliable timestamp handling across formats:
 
-  use Time::Str qw(time2str str2time str2date);  # individual functions
-  use Time::Str qw(:all);                        # all functions
+=over 4
+
+=item *
+
+Both C<strftime> and C<strptime> are subject to the current locale.
+Month and day names vary by locale, making them unreliable for formats
+that require English names (e.g., RFC 2822, RFC 2616). Even English
+locales are not consistent — abbreviated month names may differ (e.g.,
+C<Sep> vs C<Sept>). Using these functions for standard formats requires
+the C locale; altering the locale in a running process has issues with
+thread safety, side effects, and slow performance.
+
+=item *
+
+C<strptime> requires a fixed format string and cannot express optional
+components (e.g., optional day name in RFC 2822, optional seconds in
+ISO 8601). Handling variations requires multiple C<strptime> calls or
+manual pre-processing.
+
+=item *
+
+C<strptime> cannot parse ISO 8601 basic format date-times (e.g.,
+C<20241224T153045Z>) where date and time components lack separators.
+
+=item *
+
+C<strftime> cannot produce ISO 8601 extended timezone offsets (C<±HH:MM>)
+portably. The C<%z> conversion produces basic format (C<±HHMM>) and there
+is no standard conversion for the extended form.
+
+=item *
+
+Neither interface handles fractional seconds or nanosecond precision.
+
+=item *
+
+There is no built-in validation of parsed components — out-of-range
+values such as month 13, day 32, or hour 25 are silently accepted.
+
+=back
+
+Time::Str provides named format specifiers that encapsulate the parsing
+and formatting rules for each standard, with strict validation of all
+components.
 
 =head1 DIAGNOSTICS
 
@@ -1329,6 +1376,41 @@ Nothing is exported by default. Functions can be imported individually or by cat
 it to a Unix timestamp without a UTC designator or numeric offset.
 
 =back
+
+=head1 LIMITATIONS
+
+=over 4
+
+=item *
+
+No support for locale-specific formatting or parsing. Month and day
+names are English only.
+
+=item *
+
+No support for ISO 8601 week-dates (e.g., C<2024-W52-2>) or ordinal
+dates (e.g., C<2024-359>).
+
+=item *
+
+Timestamps are limited to the year range 0001-9999. Most string
+representation formats cannot represent years outside this range.
+
+=item *
+
+Timezone abbreviations (e.g., C<EST>, C<IST>) are captured in
+C<tz_abbrev> but are not resolved to UTC offsets. C<str2time> requires
+a UTC designator or numeric offset and will croak if only an
+abbreviation is present.
+
+=back
+
+=head1 EXPORTS
+
+Nothing is exported by default. Functions can be imported individually or by category:
+
+  use Time::Str qw(time2str str2time str2date);  # individual functions
+  use Time::Str qw(:all);                        # all functions
 
 =head1 SEE ALSO
 
