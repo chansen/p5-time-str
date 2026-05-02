@@ -48,8 +48,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -97,8 +97,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -124,8 +124,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -155,8 +155,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -173,17 +173,17 @@ BEGIN {
   for my $m (1 .. 12) {
     {
       my $str = sprintf '24 %s 2012', $months_short[$m-1];
-      my $got = str2date($str, format => 'generic');
+      my $got = str2date($str, format => 'DateTime');
       is($got->{month}, $m, qq['$str': month]);
     }
     {
       my $str = sprintf '24 %s 2012', $months_long[$m-1];
-      my $got = str2date($str, format => 'generic');
+      my $got = str2date($str, format => 'DateTime');
       is($got->{month}, $m, qq['$str': month]);
     }
     {
       my $str = sprintf '24 %s 2012', $months_roman[$m-1];
-      my $got = str2date($str, format => 'generic');
+      my $got = str2date($str, format => 'DateTime');
       is($got->{month}, $m, qq['$str': month]);
     }
   }
@@ -224,8 +224,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -326,8 +326,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -367,7 +367,7 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp_hour, $label) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is($got->{hour}, $exp_hour, "meridiem: $label");
   }
 }
@@ -413,8 +413,8 @@ BEGIN {
     my ($zone, $offset) = @$case;
     my $str = $base_str . $zone;
     my $exp = {%base_exp, tz_offset => $offset};
-    my $got = str2date($str, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$str', format => 'generic')]);
+    my $got = str2date($str, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$str', format => 'DateTime')]);
   }
 }
 
@@ -445,8 +445,8 @@ BEGIN {
     my ($zone, $utc_val) = @$case;
     my $str = $base_str . $zone;
     my $exp = {%base_exp, tz_utc => $utc_val};
-    my $got = str2date($str, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$str', format => 'generic')]);
+    my $got = str2date($str, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$str', format => 'DateTime')]);
   }
 }
 
@@ -520,8 +520,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -556,8 +556,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -596,8 +596,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -633,8 +633,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
-    is_deeply($got, $exp, qq[str2date('$string', format => 'generic')]);
+    my $got = str2date($string, format => 'DateTime');
+    is_deeply($got, $exp, qq[str2date('$string', format => 'DateTime')]);
   }
 }
 
@@ -679,7 +679,7 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[ISO 8601: '$string']);
   }
 }
@@ -713,14 +713,14 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[RFC 3339: '$string']);
   }
 }
 
 # RFC 9557
 {
-  my $got = str2date('2012-12-24T15:30:45.500+01:00[Europe/Stockholm]', format => 'generic');
+  my $got = str2date('2012-12-24T15:30:45.500+01:00[Europe/Stockholm]', format => 'DateTime');
   is_deeply($got, {
     year          => 2012,
     month         => 12,
@@ -782,14 +782,14 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[RFC 2822: '$string']);
   }
 }
 
 # RFC 2616 (HTTP-date)
 {
-  my $got = str2date('Mon, 24 Dec 2012 15:30:45 GMT', format => 'generic');
+  my $got = str2date('Mon, 24 Dec 2012 15:30:45 GMT', format => 'DateTime');
   is_deeply($got, {
     year      => 2012,
     month     => 12,
@@ -804,7 +804,7 @@ BEGIN {
 
 # RFC 9051 (IMAP)
 {
-  my $got = str2date('24-Dec-2012 15:30:45 +0100', format => 'generic');
+  my $got = str2date('24-Dec-2012 15:30:45 +0100', format => 'DateTime');
   is_deeply($got, {
     year      => 2012,
     month     => 12,
@@ -866,14 +866,14 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[SQL: '$string']);
   }
 }
 
 # ECMAScript Date.prototype.toString
 {
-  my $got = str2date('Mon Dec 24 2012 15:30:45 GMT+0100 (Central European Time)', format => 'generic');
+  my $got = str2date('Mon Dec 24 2012 15:30:45 GMT+0100 (Central European Time)', format => 'DateTime');
   is_deeply($got, {
     year      => 2012,
     month     => 12,
@@ -932,7 +932,7 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[long-form: '$string']);
   }
 }
@@ -986,7 +986,7 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $exp) = @$case;
-    my $got = str2date($string, format => 'generic');
+    my $got = str2date($string, format => 'DateTime');
     is_deeply($got, $exp, qq[short-form: '$string']);
   }
 }
@@ -997,28 +997,28 @@ BEGIN {
 
 {
   # Leap year
-  my $got = str2date('2012-02-29', format => 'generic');
+  my $got = str2date('2012-02-29', format => 'DateTime');
   is($got->{day}, 29, 'leap year 2012-02-29');
 }
 
 {
   # Century leap year
-  my $got = str2date('2000-02-29', format => 'generic');
+  my $got = str2date('2000-02-29', format => 'DateTime');
   is($got->{day}, 29, 'century leap year 2000-02-29');
 }
 
 {
-  eval { str2date('2012-02-30', format => 'generic') };
+  eval { str2date('2012-02-30', format => 'DateTime') };
   like($@, qr/out of range/, '2012-02-30 rejected');
 }
 
 {
-  eval { str2date('2012-13-01', format => 'generic') };
+  eval { str2date('2012-13-01', format => 'DateTime') };
   like($@, qr/out of range/, 'month 13 rejected');
 }
 
 {
-  eval { str2date('2012-00-01', format => 'generic') };
+  eval { str2date('2012-00-01', format => 'DateTime') };
   like($@, qr/out of range/, 'month 0 rejected');
 }
 
@@ -1027,23 +1027,23 @@ BEGIN {
 #
 
 {
-  eval { str2date('2012-12-24T24:00:00Z', format => 'generic') };
+  eval { str2date('2012-12-24T24:00:00Z', format => 'DateTime') };
   like($@, qr/out of range/, 'hour 24 rejected');
 }
 
 {
-  eval { str2date('2012-12-24T12:60:00Z', format => 'generic') };
+  eval { str2date('2012-12-24T12:60:00Z', format => 'DateTime') };
   like($@, qr/out of range/, 'minute 60 rejected');
 }
 
 {
   # Leap second allowed
-  my $got = str2date('2012-12-24T23:59:60Z', format => 'generic');
+  my $got = str2date('2012-12-24T23:59:60Z', format => 'DateTime');
   is($got->{second}, 60, 'leap second 60 allowed');
 }
 
 {
-  eval { str2date('2012-12-24T23:59:61Z', format => 'generic') };
+  eval { str2date('2012-12-24T23:59:61Z', format => 'DateTime') };
   like($@, qr/out of range/, 'second 61 rejected');
 }
 
@@ -1062,8 +1062,8 @@ BEGIN {
 
   foreach my $case (@tests) {
     my ($string, $time) = @$case;
-    my $got = str2time($string, format => 'generic');
-    is($got, $time, qq[str2time('$string', format => 'generic')]);
+    my $got = str2time($string, format => 'DateTime');
+    is($got, $time, qq[str2time('$string', format => 'DateTime')]);
   }
 }
 
@@ -1072,7 +1072,7 @@ BEGIN {
 #
 
 {
-  eval { str2time('2012-12-24T15:30:45', format => 'generic') };
+  eval { str2time('2012-12-24T15:30:45', format => 'DateTime') };
   like($@, qr/timestamp string without a UTC designator or numeric offset/, 'str2time croaks without timezone');
 }
 

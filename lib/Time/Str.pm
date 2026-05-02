@@ -50,7 +50,7 @@ my %MeridiemMap = qw(
 );
 
 #
-# Generic DateTime
+# DateTime
 #
 #  Parses a broad set of real-world date and time formats, accepting only 
 #  those that can be parsed deterministically. Numeric-only dates must use 
@@ -106,7 +106,7 @@ my %MeridiemMap = qw(
 #   24DEC2012 12:30:45.500 UTC+1
 #   24.Dec.2012 15:30:45
 #
-my $GenericDateTime_Rx = qr{
+my $DateTime_Rx = qr{
   (?(DEFINE)
     (?<DayNameShort>    (?i: Mon|Tue|Tues|Wed|Thu|Thurs|Fri|Sat|Sun))
     (?<DayNameLong>     (?i: Monday|Tuesday|Wednesday|Thursday|Friday|
@@ -777,8 +777,9 @@ my %RegexpMap = (
   atom     => $RFC4287_Rx,
   clf      => $CommonLogFormat_Rx,
   ctime    => $ANSIC_Rx,
+  datetime => $DateTime_Rx,
   email    => $RFC2822_Rx,
-  generic  => $GenericDateTime_Rx,
+  generic  => $DateTime_Rx,
   git      => $GitDate_Rx,
   http     => $RFC2616_Rx,
   ixdtf    => $RFC9557_Rx,

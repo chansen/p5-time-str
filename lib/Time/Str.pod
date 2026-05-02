@@ -33,7 +33,7 @@ Time::Str parses date/time strings from various standard formats into Unix
 timestamps or components, and formats Unix timestamps back into strings.
 
 Supported standards include ISO 8601, RFC 3339, RFC 2822, RFC 2616 (HTTP),
-ISO 9075 (SQL), ASN.1, and others. A permissive L<Generic|/GENERIC FORMAT PARSING> 
+ISO 9075 (SQL), ASN.1, and others. A permissive L<DateTime|/DATETIME FORMAT PARSING> 
 parser handles most real-world date/time representations that can be parsed without 
 ambiguity.
 
@@ -231,7 +231,7 @@ Croaks if:
     # (year => 2024)
 
     # 12-hour clock
-    my %d = str2date('December 24, 2024, 3:30 PM', format => 'generic');
+    my %d = str2date('December 24, 2024, 3:30 PM', format => 'DateTime');
     # (..., hour => 15)
 
     # Two-digit year
@@ -250,7 +250,7 @@ Croaks if:
 
     # UTC designator with offset
     my %d = str2date('December 24, 2024 at 3:30 pm UTC+05:30',
-                     format => 'generic');
+                     format => 'DateTime');
     # (..., tz_utc => 'UTC', tz_offset => 330)
 
     # Timezone abbreviation (unresolved)
@@ -259,7 +259,7 @@ Croaks if:
 
     # RFC 9557 annotation
     my %d = str2date('2024-12-24T15:30:45.500+01:00[Europe/Stockholm]',
-                     format => 'generic');
+                     format => 'DateTime');
     # (..., tz_offset => 60, tz_annotation => '[Europe/Stockholm]')
 
 =head2 time2str
@@ -589,13 +589,17 @@ B<Formatting>:
   time2str(1735052445.5, format => 'CLF', precision => 3, offset => 60)
   # '24/Dec/2024:16:30:45.500 +0100'
 
-=head2 Generic
+=head2 DateTime
 
 A permissive parser that accepts a wide variety of real-world date/time
 representations, restricted to those that can be parsed deterministically.
 B<Parsing only>; cannot be used with C<time2str>.
 
-See L</GENERIC FORMAT PARSING> for the full grammar, rules, and examples.
+See L</DATETIME FORMAT PARSING> for the full grammar, rules, and examples.
+
+=head2 Generic
+
+Deprecated. Use C<DateTime> instead.
 
 =head2 Git
 
@@ -988,9 +992,9 @@ Timezone offset format: C<±HH:MM>
 
 B<Formatting>: Identical to RFC3339.
 
-=head1 GENERIC FORMAT PARSING
+=head1 DATETIME FORMAT PARSING
 
-The C<generic> format parser accepts a wide variety of real-world date/time
+The C<DateTime> format parser accepts a wide variety of real-world date/time
 representations, restricted to those that can be parsed deterministically.
 A date is always required. Time and timezone are optional, but a timezone
 may only appear when a time is present.
@@ -1235,7 +1239,7 @@ discarded.
 
 =head1 TIMEZONE ABBREVIATIONS
 
-The C<Generic>, C<RFC2822>, and C<Unix> parsers accept timezone
+The C<DateTime>, C<RFC2822>, and C<Unix> parsers accept timezone
 abbreviations.
 
 =over 4
