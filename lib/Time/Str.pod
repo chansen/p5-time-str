@@ -1308,7 +1308,7 @@ make them unsuitable for reliable timestamp handling across formats:
 Both C<strftime> and C<strptime> are subject to the current locale.
 Month and day names vary by locale, making them unreliable for formats
 that require English names (e.g., RFC 2822, RFC 2616). Even English
-locales are not consistent — abbreviated month names may differ (e.g.,
+locales are not consistent - abbreviated month names may differ (e.g.,
 C<Sep> vs C<Sept>). Using these functions for standard formats requires
 the C locale; altering the locale in a running process has issues with
 thread safety, side effects, and slow performance.
@@ -1337,7 +1337,7 @@ Neither interface handles fractional seconds or nanosecond precision.
 
 =item *
 
-There is no built-in validation of parsed components — out-of-range
+There is no built-in validation of parsed components - out-of-range
 values such as month 13, day 32, or hour 25 are silently accepted.
 
 =back
