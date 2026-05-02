@@ -1390,6 +1390,44 @@ year-month-day order. Ambiguous formats are rejected. When the month
 is given as a name or Roman numeral, day and year may appear in any
 order since the month is unambiguous.
 
+=head2 Two-Digit Year Ambiguity
+
+A two-digit year introduces century ambiguity: C<01/02/03> could be
+2003-01-02, 2003-02-01, or 2001-02-03 depending on which component
+is assumed to be the year and which convention is used for month and
+day. Existing modules apply different heuristics:
+
+=over 4
+
+=item L<Date::Parse|https://metacpan.org/pod/Date::Parse>
+
+Assumes the year is the last component (MM/DD/YY). Expands
+two-digit years using a fixed split: 69-99 to 1969-1999,
+0-68 to 2000-2068.
+
+=item L<Date::Parse::Modern|https://metacpan.org/pod/Date::Parse::Modern>
+
+Requires a four-digit year in numeric dates. Two-digit year dates
+such as C<01/02/03> are not recognised. When a two-digit year
+appears with a textual month (e.g., C<17 March 94>), it is
+unconditionally mapped to the 1900s.
+
+=item L<Time::ParseDate|https://metacpan.org/pod/Time::ParseDate>
+
+Infers the year position from value ranges. When all three values are
+12 or below, defaults to MM/DD/YY. Expands two-digit years relative
+to the current year with C<PREFER_PAST> and C<PREFER_FUTURE> options.
+
+=back
+
+The same input produces different results depending on the module
+and, in some cases, the current date.
+
+The C<datetime> format in Time::Str requires a four-digit year,
+avoiding century ambiguity entirely. Formats that inherently use
+two-digit years (C<ASN1UT>, RFC 850 within C<RFC2616>) provide a
+configurable C<pivot_year> parameter with a documented default.
+
 =head2 Ambiguous Timezone Abbreviations
 
 Timezone abbreviations such as C<EST>, C<IST>, and C<CST> are
@@ -1401,8 +1439,8 @@ China Standard Time (+08:00), or Cuba Standard Time (-05:00).
 There is no authoritative registry of abbreviations, and existing
 modules resolve them differently:
 L<Date::Parse|https://metacpan.org/pod/Date::Parse>, 
-L<Time::ParseDate|https://metacpan.org/pod/Time::ParseDate>, and
-L<Date::Parse::Modern|https://metacpan.org/pod/Date::Parse::Modern>
+L<Date::Parse::Modern|https://metacpan.org/pod/Date::Parse::Modern>, and
+L<Time::ParseDate|https://metacpan.org/pod/Time::ParseDate>
 each ship their own lookup tables with conflicting mappings.
 
 Even when a mapping is correct for the present, it may not be
