@@ -684,6 +684,54 @@ my $UnixDate_Rx = qr{
   \z
 }x;
 
+# UnixStamp
+#
+#  Unix date based format with optional fractional seconds and timezone
+#
+#   [DDD[,] ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] (±hhmm|UTC|GMT|ZONE) YYYY
+#   [DDD[,] ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY (±hhmm|UTC|GMT|ZONE)
+#
+my $UnixStamp_Rx = qr{
+  (?(DEFINE)
+    (?<DayName>        (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
+    (?<MonthName>      (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
+    (?<TimeZoneAbbrev> [A-Z][A-Za-z][A-Z]{1,4})
+    (?<TimeZoneOffset> [+-][0-9]{4})
+  )
+  \A
+  (?:
+    (?: (?&DayName) [ ] )?
+        (?<month>  (?&MonthName))
+    (?:
+        (?: [ ]{2} (?<day> [0-9]{1}))
+      | (?: [ ]{1} (?<day> [0-9]{1,2}))
+    )
+    [ ] (?<hour>   [0-9]{2})
+    [:] (?<minute> [0-9]{2}) (?: [:] (?<second>   [0-9]{2})
+                             (?: [.] (?<fraction> [0-9]{1,9}) )?)?
+    [ ]
+    (?:
+        (?:
+             (?<tz_offset> (?&TimeZoneOffset))
+          |  (?<tz_utc>    UTC|GMT) (?: (?<tz_offset> (?&TimeZoneOffset)) )?
+          |  (?<tz_abbrev> (?&TimeZoneAbbrev))
+        )
+        [ ] (?<year> [0-9]{4})
+      |
+            (?<year> [0-9]{4})
+        (?:
+          [ ]
+          (?:
+               (?<tz_offset> (?&TimeZoneOffset))
+            |  (?<tz_utc>    UTC|GMT) (?: (?<tz_offset> (?&TimeZoneOffset)) )?
+            |  (?<tz_abbrev> (?&TimeZoneAbbrev))
+          )?
+        )?
+    )
+  )
+  \z
+}x;
+
 # Git Date
 # <https://git-scm.com/docs/git-log#_commit_formatting>
 #
@@ -853,6 +901,7 @@ my %RegexpMap = (
   sql        => $ISO9075_Rx,
   unix       => $UnixDate_Rx,
   unixdate   => $UnixDate_Rx,
+  unixstamp  => $UnixStamp_Rx,
   w3c        => $W3CDTF_Rx,
   w3cdtf     => $W3CDTF_Rx,
   x509       => $RFC5280_Rx,
@@ -1157,6 +1206,16 @@ sub str2time {
       $DoW[$wday], $MoY[$mon], $mday, $hour, $min, $sec, $zstr, $year + 1900;
   }
 
+  sub format_UnixStamp {
+    my ($time, $offset, $fraction) = @_;
+
+    $time += $offset * 60;
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday) = gmtime $time;
+    my $zstr = format_offset_basic($offset, 'UTC');
+    return sprintf '%s %s %2d %02d:%02d:%02d%s %s %04d',
+      $DoW[$wday], $MoY[$mon], $mday, $hour, $min, $sec, $fraction, $zstr, $year + 1900;
+  }
+
   sub format_RubyDate {
     my ($time, $offset) = @_;
 
@@ -1213,6 +1272,7 @@ my %FormatMap = (
   sql        => \&format_ISO9075,
   unix       => \&format_UnixDate,
   unixdate   => \&format_UnixDate,
+  unixstamp  => \&format_UnixStamp,
   w3c        => \&format_RFC3339,
   w3cdtf     => \&format_RFC3339,
   x509       => \&format_RFC5280,

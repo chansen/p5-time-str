@@ -1022,6 +1022,49 @@ and a numeric offset otherwise.
 
 B<Limitations>: Fractional seconds are not supported.
 
+=head2 UnixStamp
+
+Unix C<date(1)> based format with optional fractional seconds and
+timezone.
+
+  [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] [±HHMM|UTC|GMT|abbrev] YYYY
+  [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [±HHMM|UTC|GMT|abbrev]
+
+B<Parsing>:
+
+Day name is optional. Day may be space-padded or zero-padded.
+Seconds and fractional seconds are optional. Timezone may appear
+before or after the year.
+
+  Sun Jul 17 06:53:23 2022
+  Sun Jul  3 06:53:23 2022
+  Jul 17 06:53:23 2022
+  Sun Jul 17 20:35:45.089105460 2022
+  Sun Jul 17 06:53:23 +0100 2022
+  Sun Jul 17 06:53:23 EDT 2022
+  Sun Jul 17 06:53:23 2022 +0100
+  Sun Jul 17 06:53:23 2022 EDT
+  Sun Jul 17 06:53:23 GMT+0100 2022
+  Jul 17 06:53 2022
+
+Timezone offset format: C<±HHMM>
+
+See L</TIMEZONE ABBREVIATIONS>.
+
+B<Formatting>:
+
+Always produces the zone-before-year. Uses C<UTC> for zero offset
+and a numeric offset otherwise.
+
+  time2str(1658044403, format => 'UnixStamp')
+  # 'Sun Jul 17 06:53:23 UTC 2022'
+
+  time2str(1658044403, format => 'UnixStamp', offset => 60)
+  # 'Sun Jul 17 07:53:23 +0100 2022'
+
+  time2str(1658044403.5, format => 'UnixStamp', precision => 3)
+  # 'Sun Jul 17 06:53:23.500 UTC 2022'
+
 =head2 W3CDTF (alias: W3C)
 
 W3C Date and Time Format, a profile of ISO 8601.
