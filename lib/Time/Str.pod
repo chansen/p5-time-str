@@ -631,7 +631,7 @@ comment is not preserved in formatting.
 
 Deprecated. Use C<DateTime> instead.
 
-=head2 Git
+=head2 GitDate (alias: Git)
 
 Default date format used by Git.
 
@@ -646,10 +646,10 @@ Timezone offset format: C<±HHMM>
 
 B<Formatting>:
 
-  time2str(1735052445, format => 'Git')
+  time2str(1735052445, format => 'GitDate')
   # 'Tue Dec 24 15:30:45 2024 +0000'
 
-  time2str(1735052445, format => 'Git', offset => 60)
+  time2str(1735052445, format => 'GitDate', offset => 60)
   # 'Tue Dec 24 16:30:45 2024 +0100'
 
 B<Limitations>: Fractional seconds are not supported.
@@ -962,7 +962,7 @@ Timezone offset format: C<±HH:MM>
 
 B<Formatting>: Identical to RFC3339 (tags are not preserved).
 
-=head2 Ruby
+=head2 RubyDate (alias: Ruby)
 
 Date format popularized by Ruby on Rails and Twitter.
 
@@ -977,15 +977,15 @@ Timezone offset format: C<±HHMM>
 
 B<Formatting>:
 
-  time2str(1735052445, format => 'Ruby')
+  time2str(1735052445, format => 'RubyDate')
   # 'Tue Dec 24 15:30:45 +0000 2024'
 
-  time2str(1735052445, format => 'Ruby', offset => 60)
+  time2str(1735052445, format => 'RubyDate', offset => 60)
   # 'Tue Dec 24 16:30:45 +0100 2024'
 
 B<Limitations>: Fractional seconds are not supported.
 
-=head2 Unix
+=head2 UnixDate (alias: Unix)
 
 The C<date(1)> command output format as defined by POSIX.
 
@@ -1014,10 +1014,10 @@ B<Formatting>:
 Always produces the zone-before-year. Uses C<UTC> for zero offset
 and a numeric offset otherwise.
 
-  time2str(1735052445, format => 'Unix')
+  time2str(1735052445, format => 'UnixDate')
   # 'Tue Dec 24 15:30:45 UTC 2024'
 
-  time2str(1735052445, format => 'Unix', offset => 60)
+  time2str(1735052445, format => 'UnixDate', offset => 60)
   # 'Tue Dec 24 16:30:45 +0100 2024'
 
 B<Limitations>: Fractional seconds are not supported.

@@ -132,4 +132,12 @@ BEGIN {
   }
 }
 
+# Ruby alias
+{
+  my $string   = 'Mon Dec 24 15:30:45 +0100 2012';
+  my $got_ruby = str2date($string, format => 'Ruby');
+  my $got_main = str2date($string, format => 'RubyDate');
+  is_deeply($got_ruby, $got_main, 'Ruby alias parses same as RubyDate');
+}
+
 done_testing();

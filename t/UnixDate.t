@@ -228,4 +228,12 @@ BEGIN {
   }
 }
 
+# Unix alias
+{
+  my $string   = 'Mon Dec 24 15:30:45 UTC 2012';
+  my $got_unix = str2date($string, format => 'Unix');
+  my $got_main = str2date($string, format => 'UnixDate');
+  is_deeply($got_unix, $got_main, 'Unix alias parses same as UnixDate');
+}
+
 done_testing();

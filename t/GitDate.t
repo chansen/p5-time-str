@@ -143,4 +143,12 @@ BEGIN {
   }
 }
 
+# Git alias
+{
+  my $string   = 'Mon Dec 24 15:30:45 2012 +0100';
+  my $got_git  = str2date($string, format => 'Git');
+  my $got_main = str2date($string, format => 'GitDate');
+  is_deeply($got_git, $got_main, 'Git alias parses same as GitDate');
+}
+
 done_testing();
