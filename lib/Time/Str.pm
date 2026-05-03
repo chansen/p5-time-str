@@ -2,7 +2,7 @@ package Time::Str;
 use strict;
 use warnings;
 use v5.10;
-our $VERSION     = '0.05';
+our $VERSION     = '0.06';
 our @EXPORT_OK   = qw[ time2str str2time str2date ];
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
