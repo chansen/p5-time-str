@@ -28,7 +28,7 @@ DESCRIPTION
     strings.
 
     Supported standards include ISO 8601, RFC 3339, RFC 2822, RFC 2616
-    (HTTP), ISO 9075 (SQL), ASN.1, and others. A permissive Generic parser
+    (HTTP), ISO 9075 (SQL), ASN.1, and others. A permissive DateTime parser
     handles most real-world date/time representations that can be parsed
     without ambiguity.
 
@@ -197,7 +197,7 @@ FUNCTIONS
         # (year => 2024)
 
         # 12-hour clock
-        my %d = str2date('December 24, 2024, 3:30 PM', format => 'generic');
+        my %d = str2date('December 24, 2024, 3:30 PM', format => 'DateTime');
         # (..., hour => 15)
 
         # Two-digit year
@@ -216,7 +216,7 @@ FUNCTIONS
 
         # UTC designator with offset
         my %d = str2date('December 24, 2024 at 3:30 pm UTC+05:30',
-                         format => 'generic');
+                         format => 'DateTime');
         # (..., tz_utc => 'UTC', tz_offset => 330)
 
         # Timezone abbreviation (unresolved)
@@ -225,7 +225,7 @@ FUNCTIONS
 
         # RFC 9557 annotation
         my %d = str2date('2024-12-24T15:30:45.500+01:00[Europe/Stockholm]',
-                         format => 'generic');
+                         format => 'DateTime');
         # (..., tz_offset => 60, tz_annotation => '[Europe/Stockholm]')
 
   time2str
@@ -523,14 +523,46 @@ SUPPORTED FORMATS
       time2str(1735052445.5, format => 'CLF', precision => 3, offset => 60)
       # '24/Dec/2024:16:30:45.500 +0100'
 
-  Generic
+  DateTime
     A permissive parser that accepts a wide variety of real-world date/time
     representations, restricted to those that can be parsed
     deterministically. Parsing only; cannot be used with "time2str".
 
-    See "GENERIC FORMAT PARSING" for the full grammar, rules, and examples.
+    See "DATETIME FORMAT PARSING" for the full grammar, rules, and examples.
 
-  Git
+  ECMAScript (alias: JavaScript)
+    ECMAScript "Date.prototype.toString" format.
+
+      DDD MMM DD YYYY HH:MM:SS [GMT|UTC]Â±HHMM [(comment)]
+
+    Parsing:
+
+    Day name is required. An optional parenthesized comment (e.g., timezone
+    name) may follow the offset and is discarded. "GMT" or "UTC" before the
+    offset is captured in "tz_utc".
+
+      Tue Dec 24 2024 15:30:45 GMT+0100 (Central European Standard Time)
+      Tue Dec 24 2024 15:30:45 +0000
+      Tue Dec 24 2024 15:30:45 UTC+0530 (India Standard Time)
+      Mon Jan 01 2024 00:00:00 GMT+0000 (Coordinated Universal Time)
+
+    Timezone offset format: "Â±HHMM" (required)
+
+    Formatting:
+
+      time2str(1735052445, format => 'ECMAScript')
+      # 'Tue Dec 24 2024 15:30:45 GMT+0000'
+
+      time2str(1735052445, format => 'ECMAScript', offset => 60)
+      # 'Tue Dec 24 2024 16:30:45 GMT+0100'
+
+    Limitations: Fractional seconds are not supported. Parenthesized comment
+    is not preserved in formatting.
+
+  Generic
+    Deprecated. Use "DateTime" instead.
+
+  GitDate (alias: Git)
     Default date format used by Git.
 
       DDD MMM D HH:MM:SS YYYY Â±HHMM
@@ -544,10 +576,10 @@ SUPPORTED FORMATS
 
     Formatting:
 
-      time2str(1735052445, format => 'Git')
+      time2str(1735052445, format => 'GitDate')
       # 'Tue Dec 24 15:30:45 2024 +0000'
 
-      time2str(1735052445, format => 'Git', offset => 60)
+      time2str(1735052445, format => 'GitDate', offset => 60)
       # 'Tue Dec 24 16:30:45 2024 +0100'
 
     Limitations: Fractional seconds are not supported.
@@ -724,6 +756,31 @@ SUPPORTED FORMATS
       time2str(1735052445.5, format => 'RFC3339', precision => 3)
       # '2024-12-24T15:30:45.500Z'
 
+  RFC3501 (aliases: RFC9051, IMAP)
+    IMAP internal date format as defined in RFC 3501 and RFC 9051.
+
+      DD-MMM-YYYY HH:MM:SS Â±HHMM
+
+    Parsing:
+
+    Day is always two digits (zero-padded). Month name is case-insensitive.
+
+      24-Dec-2024 15:30:45 +0100
+      01-Jan-2024 00:00:00 +0000
+      24-dec-2024 15:30:45 -0500
+
+    Timezone offset format: "Â±HHMM" (required)
+
+    Formatting:
+
+      time2str(1735052445, format => 'RFC3501')
+      # '24-Dec-2024 15:30:45 +0000'
+
+      time2str(1735052445, format => 'RFC3501', offset => 60)
+      # '24-Dec-2024 16:30:45 +0100'
+
+    Limitations: Fractional seconds are not supported.
+
   RFC4287 (alias: ATOM)
     Atom feed timestamp as defined in RFC 4287. Stricter than RFC 3339:
     requires uppercase "T" and "Z", no space separator, no lowercase
@@ -826,7 +883,7 @@ SUPPORTED FORMATS
 
     Formatting: Identical to RFC3339 (tags are not preserved).
 
-  Ruby
+  RubyDate (alias: Ruby)
     Date format popularized by Ruby on Rails and Twitter.
 
       DDD MMM DD HH:MM:SS Â±HHMM YYYY
@@ -840,15 +897,15 @@ SUPPORTED FORMATS
 
     Formatting:
 
-      time2str(1735052445, format => 'Ruby')
+      time2str(1735052445, format => 'RubyDate')
       # 'Tue Dec 24 15:30:45 +0000 2024'
 
-      time2str(1735052445, format => 'Ruby', offset => 60)
+      time2str(1735052445, format => 'RubyDate', offset => 60)
       # 'Tue Dec 24 16:30:45 +0100 2024'
 
     Limitations: Fractional seconds are not supported.
 
-  Unix
+  UnixDate (alias: Unix)
     The date(1) command output format as defined by POSIX.
 
       DDD MMM (_D|DD) HH:MM:SS (Â±HHMM|UTC|GMT|abbrev) YYYY
@@ -876,13 +933,54 @@ SUPPORTED FORMATS
     Always produces the zone-before-year. Uses "UTC" for zero offset and a
     numeric offset otherwise.
 
-      time2str(1735052445, format => 'Unix')
+      time2str(1735052445, format => 'UnixDate')
       # 'Tue Dec 24 15:30:45 UTC 2024'
 
-      time2str(1735052445, format => 'Unix', offset => 60)
+      time2str(1735052445, format => 'UnixDate', offset => 60)
       # 'Tue Dec 24 16:30:45 +0100 2024'
 
     Limitations: Fractional seconds are not supported.
+
+  UnixStamp
+    Unix date(1) based format with optional fractional seconds and timezone.
+
+      [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] [Â±HHMM|UTC|GMT|abbrev] YYYY
+      [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [Â±HHMM|UTC|GMT|abbrev]
+
+    Parsing:
+
+    Day name is optional. Day may be space-padded or zero-padded. Seconds
+    and fractional seconds are optional. Timezone may appear before or after
+    the year.
+
+      Sun Jul 17 06:53:23 2022
+      Sun Jul  3 06:53:23 2022
+      Jul 17 06:53:23 2022
+      Sun Jul 17 20:35:45.089105460 2022
+      Sun Jul 17 06:53:23 +0100 2022
+      Sun Jul 17 06:53:23 EDT 2022
+      Sun Jul 17 06:53:23 2022 +0100
+      Sun Jul 17 06:53:23 2022 EDT
+      Sun Jul 17 06:53:23 GMT+0100 2022
+      Jul 17 06:53 2022
+
+    Timezone offset format: "Â±HHMM"
+
+    See "TIMEZONE ABBREVIATIONS".
+
+    Formatting:
+
+    Always produces the zone-before-year. Uses "UTC" for zero offset and a
+    numeric offset otherwise.
+
+      time2str(1658044403, format => 'UnixStamp')
+      # 'Sun Jul 17 06:53:23 UTC 2022'
+
+      time2str(1658044403, format => 'UnixStamp', offset => 60)
+      # 'Sun Jul 17 07:53:23 +0100 2022'
+
+      time2str(1658044403.5, format => 'UnixStamp', precision => 3)
+      # 'Sun Jul 17 06:53:23.500 UTC 2022'
 
   W3CDTF (alias: W3C)
     W3C Date and Time Format, a profile of ISO 8601.
@@ -909,8 +1007,8 @@ SUPPORTED FORMATS
 
     Formatting: Identical to RFC3339.
 
-GENERIC FORMAT PARSING
-    The "generic" format parser accepts a wide variety of real-world
+DATETIME FORMAT PARSING
+    The "DateTime" format parser accepts a wide variety of real-world
     date/time representations, restricted to those that can be parsed
     deterministically. A date is always required. Time and timezone are
     optional, but a timezone may only appear when a time is present.
@@ -1109,7 +1207,7 @@ GENERIC FORMAT PARSING
       # RFC 2616 (HTTP)
       Mon, 24 Dec 2024 15:30:45 GMT
 
-      # RFC 9051 (IMAP)
+      # RFC 3501 (IMAP)
       24-Dec-2024 15:30:45 +0100
 
       # ISO 9075 (SQL)
@@ -1131,7 +1229,7 @@ GENERIC FORMAT PARSING
       24.Dec.2024 15:30:45
 
 TIMEZONE ABBREVIATIONS
-    The "Generic", "RFC2822", and "Unix" parsers accept timezone
+    The "DateTime", "RFC2822", and "Unix" parsers accept timezone
     abbreviations.
 
     *   UTC designators ("UTC", "GMT", "UT", "Z")
@@ -1171,6 +1269,11 @@ STANDARDS
         <https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1> -
         HTTP/1.1
 
+    *   RFC 3501
+        <https://datatracker.ietf.org/doc/html/rfc3501#section-2.3.3> / RFC
+        9051 <https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3> -
+        Internet Message Access Protocol (IMAP)
+
     *   RFC 4287 - The Atom Syndication Format
         <https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
 
@@ -1179,9 +1282,6 @@ STANDARDS
 
     *   RFC 5545 - Internet Calendaring and Scheduling (iCalendar)
         <https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
-
-    *   RFC 9051 - Internet Message Access Protocol (IMAP)
-        <https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3>
 
     *   RFC 9557 - Date and Time on the Internet: Timestamps with Additional
         Information <https://datatracker.ietf.org/doc/html/rfc9557>
@@ -1194,7 +1294,12 @@ STANDARDS
 
     *   W3C Date and Time Formats <https://www.w3.org/TR/NOTE-datetime>
 
+    *   ECMAScript Date.prototype.toString
+        <https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date.p
+        rototype.tostring>
+
 RATIONALE
+  strftime and strptime
     strftime
     <https://pubs.opengroup.org/onlinepubs/9799919799/functions/strftime.htm
     l> and strptime
@@ -1206,7 +1311,7 @@ RATIONALE
     *   Both "strftime" and "strptime" are subject to the current locale.
         Month and day names vary by locale, making them unreliable for
         formats that require English names (e.g., RFC 2822, RFC 2616). Even
-        English locales are not consistent â abbreviated month names may
+        English locales are not consistent - abbreviated month names may
         differ (e.g., "Sep" vs "Sept"). Using these functions for standard
         formats requires the C locale; altering the locale in a running
         process has issues with thread safety, side effects, and slow
@@ -1227,12 +1332,95 @@ RATIONALE
     *   Neither interface handles fractional seconds or nanosecond
         precision.
 
-    *   There is no built-in validation of parsed components â out-of-range
+    *   There is no built-in validation of parsed components - out-of-range
         values such as month 13, day 32, or hour 25 are silently accepted.
 
     Time::Str provides named format specifiers that encapsulate the parsing
     and formatting rules for each standard, with strict validation of all
     components.
+
+  Numeric Date Ambiguity
+    Numeric dates in year-month-day order ("YYYY-MM-DD") are unambiguous.
+    However, when the year is not the leading component, the interpretation
+    depends on convention: "01/02/2024" is January 2nd in American format
+    (MM/DD/YYYY) but February 1st in European format (DD/MM/YYYY).
+
+    When both the first and second components are in the range 1-12, either
+    interpretation produces a valid date - 144 such combinations exist (12
+    months x 12 days), making it impossible to determine the intended format
+    from the string alone.
+
+    Existing modules handle this differently:
+
+    Date::Parse <https://metacpan.org/pod/Date::Parse>
+        Assumes American (MM/DD). Swaps to year-month-day only if the first
+        value exceeds 12. Documents this as a known bug with no workaround.
+
+    Date::Parse::Modern <https://metacpan.org/pod/Date::Parse::Modern>
+        Assumes European (DD/MM/YYYY) for non-year-leading formats. Swaps
+        day and month if the month value exceeds 12.
+
+    Time::ParseDate <https://metacpan.org/pod/Time::ParseDate>
+        Assumes American (MM/DD) by default. A "UK" option switches to
+        European (DD/MM). Applies heuristics when values exceed 12.
+
+    Time::Str avoids this problem entirely: numeric dates must be in
+    year-month-day order. Ambiguous formats are rejected. When the month is
+    given as a name or Roman numeral, day and year may appear in any order
+    since the month is unambiguous.
+
+  Two-Digit Year Ambiguity
+    A two-digit year introduces century ambiguity: "01/02/03" could be
+    2003-01-02, 2003-02-01, or 2001-02-03 depending on which component is
+    assumed to be the year and which convention is used for month and day.
+    Existing modules apply different heuristics:
+
+    Date::Parse <https://metacpan.org/pod/Date::Parse>
+        Assumes the year is the last component (MM/DD/YY). Expands two-digit
+        years using a fixed split: 69-99 to 1969-1999, 0-68 to 2000-2068.
+
+    Date::Parse::Modern <https://metacpan.org/pod/Date::Parse::Modern>
+        Requires a four-digit year in numeric dates. Two-digit year dates
+        such as "01/02/03" are not recognised. When a two-digit year appears
+        with a textual month (e.g., "17 March 94"), it is unconditionally
+        mapped to the 1900s.
+
+    Time::ParseDate <https://metacpan.org/pod/Time::ParseDate>
+        Infers the year position from value ranges. When all three values
+        are 12 or below, defaults to MM/DD/YY. Expands two-digit years
+        relative to the current year with "PREFER_PAST" and "PREFER_FUTURE"
+        options.
+
+    The same input produces different results depending on the module and,
+    in some cases, the current date.
+
+    The "datetime" format in Time::Str requires a four-digit year, avoiding
+    century ambiguity entirely. Formats that inherently use two-digit years
+    ("ASN1UT", RFC 850 within "RFC2616") provide a configurable "pivot_year"
+    parameter with a documented default.
+
+  Ambiguous Timezone Abbreviations
+    Timezone abbreviations such as "EST", "IST", and "CST" are inherently
+    ambiguous. "IST" may refer to India Standard Time (+05:30), Israel
+    Standard Time (+02:00), or Irish Standard Time (+01:00). "CST" may refer
+    to US Central Standard Time (-06:00), China Standard Time (+08:00), or
+    Cuba Standard Time (-05:00).
+
+    There is no authoritative registry of abbreviations, and existing
+    modules resolve them differently: Date::Parse
+    <https://metacpan.org/pod/Date::Parse>, Date::Parse::Modern
+    <https://metacpan.org/pod/Date::Parse::Modern>, and Time::ParseDate
+    <https://metacpan.org/pod/Time::ParseDate> each ship their own lookup
+    tables with conflicting mappings.
+
+    Even when a mapping is correct for the present, it may not be
+    historically accurate. Timezone rules change: regions adopt new offsets,
+    daylight saving rules are revised or abolished, and political decisions
+    alter zone boundaries. A static lookup table cannot account for these
+    changes across time.
+
+    Time::Str captures abbreviations in "tz_abbrev" without attempting to
+    resolve them, leaving interpretation to the caller.
 
 DIAGNOSTICS
     Usage: %s
