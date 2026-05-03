@@ -801,6 +801,32 @@ Always produces uppercase C<T> and C<Z> (or C<±HH:MM>):
   time2str(1735052445.5, format => 'RFC3339', precision => 3)
   # '2024-12-24T15:30:45.500Z'
 
+=head2 RFC3501 (aliases: RFC9051, IMAP)
+
+IMAP internal date format as defined in RFC 3501 and RFC 9051.
+
+  DD-MMM-YYYY HH:MM:SS ±HHMM
+
+B<Parsing>:
+
+Day is always two digits (zero-padded). Month name is case-insensitive.
+
+  24-Dec-2024 15:30:45 +0100
+  01-Jan-2024 00:00:00 +0000
+  24-dec-2024 15:30:45 -0500
+
+Timezone offset format: C<±HHMM> (required)
+
+B<Formatting>:
+
+  time2str(1735052445, format => 'RFC3501')
+  # '24-Dec-2024 15:30:45 +0000'
+
+  time2str(1735052445, format => 'RFC3501', offset => 60)
+  # '24-Dec-2024 16:30:45 +0100'
+
+B<Limitations>: Fractional seconds are not supported.
+
 =head2 RFC4287 (alias: ATOM)
 
 Atom feed timestamp as defined in RFC 4287. Stricter than RFC 3339:
@@ -1216,7 +1242,7 @@ discarded.
   # RFC 2616 (HTTP)
   Mon, 24 Dec 2024 15:30:45 GMT
 
-  # RFC 9051 (IMAP)
+  # RFC 3501 (IMAP)
   24-Dec-2024 15:30:45 +0100
 
   # ISO 9075 (SQL)
@@ -1278,13 +1304,13 @@ components including C<tz_abbrev>, then resolve externally:
 
 =item * L<RFC 2616|https://datatracker.ietf.org/doc/html/rfc2616#section-3.3> / L<RFC 7231|https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1> - HTTP/1.1
 
+=item * L<RFC 3501|https://datatracker.ietf.org/doc/html/rfc3501#section-2.3.3> / L<RFC 9051|https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3> - Internet Message Access Protocol (IMAP)
+
 =item * L<RFC 4287 - The Atom Syndication Format|https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
 
 =item * L<RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)|https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
 
 =item * L<RFC 5545 - Internet Calendaring and Scheduling (iCalendar)|https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
-
-=item * L<RFC 9051 - Internet Message Access Protocol (IMAP)|https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3>
 
 =item * L<RFC 9557 - Date and Time on the Internet: Timestamps with Additional Information|https://datatracker.ietf.org/doc/html/rfc9557>
 

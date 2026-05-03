@@ -366,6 +366,27 @@ my $RFC2822_Rx = qr{
   \z
 }x;
 
+# RFC 3501 Internet Message Access Protocol (IMAP)
+# <https://datatracker.ietf.org/doc/html/rfc3501#section-2.3.3>
+# <https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3>
+#
+#   DD-MMM-YYYY hh:mm:ss ±hhmm
+#
+my $RFC3501_Rx = qr{
+  (?(DEFINE)
+    (?<MonthName> (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
+  )
+  \A
+      (?<day>       [0-9]{2})
+  [-] (?<month>     (?&MonthName))
+  [-] (?<year>      [0-9]{4})
+  [ ] (?<hour>      [0-9]{2})
+  [:] (?<minute>    [0-9]{2})
+  [:] (?<second>    [0-9]{2})
+  [ ] (?<tz_offset> [+-][0-9]{4})
+  \z
+}x;
+
 # RFC 3339 Date and Time on the Internet: Timestamps
 # <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>
 #
@@ -782,19 +803,22 @@ my %RegexpMap = (
   generic  => $DateTime_Rx,
   git      => $GitDate_Rx,
   http     => $RFC2616_Rx,
-  ixdtf    => $RFC9557_Rx,
   ical     => $RFC5545_Rx,
+  imap     => $RFC3501_Rx,
   imf      => $RFC2822_Rx,
   iso8601  => $ISO8601_Rx,
   iso9075  => $ISO9075_Rx,
+  ixdtf    => $RFC9557_Rx,
   rfc2616  => $RFC2616_Rx,
   rfc2822  => $RFC2822_Rx,
   rfc3339  => $RFC3339_Rx,
+  rfc3501  => $RFC3501_Rx,
   rfc4287  => $RFC4287_Rx,
   rfc5280  => $RFC5280_Rx,
   rfc5322  => $RFC2822_Rx,
   rfc5545  => $RFC5545_Rx,
   rfc7231  => $RFC2616_Rx,
+  rfc9051  => $RFC3501_Rx,
   rfc9557  => $RFC9557_Rx,
   ruby     => $RubyDate_Rx,
   sql      => $ISO9075_Rx,
@@ -1026,6 +1050,16 @@ sub str2time {
     return sprintf '%s, %d %s %04d %02d:%02d:%02d %s',
       $DoW[$wday], $mday, $MoY[$mon], $year + 1900, $hour, $min, $sec, $zstr;
   }
+  
+  sub format_RFC3501 {
+    my ($time, $offset) = @_;
+
+    $time += $offset * 60;
+    my ($sec, $min, $hour, $mday, $mon, $year) = gmtime $time;
+    my $zstr = format_offset_basic($offset, '+0000');
+    return sprintf '%02d-%s-%04d %02d:%02d:%02d %s',
+      $mday, $MoY[$mon], $year + 1900, $hour, $min, $sec, $zstr;
+  }
 
   sub format_RFC3339 {
     my ($time, $offset, $fraction) = @_;
@@ -1114,19 +1148,22 @@ my %FormatMap = (
   email    => \&format_RFC2822,
   git      => \&format_GitDate,
   http     => \&format_RFC2616,
-  ixdtf    => \&format_RFC3339,
   ical     => \&format_RFC5545,
+  imap     => \&format_RFC3501,
   imf      => \&format_RFC2822,
   iso8601  => \&format_RFC3339,
   iso9075  => \&format_ISO9075,
+  ixdtf    => \&format_RFC3339,
   rfc2616  => \&format_RFC2616,
   rfc2822  => \&format_RFC2822,
   rfc3339  => \&format_RFC3339,
+  rfc3501  => \&format_RFC3501,
   rfc4287  => \&format_RFC3339,
   rfc5280  => \&format_RFC5280,
   rfc5322  => \&format_RFC2822,
   rfc5545  => \&format_RFC5545,
   rfc7231  => \&format_RFC2616,
+  rfc9051  => \&format_RFC3501,
   rfc9557  => \&format_RFC3339,
   ruby     => \&format_RubyDate,
   sql      => \&format_ISO9075,
