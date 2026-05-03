@@ -1,3 +1,12 @@
+0.06 2026-05-04
+  - Expanded RATIONALE with comparison to Date::Parse,
+    Date::Parse::Modern, and Time::ParseDate covering numeric date
+    ambiguity, two-digit year handling, and timezone abbreviation
+    resolution.
+  - Added RFC 3501 (IMAP) format support.
+  - Added ECMAScript format support.
+  - Added UnixStamp format support.
+
 0.05 2026-05-02
   - Added RFC 9557 (IXDTF) format support.
   - Added RATIONALE and LIMITATIONS to POD
