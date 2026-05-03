@@ -565,6 +565,31 @@ my $ISO9075_Rx = qr{
   \z
 }x;
 
+# ECMAScript Date.prototype.toString
+# <https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date.prototype.tostring>
+#
+#   DDD MMM DD YYYY hh:mm:ss [GMT|UTC]±hhmm [comment]
+#
+my $ECMAScript_Rx = qr{
+  (?(DEFINE)
+    (?<DayName>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
+    (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
+  )
+  \A
+      (?&DayName)
+  [ ] (?<month>   (?&MonthName))
+  [ ] (?<day>     [0-9]{2})
+  [ ] (?<year>    [0-9]{4})
+  [ ] (?<hour>    [0-9]{2})
+  [:] (?<minute>  [0-9]{2})
+  [:] (?<second>  [0-9]{2})
+  [ ] (?<tz_utc>  UTC|GMT)? (?<tz_offset> [+-][0-9]{4})
+  (?:
+    [ ] (?: \( [^()]+ \) )
+  )?
+  \z
+}x;
+
 # Common Log Format
 # <https://httpd.apache.org/docs/2.4/logs.html#accesslog>
 # <https://httpd.apache.org/docs/2.4/mod/mod_log_config.html#formats>
@@ -792,40 +817,42 @@ sub parse_numeric_offset {
 }
 
 my %RegexpMap = (
-  ansic    => $ANSIC_Rx,
-  asn1gt   => $ASN1GT_Rx,
-  asn1ut   => $ASN1UT_Rx,
-  atom     => $RFC4287_Rx,
-  clf      => $CommonLogFormat_Rx,
-  ctime    => $ANSIC_Rx,
-  datetime => $DateTime_Rx,
-  email    => $RFC2822_Rx,
-  generic  => $DateTime_Rx,
-  git      => $GitDate_Rx,
-  http     => $RFC2616_Rx,
-  ical     => $RFC5545_Rx,
-  imap     => $RFC3501_Rx,
-  imf      => $RFC2822_Rx,
-  iso8601  => $ISO8601_Rx,
-  iso9075  => $ISO9075_Rx,
-  ixdtf    => $RFC9557_Rx,
-  rfc2616  => $RFC2616_Rx,
-  rfc2822  => $RFC2822_Rx,
-  rfc3339  => $RFC3339_Rx,
-  rfc3501  => $RFC3501_Rx,
-  rfc4287  => $RFC4287_Rx,
-  rfc5280  => $RFC5280_Rx,
-  rfc5322  => $RFC2822_Rx,
-  rfc5545  => $RFC5545_Rx,
-  rfc7231  => $RFC2616_Rx,
-  rfc9051  => $RFC3501_Rx,
-  rfc9557  => $RFC9557_Rx,
-  ruby     => $RubyDate_Rx,
-  sql      => $ISO9075_Rx,
-  unix     => $UnixDate_Rx,
-  w3c      => $W3CDTF_Rx,
-  w3cdtf   => $W3CDTF_Rx,
-  x509     => $RFC5280_Rx,
+  ansic      => $ANSIC_Rx,
+  asn1gt     => $ASN1GT_Rx,
+  asn1ut     => $ASN1UT_Rx,
+  atom       => $RFC4287_Rx,
+  clf        => $CommonLogFormat_Rx,
+  ctime      => $ANSIC_Rx,
+  datetime   => $DateTime_Rx,
+  ecmascript => $ECMAScript_Rx,
+  email      => $RFC2822_Rx,
+  generic    => $DateTime_Rx,
+  git        => $GitDate_Rx,
+  http       => $RFC2616_Rx,
+  ical       => $RFC5545_Rx,
+  imap       => $RFC3501_Rx,
+  imf        => $RFC2822_Rx,
+  iso8601    => $ISO8601_Rx,
+  iso9075    => $ISO9075_Rx,
+  ixdtf      => $RFC9557_Rx,
+  javascript => $ECMAScript_Rx,
+  rfc2616    => $RFC2616_Rx,
+  rfc2822    => $RFC2822_Rx,
+  rfc3339    => $RFC3339_Rx,
+  rfc3501    => $RFC3501_Rx,
+  rfc4287    => $RFC4287_Rx,
+  rfc5280    => $RFC5280_Rx,
+  rfc5322    => $RFC2822_Rx,
+  rfc5545    => $RFC5545_Rx,
+  rfc7231    => $RFC2616_Rx,
+  rfc9051    => $RFC3501_Rx,
+  rfc9557    => $RFC9557_Rx,
+  ruby       => $RubyDate_Rx,
+  sql        => $ISO9075_Rx,
+  unix       => $UnixDate_Rx,
+  w3c        => $W3CDTF_Rx,
+  w3cdtf     => $W3CDTF_Rx,
+  x509       => $RFC5280_Rx,
 );
 
 sub str2date {
@@ -1102,6 +1129,16 @@ sub str2time {
       $year + 1900, $mon + 1, $mday, $hour, $min, $sec, $fraction, $zstr;
   }
 
+  sub format_ECMAScript {
+    my ($time, $offset) = @_;
+
+    $time += $offset * 60;
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday) = gmtime $time;
+    my $zstr = format_offset_basic($offset, '+0000');
+    return sprintf '%s %s %02d %04d %02d:%02d:%02d GMT%s',
+      $DoW[$wday], $MoY[$mon], $mday, $year + 1900, $hour, $min, $sec, $zstr;
+  }
+
   sub format_ANSIC {
     my ($time) = @_;
     return scalar gmtime $time;
@@ -1139,38 +1176,40 @@ sub str2time {
 }
 
 my %FormatMap = (
-  ansic    => \&format_ANSIC,
-  asn1gt   => \&format_ASN1GT,
-  asn1ut   => \&format_ASN1UT,
-  atom     => \&format_RFC3339,
-  clf      => \&format_CLF,
-  ctime    => \&format_ANSIC,
-  email    => \&format_RFC2822,
-  git      => \&format_GitDate,
-  http     => \&format_RFC2616,
-  ical     => \&format_RFC5545,
-  imap     => \&format_RFC3501,
-  imf      => \&format_RFC2822,
-  iso8601  => \&format_RFC3339,
-  iso9075  => \&format_ISO9075,
-  ixdtf    => \&format_RFC3339,
-  rfc2616  => \&format_RFC2616,
-  rfc2822  => \&format_RFC2822,
-  rfc3339  => \&format_RFC3339,
-  rfc3501  => \&format_RFC3501,
-  rfc4287  => \&format_RFC3339,
-  rfc5280  => \&format_RFC5280,
-  rfc5322  => \&format_RFC2822,
-  rfc5545  => \&format_RFC5545,
-  rfc7231  => \&format_RFC2616,
-  rfc9051  => \&format_RFC3501,
-  rfc9557  => \&format_RFC3339,
-  ruby     => \&format_RubyDate,
-  sql      => \&format_ISO9075,
-  unix     => \&format_UnixDate,
-  w3c      => \&format_RFC3339,
-  w3cdtf   => \&format_RFC3339,
-  x509     => \&format_RFC5280,
+  ansic      => \&format_ANSIC,
+  asn1gt     => \&format_ASN1GT,
+  asn1ut     => \&format_ASN1UT,
+  atom       => \&format_RFC3339,
+  clf        => \&format_CLF,
+  ctime      => \&format_ANSIC,
+  ecmascript => \&format_ECMAScript,
+  email      => \&format_RFC2822,
+  git        => \&format_GitDate,
+  http       => \&format_RFC2616,
+  ical       => \&format_RFC5545,
+  imap       => \&format_RFC3501,
+  imf        => \&format_RFC2822,
+  iso8601    => \&format_RFC3339,
+  iso9075    => \&format_ISO9075,
+  ixdtf      => \&format_RFC3339,
+  javascript => \&format_ECMAScript,
+  rfc2616    => \&format_RFC2616,
+  rfc2822    => \&format_RFC2822,
+  rfc3339    => \&format_RFC3339,
+  rfc3501    => \&format_RFC3501,
+  rfc4287    => \&format_RFC3339,
+  rfc5280    => \&format_RFC5280,
+  rfc5322    => \&format_RFC2822,
+  rfc5545    => \&format_RFC5545,
+  rfc7231    => \&format_RFC2616,
+  rfc9051    => \&format_RFC3501,
+  rfc9557    => \&format_RFC3339,
+  ruby       => \&format_RubyDate,
+  sql        => \&format_ISO9075,
+  unix       => \&format_UnixDate,
+  w3c        => \&format_RFC3339,
+  w3cdtf     => \&format_RFC3339,
+  x509       => \&format_RFC5280,
 );
 
 sub time2str {

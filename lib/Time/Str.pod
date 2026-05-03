@@ -597,6 +597,36 @@ B<Parsing only>; cannot be used with C<time2str>.
 
 See L</DATETIME FORMAT PARSING> for the full grammar, rules, and examples.
 
+=head2 ECMAScript (alias: JavaScript)
+
+ECMAScript C<Date.prototype.toString> format.
+
+  DDD MMM DD YYYY HH:MM:SS [GMT|UTC]±HHMM [(comment)]
+
+B<Parsing>:
+
+Day name is required. An optional parenthesized comment (e.g., timezone name) 
+may follow the offset and is discarded. C<GMT> or C<UTC> before the offset
+is captured in C<tz_utc>.
+
+  Tue Dec 24 2024 15:30:45 GMT+0100 (Central European Standard Time)
+  Tue Dec 24 2024 15:30:45 +0000
+  Tue Dec 24 2024 15:30:45 UTC+0530 (India Standard Time)
+  Mon Jan 01 2024 00:00:00 GMT+0000 (Coordinated Universal Time)
+
+Timezone offset format: C<±HHMM> (required)
+
+B<Formatting>:
+
+  time2str(1735052445, format => 'ECMAScript')
+  # 'Tue Dec 24 2024 15:30:45 GMT+0000'
+
+  time2str(1735052445, format => 'ECMAScript', offset => 60)
+  # 'Tue Dec 24 2024 16:30:45 GMT+0100'
+
+B<Limitations>: Fractional seconds are not supported. Parenthesized
+comment is not preserved in formatting.
+
 =head2 Generic
 
 Deprecated. Use C<DateTime> instead.
@@ -1319,6 +1349,8 @@ components including C<tz_abbrev>, then resolve externally:
 =item * L<ITU-T X.680 (ISO/IEC 8824-1) - ASN.1|https://www.itu.int/rec/T-REC-X.680-202102-I>
 
 =item * L<W3C Date and Time Formats|https://www.w3.org/TR/NOTE-datetime>
+
+=item * L<ECMAScript Date.prototype.toString|https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date.prototype.tostring>
 
 =back
 
