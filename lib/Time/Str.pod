@@ -73,10 +73,10 @@ See L</PRECISION HANDLING>.
 
 =item * C<pivot_year> (optional, default: 1950)
 
-For formats with two-digit years (C<ASN1UT>, RFC 850 within C<RFC2616>),
-sets the pivot year for century expansion. Two-digit years less than
-C<(pivot_year % 100)> map to the next century; others map to the
-current century.
+For formats with two-digit years (C<ASN1UT>, RFC 850 within C<RFC2616>,
+C<RFC5280>), sets the pivot year for century expansion. Two-digit years
+less than C<(pivot_year % 100)> map to the next century; others map to
+the current century.
 
 With the default pivot of 1950: C<49> becomes 2049, C<50> becomes 1950,
 C<99> becomes 1999.
@@ -1025,7 +1025,7 @@ B<Limitations>: Fractional seconds are not supported.
 =head2 UnixStamp
 
 Unix C<date(1)> based format with optional fractional seconds and
-timezone.
+timezone. A superset of ANSIC, GitDate, RubyDate, and UnixDate formats.
 
   [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] [±HHMM|UTC|GMT|abbrev] YYYY
   [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [±HHMM|UTC|GMT|abbrev]
@@ -1526,8 +1526,8 @@ and, in some cases, the current date.
 
 The C<datetime> format in Time::Str requires a four-digit year,
 avoiding century ambiguity entirely. Formats that inherently use
-two-digit years (C<ASN1UT>, RFC 850 within C<RFC2616>) provide a
-configurable C<pivot_year> parameter with a documented default.
+two-digit years (C<ASN1UT>, RFC 850 within C<RFC2616>, C<RFC5280>) 
+provide a configurable C<pivot_year> parameter with a documented default.
 
 =head2 Ambiguous Timezone Abbreviations
 
