@@ -29,6 +29,16 @@ BEGIN {
 
 sub DEFAULT_PIVOT_YEAR () { 1950 }
 
+my %DayIndexMap = qw(
+  mon 1 monday    1
+  tue 2 tuesday   2 tues  2
+  wed 3 wednesday 3
+  thu 4 thursday  4 thurs 4
+  fri 5 friday    5
+  sat 6 saturday  6
+  sun 7 sunday    7
+);
+
 my %MonthIndexMap = qw(
   i     1 jan  1 january    1
   ii    2 feb  2 february   2
@@ -112,7 +122,6 @@ my $DateTime_Rx = qr{
     (?<DayNameLong>     (?i: Monday|Tuesday|Wednesday|Thursday|Friday|
                              Saturday|Sunday))
     (?<DayName>         (?&DayNameShort) | (?&DayNameLong))
-    (?<DayNamePrefix>   (?&DayName) [.]?[,]? [ ])
     (?<MonthNameShort>  (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))
     (?<MonthNameLong>   (?i: January|February|March|April|May|June|
                              July|August|September|October|November|December))
@@ -128,10 +137,10 @@ my $DateTime_Rx = qr{
 
   \A
 
-  # Note: Day names and ordinal suffixes (e.g., "Mon", "th") are matched by the
-  # regex but are not validated against the parsed date. (XXX reconsider this!)
+  # Note: Ordinal suffixes (e.g., "st", "th") are matched by the regex but are not
+  # validated against the parsed date.
 
-  (?&DayNamePrefix)?
+  (?: (?<day_name> (?&DayName)) [.]?[,]? [ ] )?
 
   (?:
       (?:
@@ -299,7 +308,7 @@ my $RFC2616_Rx = qr{
   (?:
     # IMF-fixdate
     (?:
-      (?&DayNameShort) [,]
+      (?<day_name> (?&DayNameShort)) [,]
       [ ] (?<day>    [0-9]{2})
       [ ] (?<month>  (?&MonthNameShort))
       [ ] (?<year>   [0-9]{4})
@@ -310,7 +319,7 @@ my $RFC2616_Rx = qr{
     )
   | # RFC 850
     (?:
-      (?&DayNameLong) [,]
+      (?<day_name> (?&DayNameLong)) [,]
       [ ] (?<day>    [0-9]{2})
       [-] (?<month>  (?&MonthNameShort))
       [-] (?<year>   [0-9]{2})
@@ -321,7 +330,7 @@ my $RFC2616_Rx = qr{
     )
   | # ANSI C's ctime
     (?:
-      (?&DayNameShort)
+      (?<day_name> (?&DayNameShort))
       [ ] (?<month>  (?&MonthNameShort))
       (?:
           (?: [ ]{2} (?<day> [0-9]{1}))
@@ -350,7 +359,7 @@ my $RFC2822_Rx = qr{
     (?<NestedComment>  \( (?: \\\( | \\\) | [^()] | (?&NestedComment) )* \) )
   )
   \A
-  (?: \s* (?&DayName)[,] )?
+  (?: \s* (?<day_name> (?&DayName))[,] )?
   \s* (?<day>    [0-9]{1,2})
   \s+ (?<month>  (?&MonthName))
   \s+ (?<year>   [0-9]{4})
@@ -576,7 +585,7 @@ my $ECMAScript_Rx = qr{
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
   \A
-      (?&DayName)
+      (?<day_name> (?&DayName))
   [ ] (?<month>   (?&MonthName))
   [ ] (?<day>     [0-9]{2})
   [ ] (?<year>    [0-9]{4})
@@ -624,7 +633,7 @@ my $ANSIC_Rx = qr{
   )
   \A
   (?:
-    (?&DayName)
+    (?<day_name> (?&DayName))
     [ ] (?<month>  (?&MonthName))
     (?:
         (?: [ ]{2} (?<day> [0-9]{1}))
@@ -654,7 +663,7 @@ my $UnixDate_Rx = qr{
   )
   \A
   (?:
-    (?&DayName)
+    (?<day_name> (?&DayName))
     [ ] (?<month>  (?&MonthName))
     (?:
         (?: [ ]{2} (?<day> [0-9]{1}))
@@ -700,7 +709,7 @@ my $UnixStamp_Rx = qr{
   )
   \A
   (?:
-    (?: (?&DayName) [ ] )?
+    (?: (?<day_name> (?&DayName)) [ ] )?
         (?<month>  (?&MonthName))
     (?:
         (?: [ ]{2} (?<day> [0-9]{1}))
@@ -745,7 +754,7 @@ my $GitDate_Rx = qr{
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
   \A
-  (?&DayName)
+  (?<day_name> (?&DayName))
   [ ] (?<month>     (?&MonthName))
   [ ] (?<day>       [0-9]{1,2})
   [ ] (?<hour>      [0-9]{2})
@@ -768,7 +777,7 @@ my $RubyDate_Rx = qr{
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
   \A
-  (?&DayName)
+  (?<day_name> (?&DayName))
   [ ] (?<month>     (?&MonthName))
   [ ] (?<day>       [0-9]{2})
   [ ] (?<hour>      [0-9]{2})
@@ -809,6 +818,24 @@ sub valid_hms {
     return ($h >= 0 && $h <= 23
          && $m >= 0 && $m <= 59
          && $s >= 0 && ($s <= 59 || ($s == 60 && $h == 23 && $m == 59)));
+}
+
+# Validates that the day-of-week (1=Mon .. 7=Sun) matches the given
+# Gregorian date using Tomohiko Sakamoto's algorithm.
+{
+  my @DayOffset = (0, 6, 2, 1, 4, 6, 2, 4, 0, 3, 5, 1, 3);
+
+  # 1 <= $m <= 12
+  sub valid_dow {
+    my ($dow, $y, $m, $d) = @_;
+
+    use integer;
+    if ($m < 3) {
+      $y--;
+    }
+
+    return $dow == 1 + ($y + $y/4 - $y/100 + $y/400 + $DayOffset[$m] + $d) % 7;
+  }
 }
 
 sub expand_two_digit_year {
@@ -945,6 +972,13 @@ sub str2date {
 
   valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
     or croak q/Unable to parse: date is out of range/;
+
+  if (exists $r{day_name}) {
+    my $dow = $DayIndexMap{ lc delete $r{day_name} };
+
+    valid_dow($dow, $r{year}, $r{month} // 1, $r{day} // 1)
+      or croak q/Unable to parse: day name does not match date/;
+  }
 
   if (exists $r{hour}) {
 

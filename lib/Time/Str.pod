@@ -1170,8 +1170,7 @@ day-month-year order:
 =head3 Day Names
 
 An optional day name prefix (e.g., C<Monday,> or C<Mon,>) is accepted
-before the date but not validated against the actual date. Day names
-are case-insensitive.
+before the date. Day names are case-insensitive.
 
   Monday, 24 December 2024
   Mon, 24 Dec 2024
@@ -1282,6 +1281,8 @@ discarded.
 =head2 Validation
 
 =over 4
+
+=item * Day names, when present, must match the date
 
 =item * Dates must be valid for the Gregorian calendar, including leap years
 

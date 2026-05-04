@@ -36,7 +36,7 @@ BEGIN {
       }
     ],
 
-    [ 'Sat, 01 Jan 0001 00:00:00 GMT' => {
+    [ 'Mon, 01 Jan 0001 00:00:00 GMT' => {
         year      => 1,
         month     => 1,
         day       => 1,
