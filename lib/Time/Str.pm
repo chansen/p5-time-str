@@ -821,10 +821,12 @@ sub valid_hms {
 }
 
 # Validates that the day-of-week (1=Mon .. 7=Sun) matches the given
-# Gregorian date using Tomohiko Sakamoto's algorithm.
+# Gregorian date. Based on Tomohiko Sakamoto's algorithm, adjusted
+# for Monday-based numbering
 {
   my @DayOffset = (0, 6, 2, 1, 4, 6, 2, 4, 0, 3, 5, 1, 3);
 
+  # 1 <= $y
   # 1 <= $m <= 12
   sub valid_dow {
     my ($dow, $y, $m, $d) = @_;
