@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "tstr_packed_alpha.h"
 
 typedef enum {
@@ -53,6 +54,25 @@ static inline tstr_day_t tstr_day_from_string(const char* src,
   if (!len || tstr_packed_alpha_encode(src, len, &packed) != len)
     return TSTR_DAY_UNKNOWN;
   return tstr_day_from_packed_alpha(packed);
+}
+
+/*
+ * Check if the given day-of-week matches the date (y, m, d).
+ * Based on Tomohiko Sakamoto's algorithm with a Monday-based
+ * offset table. Assumes m is 1-12 and d is valid.
+ */
+static inline bool tstr_day_valid_ymd(tstr_day_t day, int y, int m, int d) {
+  static const int kDayOffset[13] = {
+    0, 6, 2, 1, 4, 6, 2, 4, 0, 3, 5, 1, 3
+  };
+
+  if (y < 1 || m < 1 || m > 12 || d < 1 || d > 31)
+    return false;
+
+  if (m < 3)
+    y--;
+
+  return day == 1 + (y + y/4 - y/100 + y/400 + kDayOffset[m] + d) % 7;
 }
 
 #endif /* TSTR_DAY_H */
