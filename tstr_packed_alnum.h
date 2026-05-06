@@ -5,16 +5,11 @@
 #include <stddef.h>
 
 /*
- * Pack a string (up to 10 alphanumeric characters) into a uint64_t.
- * Case-insensitive: letters are folded to lowercase before encoding.
+ * Pack up to 10 alphanumeric characters into a uint64_t using 6 bits each.
  *
- * Encoding: each character maps to a 6-bit value (a-z => 1-26,
- * 0-9 => 27-36), packed left-to-right with the first character in
- * the most significant position.
- *
- * Returns the number of characters consumed, or 0 on overflow (>10).
+ * Case-insensitive: a-z => 1-26, 0-9 => 27-36, packed MSB-first.
+ * Returns the number of characters consumed, or 0 if none or >10.
  */
-
 static inline size_t tstr_packed_alnum_encode(const char* str,
                                               size_t len,
                                               uint64_t* packed) {

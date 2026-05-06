@@ -67,7 +67,7 @@ static inline const char * tstr_format_name(tstr_format_t fmt) {
   return kFormatName[fmt];
 }
 
-static inline tstr_format_t tstr_format_from_packed(uint64_t packed) {
+static inline tstr_format_t tstr_format_from_packed_alnum(uint64_t packed) {
   switch (packed) {
     case TSTR_PACKED_ALNUM5('A','N','S','I','C'):
     case TSTR_PACKED_ALNUM5('C','T','I','M','E'):
@@ -141,7 +141,7 @@ static inline tstr_format_t tstr_format_from_string(const char* src,
 
   if (!len || tstr_packed_alnum_encode(src, len, &packed) != len)
     return TSTR_FORMAT_UNKNOWN;
-  return tstr_format_from_packed(packed);
+  return tstr_format_from_packed_alnum(packed);
 }
 
 #endif /* TSTR_FORMAT_H */
