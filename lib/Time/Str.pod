@@ -473,6 +473,51 @@ This default prevents spurious trailing digits caused by floating-point
 representation. For explicit control, always specify C<precision> or
 C<nanosecond>.
 
+=head1 FORMAT OVERVIEW
+
+=head2 Profiles of ISO 8601
+
+  ISO8601      20241224T153045.500+0100
+  RFC4287      2024-12-24T15:30:45Z
+  W3CDTF       2024-12-24T15:30:45+01:00
+  RFC5545      20241224T153045Z
+
+=head2 Based on ISO 8601
+
+  RFC3339      2024-12-24 15:30:45+01:00
+  RFC9557      2024-12-24 15:30:45+01:00[Europe/Paris]
+  ISO9075      2024-12-24 15:30:45 +01:00
+  ASN1GT       20241224153045Z
+  ASN1UT       241224153045Z
+  RFC5280      241224153045Z
+
+=head2 RFC / Email / HTTP / IMAP
+
+  RFC2822      Tue, 24 Dec 2024 15:30:45 +0100
+  RFC2616      Tue, 24 Dec 2024 15:30:45 GMT
+  RFC3501      24-Dec-2024 15:30:45 +0100
+
+=head2 Unix / C Library
+
+  ANSIC        Tue Dec 24 15:30:45 2024
+  UnixDate     Tue Dec 24 15:30:45 UTC 2024
+  UnixStamp    Tue Dec 24 15:30:45.500 2024 UTC
+  GitDate      Tue Dec 24 15:30:45 2024 +0100
+  RubyDate     Tue Dec 24 15:30:45 +0100 2024
+
+C<UnixStamp> is a superset of C<ANSIC>, C<GitDate>, C<RubyDate>,
+and C<UnixDate>.
+
+=head2 Other
+
+  ECMAScript   Tue Dec 24 2024 15:30:45 GMT+0100
+  CLF          24/Dec/2024:15:30:45 +0100
+  DateTime     (permissive, multi-format parser)
+
+C<DateTime> can parse C<ISO8601> (extended format), C<RFC3339>,
+C<RFC9557>, C<RFC4287>, C<W3CDTF>, C<ISO9075>, C<RFC2822>,
+C<RFC2616>, C<RFC3501>, and C<ECMAScript> formats.
+
 =head1 SUPPORTED FORMATS
 
 The following format specifiers are recognized (case-insensitive). The
@@ -799,7 +844,7 @@ B<Limitations>: Fractional seconds are not supported.
 
 =head2 RFC3339
 
-Internet timestamp as defined in RFC 3339, a profile of ISO 8601.
+Internet timestamp as defined in RFC 3339.
 
   YYYY-MM-DD(T|t| )HH:MM:SS[.fraction](Z|z|±HH:MM)
 
