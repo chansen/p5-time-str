@@ -1,0 +1,8 @@
+requires 'ExtUtils::MakeMaker';
+requires 'ExtUtils::CBuilder';
+
+on 'test' => sub {
+  requires 'Test::More'          => '0.47';
+  requires 'Test::Fatal'         => '0.006';
+  requires 'Test::Number::Delta' => '1.06';
+};
