@@ -62,15 +62,15 @@
    "provides" : {
       "Time::Str" : {
          "file" : "lib/Time/Str.pm",
-         "version" : "0.06"
+         "version" : "0.07"
       },
       "Time::Str::PP" : {
          "file" : "lib/Time/Str/PP.pm",
-         "version" : "0.06"
+         "version" : "0.07"
       },
       "Time::Str::Regexp" : {
          "file" : "lib/Time/Str/Regexp.pm",
-         "version" : "0.06"
+         "version" : "0.07"
       }
    },
    "release_status" : "stable",
@@ -85,7 +85,7 @@
          "web" : "https://github.com/chansen/p5-time-str"
       }
    },
-   "version" : "0.06",
+   "version" : "0.07",
    "x_generated_by_perl" : "v5.42.0",
    "x_serialization_backend" : "Cpanel::JSON::XS version 4.40",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later"
