@@ -64,9 +64,9 @@ FUNCTIONS
     *   "pivot_year" (optional, default: 1950)
 
         For formats with two-digit years ("ASN1UT", RFC 850 within
-        "RFC2616"), sets the pivot year for century expansion. Two-digit
-        years less than "(pivot_year % 100)" map to the next century; others
-        map to the current century.
+        "RFC2616", "RFC5280"), sets the pivot year for century expansion.
+        Two-digit years less than "(pivot_year % 100)" map to the next
+        century; others map to the current century.
 
         With the default pivot of 1950: 49 becomes 2049, 50 becomes 1950, 99
         becomes 1999.
@@ -412,6 +412,45 @@ FLOATING-POINT PRECISION
     representation. For explicit control, always specify "precision" or
     "nanosecond".
 
+FORMAT OVERVIEW
+  Profiles of ISO 8601
+      ISO8601      20241224T153045.500+0100
+      RFC4287      2024-12-24T15:30:45Z
+      W3CDTF       2024-12-24T15:30:45+01:00
+      RFC5545      20241224T153045Z
+
+  Based on ISO 8601
+      RFC3339      2024-12-24 15:30:45+01:00
+      RFC9557      2024-12-24 15:30:45+01:00[Europe/Paris]
+      ISO9075      2024-12-24 15:30:45 +01:00
+      ASN1GT       20241224153045Z
+      ASN1UT       241224153045Z
+      RFC5280      241224153045Z
+
+  RFC / Email / HTTP / IMAP
+      RFC2822      Tue, 24 Dec 2024 15:30:45 +0100
+      RFC2616      Tue, 24 Dec 2024 15:30:45 GMT
+      RFC3501      24-Dec-2024 15:30:45 +0100
+
+  Unix / C Library
+      ANSIC        Tue Dec 24 15:30:45 2024
+      UnixDate     Tue Dec 24 15:30:45 UTC 2024
+      UnixStamp    Tue Dec 24 15:30:45.500 2024 UTC
+      GitDate      Tue Dec 24 15:30:45 2024 +0100
+      RubyDate     Tue Dec 24 15:30:45 +0100 2024
+
+    "UnixStamp" is a superset of "ANSIC", "GitDate", "RubyDate", and
+    "UnixDate".
+
+  Other
+      ECMAScript   Tue Dec 24 2024 15:30:45 GMT+0100
+      CLF          24/Dec/2024:15:30:45 +0100
+      DateTime     (permissive, multi-format parser)
+
+    "DateTime" can parse "ISO8601" (extended format), "RFC3339", "RFC9557",
+    "RFC4287", "W3CDTF", "ISO9075", "RFC2822", "RFC2616", "RFC3501", and
+    "ECMAScript" formats.
+
 SUPPORTED FORMATS
     The following format specifiers are recognized (case-insensitive). The
     default format is "RFC3339".
@@ -724,7 +763,7 @@ SUPPORTED FORMATS
     Limitations: Fractional seconds are not supported.
 
   RFC3339
-    Internet timestamp as defined in RFC 3339, a profile of ISO 8601.
+    Internet timestamp as defined in RFC 3339.
 
       YYYY-MM-DD(T|t| )HH:MM:SS[.fraction](Z|z|Â±HH:MM)
 
@@ -943,6 +982,7 @@ SUPPORTED FORMATS
 
   UnixStamp
     Unix date(1) based format with optional fractional seconds and timezone.
+    A superset of ANSIC, GitDate, RubyDate, and UnixDate formats.
 
       [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] [Â±HHMM|UTC|GMT|abbrev] YYYY
       [DDD ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [Â±HHMM|UTC|GMT|abbrev]
@@ -1080,8 +1120,7 @@ DATETIME FORMAT PARSING
 
    Day Names
     An optional day name prefix (e.g., "Monday," or "Mon,") is accepted
-    before the date but not validated against the actual date. Day names are
-    case-insensitive.
+    before the date. Day names are case-insensitive.
 
       Monday, 24 December 2024
       Mon, 24 Dec 2024
@@ -1178,6 +1217,8 @@ DATETIME FORMAT PARSING
       +0100 (Central European Time)
 
   Validation
+    *   Day names, when present, must match the date
+
     *   Dates must be valid for the Gregorian calendar, including leap years
 
     *   Hours: 0-23 (24-hour) or 1-12 (12-hour with AM/PM)
@@ -1396,8 +1437,8 @@ RATIONALE
 
     The "datetime" format in Time::Str requires a four-digit year, avoiding
     century ambiguity entirely. Formats that inherently use two-digit years
-    ("ASN1UT", RFC 850 within "RFC2616") provide a configurable "pivot_year"
-    parameter with a documented default.
+    ("ASN1UT", RFC 850 within "RFC2616", "RFC5280") provide a configurable
+    "pivot_year" parameter with a documented default.
 
   Ambiguous Timezone Abbreviations
     Timezone abbreviations such as "EST", "IST", and "CST" are inherently

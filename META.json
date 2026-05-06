@@ -26,6 +26,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
+            "ExtUtils::CBuilder" : "0",
             "ExtUtils::MakeMaker" : "0"
          }
       },
@@ -61,6 +62,14 @@
    "provides" : {
       "Time::Str" : {
          "file" : "lib/Time/Str.pm",
+         "version" : "0.06"
+      },
+      "Time::Str::PP" : {
+         "file" : "lib/Time/Str/PP.pm",
+         "version" : "0.06"
+      },
+      "Time::Str::Regexp" : {
+         "file" : "lib/Time/Str/Regexp.pm",
          "version" : "0.06"
       }
    },
