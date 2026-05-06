@@ -11,24 +11,24 @@ use ExtUtils::MakeMaker;
 use Config;
 my $xs_ok = 0;
 if (eval { require ExtUtils::CBuilder; ExtUtils::CBuilder->new(quiet => 1)->have_compiler }) {
-my $cb = ExtUtils::CBuilder->new(quiet => 1);
-my $src = 'conftest.c';
-open my $fh, '>', $src or die "Cannot write $src: $!";
-print $fh "#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L\n";
-print $fh "#error C99 required\n";
-print $fh "#endif\n";
-print $fh "int main(void){return 0;}\n";
-close $fh;
-eval {
-$cb->compile(source => $src, extra_compiler_flags => ['-std=c99']);
-$xs_ok = 1;
-};
-unlink $src, glob('conftest.*');
+  my $cb = ExtUtils::CBuilder->new(quiet => 1);
+  my $src = 'conftest.c';
+  open my $fh, '>', $src or die "Cannot write $src: $!";
+  print $fh "#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L\n";
+  print $fh "#error C99 required\n";
+  print $fh "#endif\n";
+  print $fh "int main(void){return 0;}\n";
+  close $fh;
+  eval {
+    $cb->compile(source => $src, extra_compiler_flags => ['-std=c99']);
+    $xs_ok = 1;
+  };
+  unlink $src, glob('conftest.*');
 }
 if ($xs_ok) {
-print "C99 compiler found, building XS.\n";
+  print "C99 compiler found, building XS.\n";
 } else {
-print "No C99 compiler found, Pure-Perl only.\n";
+  print "No C99 compiler found, Pure-Perl only.\n";
 }
 
 my %WriteMakefileArgs = (
