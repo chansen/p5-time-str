@@ -1,4 +1,4 @@
-0.08
+0.08 2026-05-07
   - Split RFC2822 into canonical (strict) and RFC2822FWS (permissive) variants.
     The canonical form uses single-space separators and accepts a single
     non-nested comment. RFC2822FWS preserves the original behavior with
@@ -10,6 +10,7 @@
   - Use config slicing for MakeMaker::Awesome header and WriteMakefile_arg
     options. Update [@Starter] to v6.0.2 for correct [PrereqsFile] ordering.
     (PR by @Grinnz)
+  - Use canonical format names in parse error messages.
 
 0.07 2026-05-06
   - Added optional XS acceleration of time2str (requires C99 compiler).
