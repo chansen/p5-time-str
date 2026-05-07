@@ -213,6 +213,7 @@ static const tstr_format_info_t kFormatInfo[TSTR_FORMAT_TYPE_COUNT] = {
   [TSTR_FORMAT_ISO9075]    = TSTR_FMT("%F %T%f %:z"),
   [TSTR_FORMAT_RFC2616]    = TSTR_FMT("%a, %d %b %Y %T GMT"),
   [TSTR_FORMAT_RFC2822]    = TSTR_FMT("%a, %d %b %Y %T %z"),
+  [TSTR_FORMAT_RFC2822FWS] = TSTR_FMT("%a, %d %b %Y %T %z"),
   [TSTR_FORMAT_RFC3339]    = TSTR_FMT("%FT%T%f%Z"),
   [TSTR_FORMAT_RFC3501]    = TSTR_FMT("%d-%b-%Y %T %z"),
   [TSTR_FORMAT_RFC4287]    = TSTR_FMT("%FT%T%f%Z"),

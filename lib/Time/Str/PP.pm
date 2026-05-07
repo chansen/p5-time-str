@@ -557,6 +557,7 @@ my %FormatMap = (
   javascript => \&format_ECMAScript,
   rfc2616    => \&format_RFC2616,
   rfc2822    => \&format_RFC2822,
+  rfc2822fws => \&format_RFC2822,
   rfc3339    => \&format_RFC3339,
   rfc3501    => \&format_RFC3501,
   rfc4287    => \&format_RFC3339,

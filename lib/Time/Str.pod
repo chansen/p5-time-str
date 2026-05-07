@@ -812,19 +812,21 @@ Fractional seconds are not supported.
 
 Internet Message Format date as defined in RFC 2822 / RFC 5322.
 
-  [DDD,] D MMM YYYY HH:MM[:SS] (±HHMM|UT|UTC|GMT|abbrev)
+  [DDD,] D MMM YYYY HH:MM[:SS] (±HHMM|UT|UTC|GMT|abbrev) [(comment)]
 
 B<Parsing>:
 
 Day name and seconds are optional. Accepts numeric offsets, UTC
 designators (C<UT>, C<UTC>, C<GMT>), and timezone abbreviations.
 Abbreviations are returned in C<tz_abbrev> without resolution.
+An optional trailing comment in parentheses is accepted but discarded.
 
   Mon, 24 Dec 2012 15:30:45 +0100
   Mon, 24 Dec 2012 15:30 +0100
   24 Dec 2012 15:30:45 +0100
   24 Dec 2012 15:30:45 GMT
   24 Dec 2012 15:30:45 CET
+  24 Dec 2012 15:30:45 +0100 (CET)
 
 Timezone offset format: C<±HHMM>
 
@@ -841,6 +843,28 @@ Always produces a numeric offset:
   # 'Tue, 24 Dec 2024 16:30:45 +0100'
 
 B<Limitations>: Fractional seconds are not supported.
+
+=head2 RFC2822FWS
+
+Permissive variant of C<RFC2822> that accepts folding white space (FWS)
+between fields and nested comments, as allowed by the raw RFC 2822
+grammar before header unfolding.
+
+  [DDD,] D MMM YYYY HH:MM[:SS] (±HHMM|UT|UTC|GMT|abbrev) [(comment)]
+
+B<Parsing>:
+
+Whitespace between fields may be any combination of spaces, tabs, and
+folding (multiple whitespace characters). Comments may be nested.
+
+  Mon, 24 Dec 2012 15:30:45 +0100
+  Mon,  24  Dec  2012  15:30:45  +0100
+  24 Dec 2012 15:30:45 +0100 (Central (European) Time)
+
+B<Formatting>: Identical to C<RFC2822>.
+
+Use this format when parsing raw, unfolded email headers. For most
+applications, C<RFC2822> is preferred.
 
 =head2 RFC3339
 

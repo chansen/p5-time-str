@@ -19,6 +19,7 @@ typedef enum {
   TSTR_FORMAT_ISO9075,
   TSTR_FORMAT_RFC2616,
   TSTR_FORMAT_RFC2822,
+  TSTR_FORMAT_RFC2822FWS,
   TSTR_FORMAT_RFC3339,
   TSTR_FORMAT_RFC3501,
   TSTR_FORMAT_RFC4287,
@@ -50,6 +51,7 @@ static inline const char * tstr_format_name(tstr_format_t fmt) {
     [TSTR_FORMAT_ISO9075]    = "ISO 9075",
     [TSTR_FORMAT_RFC2616]    = "RFC 2616",
     [TSTR_FORMAT_RFC2822]    = "RFC 2822",
+    [TSTR_FORMAT_RFC2822FWS] = "RFC 2822 (Folding WS)",
     [TSTR_FORMAT_RFC3339]    = "RFC 3339",
     [TSTR_FORMAT_RFC3501]    = "RFC 3501",
     [TSTR_FORMAT_RFC4287]    = "RFC 4287",
@@ -101,6 +103,8 @@ static inline tstr_format_t tstr_format_from_packed_alnum(uint64_t packed) {
     case TSTR_PACKED_ALNUM5('E','M','A','I','L'):
     case TSTR_PACKED_ALNUM3('I','M','F'):
       return TSTR_FORMAT_RFC2822;
+    case TSTR_PACKED_ALNUM10('R','F','C','2','8','2','2','F','W','S'):
+      return TSTR_FORMAT_RFC2822FWS;
     case TSTR_PACKED_ALNUM7('R','F','C','3','3','3','9'):
       return TSTR_FORMAT_RFC3339;
     case TSTR_PACKED_ALNUM7('R','F','C','3','5','0','1'):

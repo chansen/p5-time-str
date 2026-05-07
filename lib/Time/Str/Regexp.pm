@@ -287,13 +287,40 @@ my $RFC2616_Rx = qr{
   \z
 }x;
 
-# RFC 2822 Internet Message Format
+# RFC 2822 Internet Message Format (canonical)
 # <https://datatracker.ietf.org/doc/html/rfc2822#section-3.3>
 # <https://datatracker.ietf.org/doc/html/rfc5322#section-3.3>
 #
-#   [DDD,] D MMM YYYY hh:mm[:ss] (±hhmm|UT|UTC|GMT|ZONE)
+#   [DDD,] D MMM YYYY hh:mm[:ss] (±hhmm|UT|UTC|GMT|ZONE) [(comment)]
 #
 my $RFC2822_Rx = qr{
+  (?(DEFINE)
+    (?<DayName>        (?i: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
+    (?<MonthName>      (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
+    (?<TimeZoneAbbrev> [A-Z][A-Za-z][A-Z]{1,4})
+  )
+  \A
+  (?: (?<day_name> (?&DayName))[,][ ] )?
+      (?<day>    [0-9]{1,2})
+  [ ] (?<month>  (?&MonthName))
+  [ ] (?<year>   [0-9]{4})
+  [ ] (?<hour>   [0-9]{2})
+  [:] (?<minute> [0-9]{2}) (?: [:](?<second> [0-9]{2}))?
+  [ ]
+  (?:
+       (?<tz_offset> [+-][0-9]{4})
+    |  (?<tz_utc>    UT[C]?|GMT)
+    |  (?<tz_abbrev> (?&TimeZoneAbbrev))
+  )
+  (?: [ ] \( [^()]+ \) )?
+  \z
+}x;
+
+# RFC 2822 Internet Message Format (with folding white space and nested comments)
+#
+#   [DDD,] D MMM YYYY hh:mm[:ss] (±hhmm|UT|UTC|GMT|ZONE) [(comment)]
+#
+my $RFC2822FWS_Rx = qr{
   (?(DEFINE)
     (?<DayName>        (?i: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -743,6 +770,7 @@ my %RegexpMap = (
   iso9075    => $ISO9075_Rx,
   rfc2616    => $RFC2616_Rx,
   rfc2822    => $RFC2822_Rx,
+  rfc2822fws => $RFC2822FWS_Rx,
   rfc3339    => $RFC3339_Rx,
   rfc3501    => $RFC3501_Rx,
   rfc4287    => $RFC4287_Rx,
