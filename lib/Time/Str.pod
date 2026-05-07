@@ -1697,6 +1697,14 @@ L<Time::Moment>, L<DateTime>, L<Time::Piece>
 
 Christian Hansen
 
+=head1 CONTRIBUTORS
+
+=over
+
+=item Dan Book (L<cpan:DBOOK|https://metacpan.org/author/DBOOK> L<GitHub:Grinnz|https://github.com/Grinnz>)
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2026 by Christian Hansen
