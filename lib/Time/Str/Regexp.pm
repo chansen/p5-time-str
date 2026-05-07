@@ -122,7 +122,7 @@ my $DateTime_Rx = qr{
 
     # Note: Dot-separated times (HH.MM or HH.MM.SS) are not accepted; only HH:MM
     # or HH:MM:SS are allowed. This avoids ambiguity where ISO 8601 decimal hours
-    # or minutes could be misinterpreted as hour–minute or minute–second notation.
+    # could be misinterpreted as hour-minute notation.
 
     (?:
              (?<hour>     [0-9]{1,2})
@@ -146,13 +146,12 @@ my $DateTime_Rx = qr{
         |  (?<tz_abbrev> (?&TimeZoneAbbrev))
       )
 
-      # Annotation tags as defined in RFC 9557 (IXDTF) and Java’s [ZoneID].
+      # RFC 9557 (IXDTF) annotation tag, e.g. [Europe/Paris]
       (?:
         (?<tz_annotation> (?: \[ [^\[\]]+ \] )+ )
       )?
 
-      # Accept parenthesized comment (typically time-zone abbreviations
-      # or descriptive zone names).
+      # Parenthesized comment, e.g. (Central European Time)
       (?:
         [ ] (?: \( [^()]+ \) )
       )?
@@ -454,7 +453,7 @@ my $RFC5545_Rx = qr{
 #   YYYY-MM-DDThh[:mm[:ss]][(.|,)fraction][Z|±hh[:mm]]
 #   YYYYMMDD
 #   YYYYMMDDThh[mm[ss]][(.|,)fraction][Z|±hh[mm]]
-
+#
 my $ISO8601_Rx = qr{
   \A
 
@@ -687,8 +686,8 @@ my $UnixDate_Rx = qr{
 #
 #  Unix date based format with optional fractional seconds and timezone
 #
-#   [DDD[,] ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] [±hhmm|UTC|GMT|ZONE] YYYY
-#   [DDD[,] ] MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [±hhmm|UTC|GMT|ZONE]
+#   [DDD ]MMM (_D|D|DD) hh:mm[:ss[.fraction]] [±hhmm|UTC|GMT|ZONE] YYYY
+#   [DDD ]MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [±hhmm|UTC|GMT|ZONE]
 #
 my $UnixStamp_Rx = qr{
   (?(DEFINE)
