@@ -1,3 +1,11 @@
+0.08
+  - Split RFC2822 into canonical (strict) and RFC2822FWS (permissive) variants.
+    The canonical form uses single-space separators and accepts a single
+    non-nested comment. RFC2822FWS preserves the original behavior with
+    folding white space and nested comments.
+  - Validate day name against parsed date (previously accepted without
+    verification). Inadvertently omitted from the 0.07 changelog.
+
 0.07 2026-05-06
   - Added optional XS acceleration of time2str (requires C99 compiler).
     Falls back to pure-Perl when no compiler is available.
