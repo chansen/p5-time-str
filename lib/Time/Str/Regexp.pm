@@ -3,6 +3,31 @@ use strict;
 use warnings;
 use v5.10;
 
+our @EXPORT_OK = qw[ $ANSIC_Rx
+                     $ASN1GT_Rx
+                     $ASN1UT_Rx
+                     $CLF_Rx
+                     $DateTime_Rx
+                     $ECMAScript_Rx
+                     $GitDate_Rx
+                     $ISO8601_Rx
+                     $ISO9075_Rx
+                     $RFC2616_Rx
+                     $RFC2822_Rx
+                     $RFC2822FWS_Rx
+                     $RFC3339_Rx
+                     $RFC3501_Rx
+                     $RFC4287_Rx
+                     $RFC5280_Rx
+                     $RFC5545_Rx
+                     $RFC9557_Rx
+                     $RubyDate_Rx
+                     $UnixDate_Rx
+                     $UnixStamp_Rx
+                     $W3CDTF_Rx ];
+
+use Exporter qw[import];
+
 # DateTime
 #
 #  Parses a broad set of real-world date and time formats, accepting only 
@@ -59,7 +84,7 @@ use v5.10;
 #   24DEC2012 12:30:45.500 UTC+1
 #   24.Dec.2012 15:30:45
 #
-my $DateTime_Rx = qr{
+our $DateTime_Rx = qr{
   (?(DEFINE)
     (?<DayNameShort>    (?i: Mon|Tue|Tues|Wed|Thu|Thurs|Fri|Sat|Sun))
     (?<DayNameLong>     (?i: Monday|Tuesday|Wednesday|Thursday|Friday|
@@ -169,7 +194,7 @@ my $DateTime_Rx = qr{
 #  ASN.1 GeneralizedTime
 #   YYYYMMDDhh[mm[ss]][(.|,)fraction][Z|±hh[mm]]
 #
-my $ASN1GT_Rx = qr{
+our $ASN1GT_Rx = qr{
    \A
 
    (?<year>   [0-9]{4})
@@ -190,7 +215,7 @@ my $ASN1GT_Rx = qr{
 #  ASN.1 UTCTime
 #   YYMMDDhhmm[ss](Z|±hhmm)
 #
-my $ASN1UT_Rx = qr{
+our $ASN1UT_Rx = qr{
    \A
 
    (?<year>   [0-9]{2})
@@ -213,7 +238,7 @@ my $ASN1UT_Rx = qr{
 #   YYYY-MM-DD
 #   YYYY-MM-DDThh:mm:ss[.fraction](Z|±hh:mm)
 #
-my $W3CDTF_Rx = qr{
+our $W3CDTF_Rx = qr{
    \A
 
    (?<year> [0-9]{4})
@@ -239,7 +264,7 @@ my $W3CDTF_Rx = qr{
 #   DDDD, DD-MMM-YY hh:mm:ss GMT    # RFC 850
 #   DDD MMM (_D|DD) hh:mm:ss YYYY   # ANSI C's ctime
 #
-my $RFC2616_Rx = qr{
+our $RFC2616_Rx = qr{
   (?(DEFINE)
     (?<DayNameShort>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<DayNameLong>    (?: Monday|Tuesday|Wednesday|Thursday|Friday|
@@ -293,7 +318,7 @@ my $RFC2616_Rx = qr{
 #
 #   [DDD,] D MMM YYYY hh:mm[:ss] (±hhmm|UT|UTC|GMT|ZONE) [(comment)]
 #
-my $RFC2822_Rx = qr{
+our $RFC2822_Rx = qr{
   (?(DEFINE)
     (?<DayName>        (?i: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -320,7 +345,7 @@ my $RFC2822_Rx = qr{
 #
 #   [DDD,] D MMM YYYY hh:mm[:ss] (±hhmm|UT|UTC|GMT|ZONE) [(comment)]
 #
-my $RFC2822FWS_Rx = qr{
+our $RFC2822FWS_Rx = qr{
   (?(DEFINE)
     (?<DayName>        (?i: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -350,7 +375,7 @@ my $RFC2822FWS_Rx = qr{
 #
 #   DD-MMM-YYYY hh:mm:ss ±hhmm
 #
-my $RFC3501_Rx = qr{
+our $RFC3501_Rx = qr{
   (?(DEFINE)
     (?<MonthName> (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
@@ -370,7 +395,7 @@ my $RFC3501_Rx = qr{
 #
 #   YYYY-MM-DD(T|t|space)hh:mm:ss[.fraction](Z|z|±hh:mm)
 #
-my $RFC3339_Rx = qr{
+our $RFC3339_Rx = qr{
   \A
         (?<year>   [0-9]{4})
   [-]   (?<month>  [0-9]{2})
@@ -390,7 +415,7 @@ my $RFC3339_Rx = qr{
 #
 #   YYYY-MM-DD(T|t|space)hh:mm:ss[.fraction](Z|z|±hh:mm)[TAGS]
 #
-my $RFC9557_Rx = qr{
+our $RFC9557_Rx = qr{
   (?(DEFINE)
     (?<Tag> \[ [0-9A-Za-z!+-._/]+ \])
   )
@@ -416,7 +441,7 @@ my $RFC9557_Rx = qr{
 #
 #   YYYY-MM-DDThh:mm:ss[.fraction](Z|±hh:mm)
 #
-my $RFC4287_Rx = qr{
+our $RFC4287_Rx = qr{
   \A
       (?<year>   [0-9]{4})
   [-] (?<month>  [0-9]{2})
@@ -437,7 +462,7 @@ my $RFC4287_Rx = qr{
 #   YYMMDDhhmmzzZ
 #   YYYYMMDDhhmmssZ
 #
-my $RFC5280_Rx = qr{
+our $RFC5280_Rx = qr{
   \A
   (?<year>   [0-9]{2}|[0-9]{4})
   (?<month>  [0-9]{2})
@@ -456,7 +481,7 @@ my $RFC5280_Rx = qr{
 #   YYYYMMDD
 #   YYYYMMDDThhmmss[Z]
 #
-my $RFC5545_Rx = qr{
+our $RFC5545_Rx = qr{
   \A
   (?<year>   [0-9]{4})
   (?<month>  [0-9]{2})
@@ -481,7 +506,7 @@ my $RFC5545_Rx = qr{
 #   YYYYMMDD
 #   YYYYMMDDThh[mm[ss]][(.|,)fraction][Z|±hh[mm]]
 #
-my $ISO8601_Rx = qr{
+our $ISO8601_Rx = qr{
   \A
 
   (?<year> [0-9]{4})
@@ -527,7 +552,7 @@ my $ISO8601_Rx = qr{
 #   YYYY-MM-DD hh:mm:ss[.fraction]
 #   YYYY-MM-DD hh:mm:ss[.fraction] ±hh:mm
 #
-my $ISO9075_Rx = qr{
+our $ISO9075_Rx = qr{
   \A
       (?<year>   [0-9]{4})
   [-] (?<month>  [0-9]{2})
@@ -548,7 +573,7 @@ my $ISO9075_Rx = qr{
 #
 #   DDD MMM DD YYYY hh:mm:ss [GMT|UTC]±hhmm [comment]
 #
-my $ECMAScript_Rx = qr{
+our $ECMAScript_Rx = qr{
   (?(DEFINE)
     (?<DayName>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -574,7 +599,7 @@ my $ECMAScript_Rx = qr{
 #
 #   DD/MMM/YYYY:hh:mm:ss[.fraction] ±hhmm
 #
-my $CommonLogFormat_Rx = qr{
+our $CLF_Rx = qr{
   (?(DEFINE)
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
@@ -595,7 +620,7 @@ my $CommonLogFormat_Rx = qr{
 #
 #   DDD MMM (_D|DD) hh:mm:ss YYYY
 #
-my $ANSIC_Rx = qr{
+our $ANSIC_Rx = qr{
   (?(DEFINE)
     (?<DayName>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -623,7 +648,7 @@ my $ANSIC_Rx = qr{
 #
 #   DDD MMM D hh:mm:ss YYYY ±hhmm
 #
-my $GitDate_Rx = qr{
+our $GitDate_Rx = qr{
   (?(DEFINE)
     (?<DayName>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -646,7 +671,7 @@ my $GitDate_Rx = qr{
 #
 #   DDD MMM DD hh:mm:ss ±hhmm YYYY
 #
-my $RubyDate_Rx = qr{
+our $RubyDate_Rx = qr{
   (?(DEFINE)
     (?<DayName>   (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -671,7 +696,7 @@ my $RubyDate_Rx = qr{
 #   DDD MMM (_D|DD) hh:mm:ss (±hhmm|UTC|GMT|ZONE) YYYY
 #   DDD MMM (_D|DD) hh:mm:ss YYYY (±hhmm|UTC|GMT|ZONE)
 #
-my $UnixDate_Rx = qr{
+our $UnixDate_Rx = qr{
   (?(DEFINE)
     (?<DayName>        (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -716,7 +741,7 @@ my $UnixDate_Rx = qr{
 #   [DDD ]MMM (_D|D|DD) hh:mm[:ss[.fraction]] [±hhmm|UTC|GMT|ZONE] YYYY
 #   [DDD ]MMM (_D|D|DD) hh:mm[:ss[.fraction]] YYYY [±hhmm|UTC|GMT|ZONE]
 #
-my $UnixStamp_Rx = qr{
+our $UnixStamp_Rx = qr{
   (?(DEFINE)
     (?<DayName>        (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
@@ -761,8 +786,7 @@ my %RegexpMap = (
   ansic      => $ANSIC_Rx,
   asn1gt     => $ASN1GT_Rx,
   asn1ut     => $ASN1UT_Rx,
-  clf        => $CommonLogFormat_Rx,
-  ctime      => $ANSIC_Rx,
+  clf        => $CLF_Rx,
   datetime   => $DateTime_Rx,
   ecmascript => $ECMAScript_Rx,
   gitdate    => $GitDate_Rx,

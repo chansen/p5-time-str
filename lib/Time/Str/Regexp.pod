@@ -1,0 +1,193 @@
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Time::Str::Regexp - Precompiled regular expressions for date/time formats
+
+=head1 SYNOPSIS
+
+    use Time::Str::Regexp qw( $RFC3339_Rx $RFC2822_Rx $DateTime_Rx );
+
+    if ($string =~ $RFC3339_Rx) {
+      my %date = %+;
+      ...
+    }
+
+=head1 DESCRIPTION
+
+This module provides precompiled regular expressions for parsing date/time
+strings in various standard formats. Each regex uses named captures to
+extract date and time components.
+
+All regexes are anchored (C<\A> ... C<\z>). They perform structural
+matching only; semantic validation (e.g., day-of-month range, leap
+years) is not performed by the regex.
+
+=head1 NAMED CAPTURES
+
+Successful matches populate C<%+> with the following keys:
+
+=over 4
+
+=item C<year>
+
+Four-digit year (two-digit for C<ASN1UT>, C<RFC5280>, and RFC 850
+within C<RFC2616>).
+
+=item C<month>
+
+Month number or name, depending on format.
+
+=item C<day>
+
+Day of month.
+
+=item C<hour>
+
+Hour (0-23, or 1-12 with meridiem).
+
+=item C<minute>
+
+Minute.
+
+=item C<second>
+
+Second.
+
+=item C<fraction>
+
+Fractional digits of the least significant time component present
+(may represent fractional seconds, minutes, or hours).
+
+=item C<day_name>
+
+Day name when present (e.g., C<Mon>, C<Monday>).
+
+=item C<meridiem>
+
+AM/PM indicator (C<DateTime> only).
+
+=item C<tz_offset>
+
+Numeric timezone offset (e.g., C<+0100>, C<+01:00>).
+
+=item C<tz_utc>
+
+UTC designator (e.g., C<Z>, C<GMT>, C<UTC>).
+
+=item C<tz_abbrev>
+
+Timezone abbreviation (e.g., C<EST>, C<CET>).
+
+=item C<tz_annotation>
+
+RFC 9557 annotation tag (e.g., C<[Europe/Paris]>).
+
+=back
+
+=head1 EXPORTED VARIABLES
+
+All variables are exportable on request. Nothing is exported by default.
+
+=head2 Profiles of ISO 8601
+
+=over 4
+
+=item C<$ISO8601_Rx> - ISO 8601 (basic and extended format)
+
+=item C<$RFC4287_Rx> - Atom feed timestamp (RFC 4287)
+
+=item C<$W3CDTF_Rx> - W3C Date and Time Format
+
+=item C<$RFC5545_Rx> - iCalendar (RFC 5545)
+
+=back
+
+=head2 Based on ISO 8601
+
+=over 4
+
+=item C<$RFC3339_Rx> - Internet timestamp (RFC 3339)
+
+=item C<$RFC9557_Rx> - Timestamps with annotations (RFC 9557)
+
+=item C<$ISO9075_Rx> - SQL timestamp (ISO 9075)
+
+=item C<$ASN1GT_Rx> - ASN.1 GeneralizedTime
+
+=item C<$ASN1UT_Rx> - ASN.1 UTCTime
+
+=item C<$RFC5280_Rx> - X.509 certificate time (RFC 5280)
+
+=back
+
+=head2 RFC / IMF / HTTP / IMAP
+
+=over 4
+
+=item C<$RFC2822_Rx> - Internet Message Format (RFC 2822, canonical)
+
+=item C<$RFC2822FWS_Rx> - RFC 2822 with folding white space and nested comments
+
+=item C<$RFC2616_Rx> - HTTP-date (RFC 2616 / RFC 7231)
+
+=item C<$RFC3501_Rx> - IMAP date-time (RFC 3501)
+
+=back
+
+=head2 Unix / C Library
+
+=over 4
+
+=item C<$ANSIC_Rx> - ANSI C ctime()/asctime()
+
+=item C<$UnixDate_Rx> - Unix date(1) output
+
+=item C<$UnixStamp_Rx> - Unix date based, with optional fractional seconds and timezone
+
+=item C<$GitDate_Rx> - Git default date format
+
+=item C<$RubyDate_Rx> - Ruby/Rails date format
+
+=back
+
+=head2 Other
+
+=over 4
+
+=item C<$ECMAScript_Rx> - ECMAScript Date.prototype.toString
+
+=item C<$CLF_Rx> - Common Log Format
+
+=item C<$DateTime_Rx> - Permissive multi-format parser
+
+=back
+
+=head1 FUNCTIONS
+
+=head2 mapping
+
+    my %map = Time::Str::Regexp->mapping;
+    my $map = Time::Str::Regexp->mapping;  # hashref in scalar context
+
+Returns the format name to regex mapping. Keys are lowercase format
+names; values are precompiled regexes.
+
+=head1 SEE ALSO
+
+L<Time::Str>
+
+=head1 AUTHOR
+
+Christian Hansen
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2026 by Christian Hansen
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
