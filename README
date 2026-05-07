@@ -732,19 +732,21 @@ SUPPORTED FORMATS
   RFC2822 (aliases: RFC5322, IMF, EMAIL)
     Internet Message Format date as defined in RFC 2822 / RFC 5322.
 
-      [DDD,] D MMM YYYY HH:MM[:SS] (Â±HHMM|UT|UTC|GMT|abbrev)
+      [DDD,] D MMM YYYY HH:MM[:SS] (Â±HHMM|UT|UTC|GMT|abbrev) [(comment)]
 
     Parsing:
 
     Day name and seconds are optional. Accepts numeric offsets, UTC
     designators ("UT", "UTC", "GMT"), and timezone abbreviations.
-    Abbreviations are returned in "tz_abbrev" without resolution.
+    Abbreviations are returned in "tz_abbrev" without resolution. An
+    optional trailing comment in parentheses is accepted but discarded.
 
       Mon, 24 Dec 2012 15:30:45 +0100
       Mon, 24 Dec 2012 15:30 +0100
       24 Dec 2012 15:30:45 +0100
       24 Dec 2012 15:30:45 GMT
       24 Dec 2012 15:30:45 CET
+      24 Dec 2012 15:30:45 +0100 (CET)
 
     Timezone offset format: "Â±HHMM"
 
@@ -761,6 +763,27 @@ SUPPORTED FORMATS
       # 'Tue, 24 Dec 2024 16:30:45 +0100'
 
     Limitations: Fractional seconds are not supported.
+
+  RFC2822FWS
+    Permissive variant of "RFC2822" that accepts folding white space (FWS)
+    between fields and nested comments, as allowed by the raw RFC 2822
+    grammar before header unfolding.
+
+      [DDD,] D MMM YYYY HH:MM[:SS] (Â±HHMM|UT|UTC|GMT|abbrev) [(comment)]
+
+    Parsing:
+
+    Whitespace between fields may be any combination of spaces, tabs, and
+    folding (multiple whitespace characters). Comments may be nested.
+
+      Mon, 24 Dec 2012 15:30:45 +0100
+      Mon,  24  Dec  2012  15:30:45  +0100
+      24 Dec 2012 15:30:45 +0100 (Central (European) Time)
+
+    Formatting: Identical to "RFC2822".
+
+    Use this format when parsing raw, unfolded email headers. For most
+    applications, "RFC2822" is preferred.
 
   RFC3339
     Internet timestamp as defined in RFC 3339.
@@ -1512,6 +1535,10 @@ SEE ALSO
 
 AUTHOR
     Christian Hansen
+
+CONTRIBUTORS
+    Dan Book (cpan:DBOOK <https://metacpan.org/author/DBOOK> GitHub:Grinnz
+    <https://github.com/Grinnz>)
 
 COPYRIGHT AND LICENSE
     Copyright (C) 2026 by Christian Hansen
