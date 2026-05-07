@@ -3,8 +3,13 @@
     The canonical form uses single-space separators and accepts a single
     non-nested comment. RFC2822FWS preserves the original behavior with
     folding white space and nested comments.
+  - Add Time::Str::Regexp module providing individually exportable
+    precompiled regexes for all supported date/time formats.
   - Validate day name against parsed date (previously accepted without
     verification). Inadvertently omitted from the 0.07 changelog.
+  - Use config slicing for MakeMaker::Awesome header and WriteMakefile_arg
+    options. Update [@Starter] to v6.0.2 for correct [PrereqsFile] ordering.
+    (PR by @Grinnz)
 
 0.07 2026-05-06
   - Added optional XS acceleration of time2str (requires C99 compiler).
