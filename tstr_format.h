@@ -61,7 +61,7 @@ static inline const char * tstr_format_name(tstr_format_t fmt) {
     [TSTR_FORMAT_RUBYDATE]   = "RubyDate",
     [TSTR_FORMAT_UNIXDATE]   = "UnixDate",
     [TSTR_FORMAT_UNIXSTAMP]  = "UnixStamp",
-    [TSTR_FORMAT_W3CDTF]     = "W3CDFT",
+    [TSTR_FORMAT_W3CDTF]     = "W3CDTF",
   };
 
   if (!tstr_format_is_known(fmt))

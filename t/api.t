@@ -41,11 +41,11 @@ throws_ok { str2date('2012-12-24T15:30:45Z', color => 'red') }
 
 # str2date parse failure
 throws_ok { str2date('not-a-date') }
-  qr/Unable to parse: string does not match the rfc3339 format/,
+  qr/Unable to parse: string does not match the RFC 3339 format/,
   'str2date: parse failure (default format)';
 
 throws_ok { str2date('not-a-date', format => 'RFC2822') }
-  qr/Unable to parse: string does not match the rfc2822 format/,
+  qr/Unable to parse: string does not match the RFC 2822 format/,
   'str2date: parse failure (explicit format)';
 
 # str2date date out of range

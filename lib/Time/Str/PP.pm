@@ -163,6 +163,31 @@ sub parse_numeric_offset {
   return $offset;
 }
 
+my %CanonicalFormatName = (
+  ansic      => 'ANSIC',
+  asn1gt     => 'ASN.1 GeneralizedTime',
+  asn1ut     => 'ASN.1 UTCTime',
+  clf        => 'Common Log Format',
+  datetime   => 'DateTime',
+  ecmascript => 'ECMAScript',
+  gitdate    => 'GitDate',
+  iso8601    => 'ISO 8601',
+  iso9075    => 'ISO 9075',
+  rfc2616    => 'RFC 2616',
+  rfc2822    => 'RFC 2822',
+  rfc2822fws => 'RFC 2822 (Folding WS)',
+  rfc3339    => 'RFC 3339',
+  rfc3501    => 'RFC 3501',
+  rfc4287    => 'RFC 4287',
+  rfc5280    => 'RFC 5280',
+  rfc5545    => 'RFC 5545',
+  rfc9557    => 'RFC 9557',
+  rubydate   => 'RubyDate',
+  unixdate   => 'UnixDate',
+  unixstamp  => 'UnixStamp',
+  w3cdtf     => 'W3CDTF',
+);
+
 my (%RegexpMap, $RFC2616_Rx, $RFC3339_Rx);
 
 BEGIN {
@@ -196,6 +221,7 @@ BEGIN {
 
   while (my ($alias, $to) = each %aliases) {
     $RegexpMap{$alias} = $RegexpMap{$to};
+    $CanonicalFormatName{$alias} = $CanonicalFormatName{$to};
   }
 }
 
@@ -223,7 +249,7 @@ sub str2date {
   }
 
   (defined $string && $string =~ $regexp)
-    or croak qq/Unable to parse: string does not match the $format format/;
+    or croak qq/Unable to parse: string does not match the $CanonicalFormatName{$format} format/;
 
   my %r = %+;
 
