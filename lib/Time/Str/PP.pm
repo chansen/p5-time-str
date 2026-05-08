@@ -244,7 +244,7 @@ sub str2date {
         or croak q/Parameter 'pivot_year' is out of range [0, 9899]/;
     }
     else {
-      croak qq/Unknown named parameter: '$name'/;
+      croak qq/Unrecognised named parameter: '$name'/;
     }
   }
 
@@ -636,7 +636,7 @@ sub time2str {
         or croak q/Parameter 'offset' is out of range [-1439, 1439]/;
     }
     else {
-      croak qq/Unknown named parameter: '$name'/;
+      croak qq/Unrecognised named parameter: '$name'/;
     }
   }
 

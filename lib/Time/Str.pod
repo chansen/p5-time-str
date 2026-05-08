@@ -1639,7 +1639,7 @@ to resolve them, leaving interpretation to the caller.
 
 (F) A parameter value is outside its valid range.
 
-=item Unknown named parameter: '%s'
+=item Unrecognised named parameter: '%s'
 
 (F) An unrecognised named parameter was given.
 

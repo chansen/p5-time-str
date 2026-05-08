@@ -72,7 +72,7 @@ time2str(...)
             croak("Parameter 'nanosecond' is out of range [0, 999_999_999]");
           break;
         default:
-          croak("Unknown named parameter: '%"SVf"'", ST(i));
+          croak("Unrecognised named parameter: '%"SVf"'", ST(i));
       }
     }
 

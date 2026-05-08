@@ -36,7 +36,7 @@ throws_ok { str2date('121224153045Z', format => 'ASN1UT', pivot_year => 9900) }
 
 # str2date unknown named parameter
 throws_ok { str2date('2012-12-24T15:30:45Z', color => 'red') }
-  qr/Unknown named parameter: 'color'/,
+  qr/Unrecognised named parameter: 'color'/,
   'str2date: unknown named parameter';
 
 # str2date parse failure
@@ -154,7 +154,7 @@ throws_ok { time2str(0, nanosecond => 1_000_000_000) }
 
 # time2str unknown named parameter
 throws_ok { time2str(0, color => 'red') }
-  qr/Unknown named parameter: 'color'/,
+  qr/Unrecognised named parameter: 'color'/,
   'time2str: unknown named parameter';
 
 # time2str time out of range for given offset
