@@ -276,30 +276,30 @@ our $RFC2616_Rx = qr{
   (?:
     # IMF-fixdate
     (?:
-      (?<day_name> (?&DayNameShort)) [,]
-      [ ] (?<day>    [0-9]{2})
-      [ ] (?<month>  (?&MonthNameShort))
-      [ ] (?<year>   [0-9]{4})
-      [ ] (?<hour>   [0-9]{2})
-      [:] (?<minute> [0-9]{2})
-      [:] (?<second> [0-9]{2})
-      [ ] (?<tz_utc> GMT)
+          (?<day_name> (?&DayNameShort)) [,]
+      [ ] (?<day>      [0-9]{2})
+      [ ] (?<month>    (?&MonthNameShort))
+      [ ] (?<year>     [0-9]{4})
+      [ ] (?<hour>     [0-9]{2})
+      [:] (?<minute>   [0-9]{2})
+      [:] (?<second>   [0-9]{2})
+      [ ] (?<tz_utc>   GMT)
     )
   | # RFC 850
     (?:
-      (?<day_name> (?&DayNameLong)) [,]
-      [ ] (?<day>    [0-9]{2})
-      [-] (?<month>  (?&MonthNameShort))
-      [-] (?<year>   [0-9]{2})
-      [ ] (?<hour>   [0-9]{2})
-      [:] (?<minute> [0-9]{2})
-      [:] (?<second> [0-9]{2})
-      [ ] (?<tz_utc> GMT)
+          (?<day_name> (?&DayNameLong)) [,]
+      [ ] (?<day>      [0-9]{2})
+      [-] (?<month>    (?&MonthNameShort))
+      [-] (?<year>     [0-9]{2})
+      [ ] (?<hour>     [0-9]{2})
+      [:] (?<minute>   [0-9]{2})
+      [:] (?<second>   [0-9]{2})
+      [ ] (?<tz_utc>   GMT)
     )
   | # ANSI C's ctime
     (?:
-      (?<day_name> (?&DayNameShort))
-      [ ] (?<month>  (?&MonthNameShort))
+          (?<day_name> (?&DayNameShort))
+      [ ] (?<month>    (?&MonthNameShort))
       (?:
           (?: [ ]{2} (?<day> [0-9]{1}))
         | (?: [ ]{1} (?<day> [0-9]{2}))
@@ -327,11 +327,11 @@ our $RFC2822_Rx = qr{
   )
   \A
   (?: (?<day_name> (?&DayName))[,][ ] )?
-      (?<day>    [0-9]{1,2})
-  [ ] (?<month>  (?&MonthName))
-  [ ] (?<year>   [0-9]{4})
-  [ ] (?<hour>   [0-9]{2})
-  [:] (?<minute> [0-9]{2}) (?: [:](?<second> [0-9]{2}))?
+      (?<day>      [0-9]{1,2})
+  [ ] (?<month>    (?&MonthName))
+  [ ] (?<year>     [0-9]{4})
+  [ ] (?<hour>     [0-9]{2})
+  [:] (?<minute>   [0-9]{2}) (?: [:](?<second> [0-9]{2}))?
   [ ]
   (?:
        (?<tz_offset> [+-][0-9]{4})
@@ -581,13 +581,13 @@ our $ECMAScript_Rx = qr{
   )
   \A
       (?<day_name> (?&DayName))
-  [ ] (?<month>   (?&MonthName))
-  [ ] (?<day>     [0-9]{2})
-  [ ] (?<year>    [0-9]{4})
-  [ ] (?<hour>    [0-9]{2})
-  [:] (?<minute>  [0-9]{2})
-  [:] (?<second>  [0-9]{2})
-  [ ] (?<tz_utc>  UTC|GMT)? (?<tz_offset> [+-][0-9]{4})
+  [ ] (?<month>    (?&MonthName))
+  [ ] (?<day>      [0-9]{2})
+  [ ] (?<year>     [0-9]{4})
+  [ ] (?<hour>     [0-9]{2})
+  [:] (?<minute>   [0-9]{2})
+  [:] (?<second>   [0-9]{2})
+  [ ] (?<tz_utc>   UTC|GMT)? (?<tz_offset> [+-][0-9]{4})
   (?:
     [ ] (?: \( [^()]+ \) )
   )?
@@ -628,8 +628,8 @@ our $ANSIC_Rx = qr{
   )
   \A
   (?:
-    (?<day_name> (?&DayName))
-    [ ] (?<month>  (?&MonthName))
+        (?<day_name> (?&DayName))
+    [ ] (?<month>    (?&MonthName))
     (?:
         (?: [ ]{2} (?<day> [0-9]{1}))
       | (?: [ ]{1} (?<day> [0-9]{2}))
@@ -655,7 +655,7 @@ our $GitDate_Rx = qr{
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
   \A
-  (?<day_name> (?&DayName))
+      (?<day_name>  (?&DayName))
   [ ] (?<month>     (?&MonthName))
   [ ] (?<day>       [0-9]{1,2})
   [ ] (?<hour>      [0-9]{2})
@@ -678,7 +678,7 @@ our $RubyDate_Rx = qr{
     (?<MonthName> (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
   )
   \A
-  (?<day_name> (?&DayName))
+      (?<day_name>  (?&DayName))
   [ ] (?<month>     (?&MonthName))
   [ ] (?<day>       [0-9]{2})
   [ ] (?<hour>      [0-9]{2})
@@ -702,11 +702,12 @@ our $UnixDate_Rx = qr{
     (?<DayName>        (?: Mon|Tue|Wed|Thu|Fri|Sat|Sun))
     (?<MonthName>      (?: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec))
     (?<TimeZoneAbbrev> [A-Z][A-Za-z][A-Z]{1,4})
+    (?<TimeZoneOffset> [+-][0-9]{4})
   )
   \A
   (?:
-    (?<day_name> (?&DayName))
-    [ ] (?<month>  (?&MonthName))
+        (?<day_name> (?&DayName))
+    [ ] (?<month>    (?&MonthName))
     (?:
         (?: [ ]{2} (?<day> [0-9]{1}))
       | (?: [ ]{1} (?<day> [0-9]{2}))
@@ -717,7 +718,7 @@ our $UnixDate_Rx = qr{
     [ ]   
     (?:
         (?:
-             (?<tz_offset> [+-][0-9]{4})
+             (?<tz_offset> (?&TimeZoneOffset))
           |  (?<tz_utc>    UTC|GMT)
           |  (?<tz_abbrev> (?&TimeZoneAbbrev))
         )
@@ -726,7 +727,7 @@ our $UnixDate_Rx = qr{
             (?<year> [0-9]{4})
         [ ] 
         (?:
-             (?<tz_offset> [+-][0-9]{4})
+             (?<tz_offset> (?&TimeZoneOffset))
           |  (?<tz_utc>    UTC|GMT)
           |  (?<tz_abbrev> (?&TimeZoneAbbrev))
         )
