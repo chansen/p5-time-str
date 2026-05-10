@@ -177,7 +177,7 @@ names; values are precompiled regexes.
 
 =head1 SEE ALSO
 
-L<Time::Str>
+L<Time::Str>, L<Time::Str::Token>
 
 =head1 AUTHOR
 

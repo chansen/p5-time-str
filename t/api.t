@@ -50,11 +50,11 @@ throws_ok { str2date('not-a-date', format => 'RFC2822') }
 
 # str2date date out of range
 throws_ok { str2date('2012-13-24T15:30:45Z') }
-  qr/Unable to parse: date is out of range/,
+  qr/Unable to parse: month is invalid/,
   'str2date: month 13';
 
 throws_ok { str2date('2012-00-24T15:30:45Z') }
-  qr/Unable to parse: date is out of range/,
+  qr/Unable to parse: month is invalid/,
   'str2date: month 0';
 
 throws_ok { str2date('2013-02-29T15:30:45Z') }

@@ -8,6 +8,12 @@ our @EXPORT_OK = qw[ time2str str2time str2date ];
 use Exporter qw[import];
 use Carp     qw[croak];
 
+use Time::Str::Token qw[ parse_day
+                         parse_day_name
+                         parse_month
+                         parse_meridiem
+                         parse_tz_offset ];
+
 BEGIN {
   if ($^V ge v5.40) {
     builtin->import(qw(floor));
@@ -28,36 +34,6 @@ BEGIN {
 
 sub DEFAULT_PIVOT_YEAR () { 1950 }
 
-my %DayIndexMap = qw(
-  mon 1 monday    1
-  tue 2 tuesday   2 tues  2
-  wed 3 wednesday 3
-  thu 4 thursday  4 thurs 4
-  fri 5 friday    5
-  sat 6 saturday  6
-  sun 7 sunday    7
-);
-
-my %MonthIndexMap = qw(
-  i     1 jan  1 january    1
-  ii    2 feb  2 february   2
-  iii   3 mar  3 march      3
-  iv    4 apr  4 april      4
-  v     5 may  5
-  vi    6 jun  6 june       6
-  vii   7 jul  7 july       7
-  viii  8 aug  8 august     8
-  ix    9 sep  9 september  9 sept 9
-  x    10 oct 10 october   10
-  xi   11 nov 11 november  11
-  xii  12 dec 12 december  12
-);
-
-my %MeridiemMap = qw(
-    am AM a.m. AM
-    pm PM p.m. PM
-);
-
 sub leap_year {
     my ($y) = @_;
     return ($y % 4 == 0 && ($y % 100 != 0 || $y % 400 == 0));
@@ -75,12 +51,6 @@ sub valid_ymd {
     return ($y >= 1 && $y <= 9999)
         && ($m >= 1 && $m <= 12)
         && ($d >= 1 && ($d <= 28 || $d <= month_days($y, $m)));
-}
-
-sub valid_hm {
-    my ($h, $m) = @_;
-    return ($h >= 0 && $h <= 23
-         && $m >= 0 && $m <= 59);
 }
 
 sub valid_hms {
@@ -127,40 +97,6 @@ sub expand_two_digit_year {
     $year += 100;
   }
   return $year;
-}
-
-sub meridiem_to_24h {
-  @_ == 2 or croak q/Usage: meridiem_to_24h(hour, meridiem)/;
-  my ($hour, $meridiem) = @_;
-
-  ($hour >= 1 && $hour <= 12)
-    or croak q/Parameter 'hour' is out of range [1, 12]/;
-
-  ($meridiem eq 'AM' || $meridiem eq 'PM')
-    or croak q/Parameter 'meridiem' is not AM or PM/;
-
-  return $meridiem eq 'AM' ? ($hour == 12 ? 0  : $hour)
-                           : ($hour == 12 ? 12 : $hour + 12);
-}
-
-sub parse_numeric_offset {
-  @_ == 1 or croak q/Usage: parse_numeric_offset(string)/;
-  my ($string) = @_;
-
-  # ±H ±HH ±H:MM ±HH:MM ±HHMM
-  my ($sign, $h, $m) = ($string =~ m/^([+-])([0-9]{1,2})[:]?([0-9]{2})?$/)
-    or croak q/Unable to parse: timezone offset is invalid/;
-
-  $m //= 0;
-  valid_hm($h, $m)
-    or croak qq/Unable to parse: timezone offset is out of range/;
-
-  my $offset = $h * 60 + $m;
-  if ($sign eq '-') {
-    $offset *= -1;
-  }
-
-  return $offset;
 }
 
 my %CanonicalFormatName = (
@@ -257,15 +193,15 @@ sub str2date {
     $r{year} = expand_two_digit_year($r{year}, $pivot_year // DEFAULT_PIVOT_YEAR);
   }
 
-  if (exists $r{month} && $r{month} !~ /^[0-9]/) {
-    $r{month} = $MonthIndexMap{ lc $r{month} };
+  if (exists $r{month}) {
+    $r{month} = parse_month($r{month});
   }
 
   valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
     or croak q/Unable to parse: date is out of range/;
 
   if (exists $r{day_name}) {
-    my $dow = $DayIndexMap{ lc delete $r{day_name} };
+    my $dow = parse_day_name(delete $r{day_name});
 
     valid_dow($dow, $r{year}, $r{month} // 1, $r{day} // 1)
       or croak q/Unable to parse: day name does not match date/;
@@ -274,10 +210,13 @@ sub str2date {
   if (exists $r{hour}) {
 
     if (exists $r{meridiem}) {
-      ($r{hour} >= 1 && $r{hour} <= 12)
+      my $meridiem = parse_meridiem(delete $r{meridiem}); 
+      my $hour     = $r{hour};
+
+      ($hour >= 1 && $hour <= 12)
         or croak q/Unable to parse: hour is out of range for 12-hour clock/;
 
-      $r{hour} = meridiem_to_24h($r{hour}, $MeridiemMap{ lc delete $r{meridiem} });
+      $r{hour} = ($hour == 12 ? $meridiem : $hour + $meridiem);
     }
 
     valid_hms($r{hour}, $r{minute} // 0, $r{second} // 0)
@@ -318,7 +257,7 @@ sub str2date {
     }
 
     if (exists $r{tz_offset}) {
-      $r{tz_offset} = parse_numeric_offset($r{tz_offset});
+      $r{tz_offset} = parse_tz_offset($r{tz_offset});
     }
 
     if (exists $r{tz_utc}) {

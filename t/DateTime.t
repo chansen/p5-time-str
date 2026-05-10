@@ -1014,12 +1014,12 @@ BEGIN {
 
 {
   eval { str2date('2012-13-01', format => 'DateTime') };
-  like($@, qr/out of range/, 'month 13 rejected');
+  like($@, qr/Unable to parse: month is invalid/, 'month 13 rejected');
 }
 
 {
   eval { str2date('2012-00-01', format => 'DateTime') };
-  like($@, qr/out of range/, 'month 0 rejected');
+  like($@, qr/Unable to parse: month is invalid/, 'month 0 rejected');
 }
 
 #
