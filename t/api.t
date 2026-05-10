@@ -76,7 +76,7 @@ throws_ok { str2date('2012-12-24T23:59:61Z') }
 
 # str2date timezone offset out of range
 throws_ok { str2date('2012-12-24T15:30:45+25:00') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'str2date: timezone offset hour out of range';
 
 # str2time usage

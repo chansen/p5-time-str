@@ -336,27 +336,27 @@ throws_ok { parse_tz_offset('+abc') }
 
 # out of range
 throws_ok { parse_tz_offset('+24') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: hour 24';
 
 throws_ok { parse_tz_offset('-24') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: hour -24';
 
 throws_ok { parse_tz_offset('+00:60') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: minute 60';
 
 throws_ok { parse_tz_offset('+2400') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: +2400';
 
 throws_ok { parse_tz_offset('-2400') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: -2400';
 
 throws_ok { parse_tz_offset('+0060') }
-  qr/Unable to parse: timezone offset is out of range/,
+  qr/Unable to parse: timezone offset is invalid/,
   'parse_tz_offset: +0060';
 
 done_testing();

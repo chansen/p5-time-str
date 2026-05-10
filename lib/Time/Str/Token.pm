@@ -157,7 +157,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
       my $h = $+{hour};
       my $m = $+{minute} // 0;
       ($h <= 23 && $m <= 59)
-        or croak q/Unable to parse: timezone offset is out of range/;
+        or croak q/Unable to parse: timezone offset is invalid/;
 
       my $offset = $h * 60 + $m;
       if ($+{sign} eq '-') {

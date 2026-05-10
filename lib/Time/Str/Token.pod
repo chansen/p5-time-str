@@ -101,9 +101,7 @@ multiple formats.
     parse_tz_offset('+5:30')   #  330
     parse_tz_offset('+00:00')  #  0
 
-Croaks with C<Unable to parse: timezone offset is invalid> if the
-string cannot be parsed, or C<Unable to parse: timezone offset is out
-of range> if hours exceed 23 or minutes exceed 59.
+Croaks with C<Unable to parse: timezone offset is invalid> on failure.
 
 =head1 SEE ALSO
 
