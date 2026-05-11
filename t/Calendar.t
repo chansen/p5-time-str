@@ -14,6 +14,7 @@ BEGIN {
                                     ymd_to_dow
                                     ymd_to_rdn
                                     rdn_to_ymd
+                                    rdn_to_dow
                                     resolve_century ]);
 }
 
@@ -223,6 +224,55 @@ throws_ok { rdn_to_ymd(3652060) }
   qr/Parameter 'rdn' is out of range/,
   'rdn_to_ymd: rdn 3652060';
 
+## rdn_to_dow
+
+throws_ok { rdn_to_dow() }
+  qr/^Usage: rdn_to_dow/,
+  'rdn_to_dow: no arguments';
+
+# known days (1=Mon .. 7=Sun)
+# RDN 1 = 0001-01-01 = Monday
+is(rdn_to_dow(      1), 1, 'rdn_to_dow: 1 (0001-01-01 Monday)');
+is(rdn_to_dow(      2), 2, 'rdn_to_dow: 2 (0001-01-02 Tuesday)');
+is(rdn_to_dow(      3), 3, 'rdn_to_dow: 3 (0001-01-03 Wednesday)');
+is(rdn_to_dow(      4), 4, 'rdn_to_dow: 4 (0001-01-04 Thursday)');
+is(rdn_to_dow(      5), 5, 'rdn_to_dow: 5 (0001-01-05 Friday)');
+is(rdn_to_dow(      6), 6, 'rdn_to_dow: 6 (0001-01-06 Saturday)');
+is(rdn_to_dow(      7), 7, 'rdn_to_dow: 7 (0001-01-07 Sunday)');
+
+# epoch dates
+is(rdn_to_dow( 719163), 4, 'rdn_to_dow: 719163 (1970-01-01 Thursday)');
+is(rdn_to_dow( 730120), 6, 'rdn_to_dow: 730120 (2000-01-01 Saturday)');
+is(rdn_to_dow( 739244), 2, 'rdn_to_dow: 739244 (2024-12-24 Tuesday)');
+is(rdn_to_dow(3652059), 5, 'rdn_to_dow: 3652059 (9999-12-31 Friday)');
+
+# consecutive days wrap Mon..Sun
+{
+  my $rdn = ymd_to_rdn(2024, 12, 23); # Monday
+  my @expected = (1, 2, 3, 4, 5, 6, 7);
+  foreach my $i (0..$#expected) {
+    is(rdn_to_dow($rdn + $i), $expected[$i],
+      "rdn_to_dow: consecutive day " . ($i + 1) . " = $expected[$i]");
+  }
+}
+
+# consistency with ymd_to_dow
+foreach my $date ([   1,  1,  1], [1970,  1,  1], [2000,  2, 29],
+                  [2024,  6, 15], [2024, 12, 31], [9999, 12, 31]) {
+  my ($y, $m, $d) = @$date;
+  my $rdn = ymd_to_rdn($y, $m, $d);
+  is(rdn_to_dow($rdn), ymd_to_dow($y, $m, $d),
+    "rdn_to_dow: $y-$m-$d consistent with ymd_to_dow");
+}
+
+throws_ok { rdn_to_dow(0) }
+  qr/Parameter 'rdn' is out of range/,
+  'rdn_to_dow: rdn 0';
+
+throws_ok { rdn_to_dow(3652060) }
+  qr/Parameter 'rdn' is out of range/,
+  'rdn_to_dow: rdn 3652060';
+
 ## ymd_to_dow
 
 throws_ok { ymd_to_dow() }
@@ -255,14 +305,12 @@ is(ymd_to_dow(   1,  1,  1), 1, 'ymd_to_dow: 0001-01-01 (Monday)');
 is(ymd_to_dow(2024,  2, 29), 4, 'ymd_to_dow: 2024-02-29 (Thursday)');
 is(ymd_to_dow(2000,  2, 29), 2, 'ymd_to_dow: 2000-02-29 (Tuesday)');
 
-# consistency with ymd_to_rdn: dow = ((rdn + 6) % 7) + 1
+# consistency with rdn_to_dow
 foreach my $date ([2024, 1,   1], [2024, 3, 1], [2024,  6, 15],
                   [2024, 12, 31], [   1, 1, 1], [9999, 12, 31]) {
   my ($y, $m, $d) = @$date;
-  my $rdn = ymd_to_rdn($y, $m, $d);
-  my $dow_from_rdn = (($rdn + 6) % 7) + 1;
-  is(ymd_to_dow($y, $m, $d), $dow_from_rdn,
-    "ymd_to_dow: $y-$m-$d consistent with ymd_to_rdn");
+  is(ymd_to_dow($y, $m, $d), rdn_to_dow(ymd_to_rdn($y, $m, $d)),
+    "ymd_to_dow: $y-$m-$d consistent with rdn_to_dow");
 }
 
 throws_ok { ymd_to_dow(0, 1, 1) }

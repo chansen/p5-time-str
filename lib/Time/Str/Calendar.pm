@@ -13,6 +13,7 @@ our @EXPORT_OK   = qw[ leap_year
                        ymd_to_dow
                        ymd_to_rdn
                        rdn_to_ymd
+                       rdn_to_dow
                        resolve_century ];
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
@@ -83,6 +84,15 @@ sub rdn_to_ymd {
     $y++, $m -= 12;
   }
   return ($y, $m, $d);
+}
+
+sub rdn_to_dow {
+  @_ == 1 or croak q/Usage: rdn_to_dow(rdn)/;
+  my ($rdn) = @_;
+
+  ($rdn >= RDN_MIN && $rdn <= RDN_MAX)
+    or croak q/Parameter 'rdn' is out of range/;
+  return 1 + ($rdn + 6) % 7;
 }
 
 {

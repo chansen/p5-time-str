@@ -78,6 +78,15 @@ Converts a Rata Die Number back to a Gregorian date.
 
 Croaks if C<rdn> is out of range [1, 3652059].
 
+=head2 rdn_to_dow
+
+    my $dow = rdn_to_dow($rdn);
+
+Returns the day of week for the given Rata Die Number as an integer
+(1=Monday .. 7=Sunday).
+
+Croaks if C<rdn> is out of range [1, 3652059].
+
 =head2 ymd_to_dow
 
     my $dow = ymd_to_dow($year, $month, $day);
