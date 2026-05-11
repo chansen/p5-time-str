@@ -16,6 +16,7 @@ use Time::Str::Token    qw[ parse_day
                             parse_meridiem
                             parse_tz_offset ];
 use Time::Str::Calendar qw[ valid_ymd
+                            ymd_to_rdn
                             ymd_to_dow
                             resolve_century ];
 
@@ -161,13 +162,11 @@ sub str2date {
   if (exists $r{hour}) {
 
     if (exists $r{meridiem}) {
-      my $meridiem = parse_meridiem(delete $r{meridiem}); 
-      my $hour     = $r{hour};
+      my $hour = $r{hour};
 
       ($hour >= 1 && $hour <= 12)
         or croak q/Unable to parse: hour is out of range for 12-hour clock/;
-
-      $r{hour} = ($hour == 12 ? $meridiem : $hour + $meridiem);
+      $r{hour} = ($hour % 12) + parse_meridiem(delete $r{meridiem});
     }
 
     valid_hms($r{hour}, $r{minute} // 0, $r{second} // 0)
@@ -249,14 +248,7 @@ sub str2time {
   $m //= 0;
   $s //= 0;
 
-  my $rdn = do {
-    use integer;
-    if ($M < 3) {
-      $Y--, $M += 12;
-    }
-    (1461 * $Y) / 4 - $Y / 100 + $Y / 400
-      + $D + ((979 * $M - 2918) >> 5) - 306;
-  };
+  my $rdn  = ymd_to_rdn($Y, $M, $D);
   my $sod  = ($h * 60 + $m) * 60 + $s;
   my $time = ($rdn - 719163) * 86400 + $sod - $r->{tz_offset} * 60;
   if (exists $r->{nanosecond}) {
