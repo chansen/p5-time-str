@@ -1215,8 +1215,9 @@ Space-separated:
   24. XII. 2024
 
 In space-separated dates, an ordinal suffix (C<st>, C<nd>, C<rd>, C<th>)
-or a trailing period may follow the day. A trailing period or comma may
-follow the month:
+or a trailing period may follow the day. The suffix must match the day
+number (e.g., C<1st>, C<2nd>, C<3rd>, C<24th>); mismatched suffixes
+are rejected. A trailing period or comma may follow the month:
 
   24th December 2024
   24. December 2024
@@ -1350,6 +1351,8 @@ discarded.
 =head2 Validation
 
 =over 4
+
+=item * Ordinal suffixes, when present, must match the day number
 
 =item * Day names, when present, must match the date
 
@@ -1691,6 +1694,7 @@ Nothing is exported by default. Functions can be imported individually or by cat
 
 =head1 SEE ALSO
 
+L<Time::Str::Regexp>, L<Time::Str::Token>, L<Time::Str::Calendar>,
 L<Time::Moment>, L<DateTime>, L<Time::Piece>
 
 =head1 AUTHOR

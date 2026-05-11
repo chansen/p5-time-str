@@ -44,8 +44,8 @@ Croaks with C<Unable to parse: day is invalid> on failure.
     my $month = parse_month($string);
 
 Converts a month string to an integer (1-12). Accepts numeric values
-values with or without leading zero, abbreviated names, full names, 
-and Roman numerals. Case-insensitive.
+with or without leading zero, abbreviated names, full names, and 
+Roman numerals. Case-insensitive.
 
     parse_month('1')         # 1
     parse_month('01')        # 1
@@ -105,7 +105,7 @@ Croaks with C<Unable to parse: timezone offset is invalid> on failure.
 
 =head1 SEE ALSO
 
-L<Time::Str>, L<Time::Str::Regexp>
+L<Time::Str>, L<Time::Str::Regexp>, L<Time::Str::Calendar>
 
 =head1 AUTHOR
 
