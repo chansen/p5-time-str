@@ -215,25 +215,23 @@ L<Time::Str::Calendar> together to build a custom parser:
     if ($string =~ $DateTime_Rx) {
       my %m = %+;
 
-      my $dow    = parse_day_name($m{day_name});         # 1 (Monday)
-      my $month  = parse_month($m{month});               # 12
-      my $day    = parse_day($m{day});                   # 24
-      my $offset = parse_tz_offset($m{tz_offset});       # 60
+      my $dow       = parse_day_name($m{day_name});    # 1 (Monday)
+      $m{month}     = parse_month($m{month});          # 12
+      $m{day}       = parse_day($m{day});              # 24
+      $m{tz_offset} = parse_tz_offset($m{tz_offset});  # 60
 
-      valid_ymd($m{year}, $month, $day)
+      valid_ymd(@m{qw(year month day)})
         or die "invalid date";
 
-      ($dow == ymd_to_dow($m{year}, $month, $day))
+      ($dow == ymd_to_dow(@m{qw(year month day)}))
         or die "day name does not match date";
 
-      my $hour_offset = parse_meridiem($m{meridiem});    # 12
-      my $hour        = ($m{hour} % 12) + $hour_offset;  # 15
+      my $hour_offset = parse_meridiem($m{meridiem});  # 12
+      $m{hour} = ($m{hour} % 12) + $hour_offset;       # 15
 
-      printf "%04d-%02d-%02dT%02d:%02d:%02d %+05d\n",
-        $m{year}, $month, $day,
-        $hour, $m{minute}, $m{second},
-        $offset;
-        # 2012-12-24T15:30:45 +0060
+      printf "%04d-%02d-%02dT%02d:%02d:%02d (%+3.2fH)\n",
+        @m{qw(year month day hour minute second)}, $m{tz_offset} / 60;
+        # 2012-12-24T15:30:45 (+1.00H)
     }
 
 =head1 SEE ALSO
