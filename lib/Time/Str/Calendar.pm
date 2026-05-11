@@ -7,20 +7,31 @@ use Exporter qw[import];
 use Carp     qw[croak];
 
 our $VERSION     = '0.08';
-our @EXPORT_OK   = qw[ valid_ymd
+our @EXPORT_OK   = qw[ leap_year
+                       month_days
+                       valid_ymd
                        ymd_to_dow
                        ymd_to_rdn
+                       rdn_to_ymd
                        resolve_century ];
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+sub RDN_MIN () {       1 }  # 0001-01-01
+sub RDN_MAX () { 3652059 }  # 9999-12-31
+
 sub leap_year {
+  @_ == 1 or croak q/Usage: leap_year(year)/; 
   my ($y) = @_;
   return (($y & 3) == 0 && ($y % 100 != 0 || $y % 400 == 0));
 }
 
-# 1 <= $m <= 12
 sub month_days {
+  @_ == 2 or croak q/Usage: month_days(year, month)/; 
   my ($y, $m) = @_;
+
+  ($m >= 1 && $m <= 12)
+    or croak q/Parameter 'month' is out of range [1, 12]/; 
+
   return 29 if $m == 2 && leap_year($y);
   return (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)[$m];
 }
@@ -50,6 +61,28 @@ sub ymd_to_rdn {
   }
   return ((1461 * $y) >> 2) - $y / 100 + $y / 400
     + $d + ((979 * $m - 2918) >> 5) - 306;
+}
+
+sub rdn_to_ymd {
+  @_ == 1 or croak q/Usage: rdn_to_ymd(rdn)/;
+  my ($rdn) = @_;
+
+  ($rdn >= RDN_MIN && $rdn <= RDN_MAX)
+    or croak q/Parameter 'rdn' is out of range/;
+
+  use integer;
+  my $Z = $rdn + 306;
+  my $H = 100 * $Z - 25;
+  my $A = $H / 3652425;
+  my $B = $A - ($A >> 2);
+  my $y = (100 * $B + $H) / 36525;
+  my $C = $B + $Z - ((1461 * $y) >> 2);
+  my $m = (535 * $C + 48950) >> 14;
+  my $d = $C - ((979 * $m - 2918) >> 5);
+  if ($m > 12) {
+    $y++, $m -= 12;
+  }
+  return ($y, $m, $d);
 }
 
 {

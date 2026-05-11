@@ -9,7 +9,7 @@ Time::Str::Calendar - Gregorian calendar validation and computation
 =head1 SYNOPSIS
 
     use Time::Str::Calendar qw( valid_ymd ymd_to_rdn ymd_to_dow
-                                resolve_century );
+                                rdn_to_ymd resolve_century );
 
     # Validate a date
     valid_ymd(2024, 2, 29);  # true (leap year)
@@ -21,9 +21,11 @@ Time::Str::Calendar - Gregorian calendar validation and computation
     # Day of week (1=Mon .. 7=Sun)
     my $dow = ymd_to_dow(2024, 12, 24);  # 2 (Tuesday)
 
+    # Rata Die to date
+    my ($y, $m, $d) = rdn_to_ymd(739244);  # (2024, 12, 24)
+
     # Resolve two-digit year
     my $year = resolve_century(24, 1950);  # 2024
-    my $year = resolve_century(80, 1950);  # 1980
 
 =head1 DESCRIPTION
 
@@ -32,6 +34,21 @@ day numbering, and century resolution. All functions operate on integer
 values and are exportable on request. Use C<:all> to import everything.
 
 =head1 FUNCTIONS
+
+=head2 leap_year
+
+    my $bool = leap_year($year);
+
+Returns true if the given year is a leap year in the Gregorian calendar.
+
+=head2 month_days
+
+    my $days = month_days($year, $month);
+
+Returns the number of days in the given month (28-31), accounting
+for leap years.
+
+Croaks if C<month> is out of range [1, 12].
 
 =head2 valid_ymd
 
@@ -52,6 +69,14 @@ range [1, 12], or C<day> is out of range [1, 31].
 
 The date is not validated; use C<valid_ymd> first if the input is
 untrusted.
+
+=head2 rdn_to_ymd
+
+    my ($year, $month, $day) = rdn_to_ymd($rdn);
+
+Converts a Rata Die Number back to a Gregorian date.
+
+Croaks if C<rdn> is out of range [1, 3652059].
 
 =head2 ymd_to_dow
 

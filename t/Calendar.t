@@ -8,13 +8,80 @@ use lib 't';
 use Util qw[throws_ok];
 
 BEGIN {
-  use_ok('Time::Str::Calendar', qw[ valid_ymd
+  use_ok('Time::Str::Calendar', qw[ leap_year
+                                    month_days
+                                    valid_ymd
                                     ymd_to_dow
                                     ymd_to_rdn
+                                    rdn_to_ymd
                                     resolve_century ]);
 }
 
-# valid_ymd
+## leap_year
+
+throws_ok { leap_year() }
+  qr/^Usage: leap_year/,
+  'leap_year: no arguments';
+
+# divisible by 4, not by 100
+ok( leap_year(2024), 'leap_year: 2024');
+ok( leap_year(2028), 'leap_year: 2028');
+ok( leap_year(1996), 'leap_year: 1996');
+
+# not divisible by 4
+ok(!leap_year(2023), 'leap_year: 2023');
+ok(!leap_year(2025), 'leap_year: 2025');
+ok(!leap_year(2019), 'leap_year: 2019');
+
+# divisible by 100, not by 400
+ok(!leap_year(1900), 'leap_year: 1900');
+ok(!leap_year(2100), 'leap_year: 2100');
+ok(!leap_year(2200), 'leap_year: 2200');
+ok(!leap_year(2300), 'leap_year: 2300');
+
+# divisible by 400
+ok( leap_year(2000), 'leap_year: 2000');
+ok( leap_year(2400), 'leap_year: 2400');
+ok( leap_year(1600), 'leap_year: 1600');
+
+# boundaries
+ok(!leap_year(   1), 'leap_year: 1');
+ok( leap_year(   4), 'leap_year: 4');
+ok(!leap_year(9999), 'leap_year: 9999');
+ok( leap_year(9996), 'leap_year: 9996');
+
+## month_days
+
+throws_ok { month_days() }
+  qr/^Usage: month_days/,
+  'month_days: no arguments';
+
+# non-leap year
+{
+  my %expected = (
+     1 => 31,  2 => 28,  3 => 31,  4 => 30,
+     5 => 31,  6 => 30,  7 => 31,  8 => 31,
+     9 => 30, 10 => 31, 11 => 30, 12 => 31,
+  );
+  foreach my $m (sort { $a <=> $b } keys %expected) {
+    is(month_days(2023, $m), $expected{$m}, "month_days: 2023-$m");
+  }
+}
+
+# leap year Feb
+is(month_days(2024, 2), 29, 'month_days: 2024-02 (leap year)');
+is(month_days(2000, 2), 29, 'month_days: 2000-02 (divisible by 400)');
+is(month_days(1900, 2), 28, 'month_days: 1900-02 (divisible by 100, not 400)');
+
+throws_ok { month_days(2024, 0) }
+  qr/Parameter 'month' is out of range/,
+  'month_days: month 0';
+
+throws_ok { month_days(2024, 13) }
+  qr/Parameter 'month' is out of range/,
+  'month_days: month 13';
+
+## valid_ymd
 
 throws_ok { valid_ymd() }
   qr/^Usage: valid_ymd/,
@@ -62,7 +129,7 @@ ok(!valid_ymd(1900, 2, 29), 'valid_ymd: 1900-02-29 (divisible by 100, not 400)')
 ok(!valid_ymd(2100, 2, 29), 'valid_ymd: 2100-02-29 (divisible by 100, not 400)');
 ok( valid_ymd(2400, 2, 29), 'valid_ymd: 2400-02-29 (divisible by 400)');
 
-# ymd_to_rdn
+## ymd_to_rdn
 
 throws_ok { ymd_to_rdn() }
   qr/^Usage: ymd_to_rdn/,
@@ -121,7 +188,42 @@ throws_ok { ymd_to_rdn(2024, 1, 32) }
   qr/Parameter 'day' is out of range/,
   'ymd_to_rdn: day 32';
 
-# ymd_to_dow
+
+## rdn_to_ymd
+
+throws_ok { rdn_to_ymd() }
+  qr/^Usage: rdn_to_ymd/,
+  'rdn_to_ymd: no arguments';
+
+# known values
+is_deeply([rdn_to_ymd(      1)], [   1,  1,  1], 'rdn_to_ymd: 1 = 0001-01-01');
+is_deeply([rdn_to_ymd(      2)], [   1,  1,  2], 'rdn_to_ymd: 2 = 0001-01-02');
+is_deeply([rdn_to_ymd(    365)], [   1, 12, 31], 'rdn_to_ymd: 365 = 0001-12-31');
+is_deeply([rdn_to_ymd(    366)], [   2,  1,  1], 'rdn_to_ymd: 366 = 0002-01-01');
+is_deeply([rdn_to_ymd( 678576)], [1858, 11, 17], 'rdn_to_ymd: 678576 = 1858-11-17 (MJD epoch)');
+is_deeply([rdn_to_ymd( 719163)], [1970,  1,  1], 'rdn_to_ymd: 719163 = 1970-01-01 (Unix epoch)');
+is_deeply([rdn_to_ymd( 730120)], [2000,  1,  1], 'rdn_to_ymd: 730120 = 2000-01-01');
+is_deeply([rdn_to_ymd( 739244)], [2024, 12, 24], 'rdn_to_ymd: 739244 = 2024-12-24');
+is_deeply([rdn_to_ymd(3652059)], [9999, 12, 31], 'rdn_to_ymd: 3652059 = 9999-12-31');
+
+# round-trip: ymd_to_rdn -> rdn_to_ymd
+foreach my $date ([   1,  1,  1], [   1, 12, 31], [1970,  1,  1],
+                  [2000,  2, 29], [2024,  6, 15], [9999, 12, 31]) {
+  my ($y, $m, $d) = @$date;
+  my $rdn = ymd_to_rdn($y, $m, $d);
+  is_deeply([rdn_to_ymd($rdn)], [$y, $m, $d],
+    "rdn_to_ymd: round-trip $y-$m-$d");
+}
+
+throws_ok { rdn_to_ymd(0) }
+  qr/Parameter 'rdn' is out of range/,
+  'rdn_to_ymd: rdn 0';
+
+throws_ok { rdn_to_ymd(3652060) }
+  qr/Parameter 'rdn' is out of range/,
+  'rdn_to_ymd: rdn 3652060';
+
+## ymd_to_dow
 
 throws_ok { ymd_to_dow() }
   qr/^Usage: ymd_to_dow/,
@@ -187,7 +289,7 @@ throws_ok { ymd_to_dow(2024, 1, 32) }
   qr/Parameter 'day' is out of range/,
   'ymd_to_dow: day 32';
 
-# resolve_century
+## resolve_century
 
 throws_ok { resolve_century() }
   qr/^Usage: resolve_century/,
