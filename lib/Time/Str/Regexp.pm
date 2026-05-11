@@ -87,21 +87,22 @@ use Exporter qw[import];
 #
 our $DateTime_Rx = qr{
   (?(DEFINE)
-    (?<DayNameShort>    (?i: Mon|Tue|Tues|Wed|Thu|Thurs|Fri|Sat|Sun))
-    (?<DayNameLong>     (?i: Monday|Tuesday|Wednesday|Thursday|Friday|
-                             Saturday|Sunday))
-    (?<DayName>         (?&DayNameShort) | (?&DayNameLong))
-    (?<MonthNameShort>  (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))
-    (?<MonthNameLong>   (?i: January|February|March|April|May|June|
-                             July|August|September|October|November|December))
-    (?<MonthName>       (?&MonthNameShort) | (?&MonthNameLong))
-    (?<MonthRoman>      (?i: I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII))
-    (?<MonthTextual>    (?&MonthName) | (?&MonthRoman))
-    (?<OrdinalSuffix>   (?i: st|nd|rd|th))
-    (?<Meridiem>        (?: [AaPp] (?: [Mm] | [.][Mm][.])))
-    (?<TimeZoneOffset>  (?: [+-] (?: [0-9]{4} | [0-9]{2} (?: [:][0-9]{2})? )))
-    (?<TimeZoneOffsetZ> (?: [+-] (?: [0-9]{4} | [0-9]{1,2} (?: [:][0-9]{2})? )))
-    (?<TimeZoneAbbrev>  [A-Z][A-Za-z][A-Z]{1,4})
+    (?<DayNameShort>      (?i: Mon|Tue|Tues|Wed|Thu|Thurs|Fri|Sat|Sun))
+    (?<DayNameLong>       (?i: Monday|Tuesday|Wednesday|Thursday|Friday|
+                               Saturday|Sunday))
+    (?<DayName>           (?&DayNameShort) | (?&DayNameLong))
+    (?<MonthNameShort>    (?i: Jan|Feb|Mar|Apr|May|Jun|Jul|
+                               Aug|Sep|Sept|Oct|Nov|Dec))
+    (?<MonthNameLong>     (?i: January|February|March|April|May|June|
+                               July|August|September|October|November|December))
+    (?<MonthName>         (?&MonthNameShort) | (?&MonthNameLong))
+    (?<MonthRoman>        (?i: I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII))
+    (?<MonthTextual>      (?&MonthName) | (?&MonthRoman))
+    (?<OrdinalSuffix>     (?i: st|nd|rd|th))
+    (?<Meridiem>          (?: [AaPp] (?: [Mm] | [.][Mm][.])))
+    (?<TimeZoneOffset>    (?: [+-] (?: [0-9]{4} | [0-9]{2}   (?: [:][0-9]{2})? )))
+    (?<TimeZoneOffsetUTC> (?: [+-] (?: [0-9]{4} | [0-9]{1,2} (?: [:][0-9]{2})? )))
+    (?<TimeZoneAbbrev>    [A-Z][A-Za-z][A-Z]{1,4})
   )
 
   \A
@@ -167,7 +168,7 @@ our $DateTime_Rx = qr{
 
       (?:
            (?<tz_offset> (?&TimeZoneOffset))
-        |  (?<tz_utc>    (?:GMT|UTC)) (?: (?<tz_offset> (?&TimeZoneOffsetZ)) )?
+        |  (?<tz_utc>    (?:GMT|UTC)) (?: (?<tz_offset> (?&TimeZoneOffsetUTC)) )?
         |  (?<tz_utc>    [Zz])
         |  (?<tz_abbrev> (?&TimeZoneAbbrev))
       )
