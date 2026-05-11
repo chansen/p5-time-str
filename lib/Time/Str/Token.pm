@@ -5,7 +5,6 @@ use v5.10;
 
 use Exporter qw[import];
 
-our $VERSION     = '0.08';
 our @EXPORT_OK   = qw[ parse_day
                        parse_day_name
                        parse_month
@@ -14,16 +13,18 @@ our @EXPORT_OK   = qw[ parse_day
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 BEGIN {
-  my $has_xs = exists &Time::Str::Token::parse_day;
-  eval {
-    require XSLoader; XSLoader::load(__PACKAGE__, $VERSION);
-    $has_xs = 1;
-  } unless ($has_xs or $ENV{TIME_STR_PP});
+  our $VERSION = '0.08';
 
-  unless ($has_xs) {
+  my $xs_loaded = exists &Time::Str::Token::parse_day;
+  eval {
+    require XSLoader; XSLoader::load('Time::Str', $VERSION);
+    $xs_loaded = 1;
+  } unless ($xs_loaded or $ENV{TIME_STR_PP});
+
+  unless ($xs_loaded) {
     require Carp; Carp->import(qw(croak));
     eval sprintf <<'EOC', __FILE__;
-# line 27 %s
+# line 28 %s
 {
   my %%DayMap = (
     '01' =>  1,  '1' =>  1,  '1st' =>  1,
