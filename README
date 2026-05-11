@@ -1121,8 +1121,9 @@ DATETIME FORMAT PARSING
       24. XII. 2024
 
     In space-separated dates, an ordinal suffix ("st", "nd", "rd", "th") or
-    a trailing period may follow the day. A trailing period or comma may
-    follow the month:
+    a trailing period may follow the day. The suffix must match the day
+    number (e.g., "1st", "2nd", "3rd", "24th"); mismatched suffixes are
+    rejected. A trailing period or comma may follow the month:
 
       24th December 2024
       24. December 2024
@@ -1240,6 +1241,8 @@ DATETIME FORMAT PARSING
       +0100 (Central European Time)
 
   Validation
+    *   Ordinal suffixes, when present, must match the day number
+
     *   Day names, when present, must match the date
 
     *   Dates must be valid for the Gregorian calendar, including leap years
@@ -1496,7 +1499,7 @@ DIAGNOSTICS
     Parameter '%s' is out of range
         (F) A parameter value is outside its valid range.
 
-    Unknown named parameter: '%s'
+    Unrecognised named parameter: '%s'
         (F) An unrecognised named parameter was given.
 
     Unable to parse: %s
@@ -1531,7 +1534,8 @@ EXPORTS
       use Time::Str qw(:all);                        # all functions
 
 SEE ALSO
-    Time::Moment, DateTime, Time::Piece
+    Time::Str::Regexp, Time::Str::Token, Time::Str::Calendar, Time::Moment,
+    DateTime, Time::Piece
 
 AUTHOR
     Christian Hansen

@@ -5,6 +5,7 @@
 use strict;
 use warnings;
 
+use 5.010001;
 use ExtUtils::MakeMaker;
 
 use Config;
@@ -39,6 +40,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Time-Str",
   "LICENSE" => "perl",
+  "MIN_PERL_VERSION" => "5.010001",
   "NAME" => "Time::Str",
   "PREREQ_PM" => {
     "Carp" => 0,
@@ -51,7 +53,7 @@ my %WriteMakefileArgs = (
     "Test::More" => "0.47",
     "Test::Number::Delta" => "1.06"
   },
-  "VERSION" => "0.08",
+  "VERSION" => "0.09",
   "test" => {
     "TESTS" => "t/*.t t/*/*.t"
   }
@@ -60,7 +62,7 @@ my %WriteMakefileArgs = (
 %WriteMakefileArgs = (
     %WriteMakefileArgs,
     XS => ($xs_ok ? { 'XS.xs' => 'XS.c' } : {}),
-    C => ($xs_ok ? ['XS.c', 'tstr_time2str.c', 'tstr_token_parse.c'] : []),
+    C => ($xs_ok ? ['XS.c', 'tstr_time2str.c'] : []),
     OBJECT => ($xs_ok ? '$(O_FILES)' : ''),
     INC => ($xs_ok ? '-I.' : ''),
     CCFLAGS => ($xs_ok ? "$Config{ccflags} -std=c99" : $Config{ccflags}),
