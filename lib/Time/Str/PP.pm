@@ -5,6 +5,8 @@ use v5.10;
 
 our @EXPORT_OK = qw[ time2str str2time str2date ];
 
+our @CARP_NOT = qw[Time::Str::Token];
+
 use Exporter qw[import];
 use Carp     qw[croak];
 
