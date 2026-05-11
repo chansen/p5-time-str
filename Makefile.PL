@@ -60,7 +60,7 @@ my %WriteMakefileArgs = (
 %WriteMakefileArgs = (
     %WriteMakefileArgs,
     XS => ($xs_ok ? { 'XS.xs' => 'XS.c' } : {}),
-    C => ($xs_ok ? ['XS.c', 'tstr_time2str.c'] : []),
+    C => ($xs_ok ? ['XS.c', 'tstr_time2str.c', 'tstr_token_parse.c'] : []),
     OBJECT => ($xs_ok ? '$(O_FILES)' : ''),
     INC => ($xs_ok ? '-I.' : ''),
     CCFLAGS => ($xs_ok ? "$Config{ccflags} -std=c99" : $Config{ccflags}),

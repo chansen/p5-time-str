@@ -7,6 +7,7 @@
 #include "tstr_format.h"
 #include "tstr_datetime.h"
 #include "tstr_time2str.h"
+#include "tstr_token_parse.h"
 
 #if NVSIZE > 8
 # define DEFAULT_PRECISION 9
@@ -20,6 +21,8 @@
 #define EPOCH_20500101     INT64_C(2524608000)     // 2050-01-01T00:00:00Z
 
 MODULE = Time::Str  PACKAGE = Time::Str
+
+PROTOTYPES: DISABLE
 
 void
 time2str(...)
@@ -123,3 +126,77 @@ time2str(...)
       croak("Parameter 'format' does not support time2str");
     PUSHTARG;
 
+
+MODULE = Time::Str  PACKAGE = Time::Str::Token
+
+PROTOTYPES: DISABLE
+
+void
+parse_day(...)
+  PREINIT:
+    const char *src;
+    STRLEN len;
+    int value;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: parse_day(string)");
+    src = SvPV_const(ST(0), len);
+    if (!tstr_token_parse_day(src, len, &value))
+      croak("Unable to parse: day is invalid");
+    mPUSHi(value);
+
+void
+parse_day_name(...)
+  PREINIT:
+    const char *src;
+    STRLEN len;
+    int value;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: parse_day_name(string)");
+    src = SvPV_const(ST(0), len);
+    if (!tstr_token_parse_day_name(src, len, &value))
+      croak("Unable to parse: day name is invalid");
+    mPUSHi(value);
+
+void
+parse_month(...)
+  PREINIT:
+    const char *src;
+    STRLEN len;
+    int value;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: parse_month(string)");
+    src = SvPV_const(ST(0), len);
+    if (!tstr_token_parse_month(src, len, &value))
+      croak("Unable to parse: month is invalid");
+    mPUSHi(value);
+
+void
+parse_meridiem(...)
+  PREINIT:
+    const char *src;
+    STRLEN len;
+    int value;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: parse_meridiem(string)");
+    src = SvPV_const(ST(0), len);
+    if (!tstr_token_parse_meridiem(src, len, &value))
+      croak("Unable to parse: meridiem is invalid");
+    mPUSHi(value);
+
+void
+parse_tz_offset(...)
+  PREINIT:
+    const char *src;
+    STRLEN len;
+    int value;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: parse_tz_offset(string)");
+    src = SvPV_const(ST(0), len);
+    if (!tstr_token_parse_tz_offset(src, len, &value))
+      croak("Unable to parse: timezone offset is invalid");
+    mPUSHi(value);

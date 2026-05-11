@@ -4,7 +4,6 @@ use warnings;
 use v5.10;
 
 use Exporter qw[import];
-use Carp     qw[croak];
 
 our $VERSION     = '0.08';
 our @EXPORT_OK   = qw[ parse_day
@@ -14,8 +13,19 @@ our @EXPORT_OK   = qw[ parse_day
                        parse_tz_offset ];
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
+BEGIN {
+  my $has_xs = exists &Time::Str::Token::parse_day;
+  eval {
+    require XSLoader; XSLoader::load(__PACKAGE__, $VERSION);
+    $has_xs = 1;
+  } unless ($has_xs or $ENV{TIME_STR_PP});
+
+  unless ($has_xs) {
+    require Carp; Carp->import(qw(croak));
+    eval sprintf <<'EOC', __FILE__;
+# line 27 %s
 {
-  my %DayMap = (
+  my %%DayMap = (
     '01' =>  1,  '1' =>  1,  '1st' =>  1,
     '02' =>  2,  '2' =>  2,  '2nd' =>  2,
     '03' =>  3,  '3' =>  3,  '3rd' =>  3,
@@ -56,7 +66,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 }
 
 {
-  my %MonthMap = (
+  my %%MonthMap = (
     '01' =>  1,  '1' =>  1, 'i'    =>  1, 'jan' =>  1, 'january'   =>  1,
     '02' =>  2,  '2' =>  2, 'ii'   =>  2, 'feb' =>  2, 'february'  =>  2,
     '03' =>  3,  '3' =>  3, 'iii'  =>  3, 'mar' =>  3, 'march'     =>  3,
@@ -78,7 +88,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 }
 
 {
-  my %DayNameMap = (
+  my %%DayNameMap = (
     'mon' => 1, 'monday'    => 1,
     'tue' => 2, 'tuesday'   => 2, 'tues'  => 2,
     'wed' => 3, 'wednesday' => 3,
@@ -95,7 +105,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 }
 
 {
-  my %MeridiemMap = (
+  my %%MeridiemMap = (
     'am' =>  0, 'a.m.' =>  0,
     'pm' => 12, 'p.m.' => 12,
   );
@@ -108,7 +118,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 {
   # Fast path for whole-hour offsets
-  my %OffsetMap = (
+  my %%OffsetMap = (
     '-09' => -9*60, '-0900' => -9*60, '-09:00' => -9*60,
     '-08' => -8*60, '-0800' => -8*60, '-08:00' => -8*60,
     '-07' => -7*60, '-0700' => -7*60, '-07:00' => -7*60,
@@ -165,6 +175,10 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
       }
       $offset;
     };
+  }
+}
+EOC
+    die $@ if $@;
   }
 }
 
