@@ -40,7 +40,7 @@ from L<Time::Str::Calendar> to expand to four digits.
 =item C<month>
 
 Month number or name, depending on format. May be a Roman numeral
-(C<I>–C<XII>) in C<DateTime>. Use C<parse_month> from
+(C<I>-C<XII>) in C<DateTime>. Use C<parse_month> from
 L<Time::Str::Token> to convert to an integer.
 
 =item C<day>
@@ -86,12 +86,15 @@ L<Time::Str::Token> to convert to an hour offset.
 
 =item C<tz_utc>
 
-UTC designator: C<Z>, C<z>, C<UT>, C<UTC>, or C<GMT>.
+UTC designator: C<Z>, C<z>, C<UT>, C<UTC>, or C<GMT>. C<UT> is only
+accepted in C<RFC2822> and C<RFC2822FWS>.
 
 =item C<tz_offset>
 
 Numeric timezone offset. Format varies: C<±HHMM>, C<±HH:MM>, C<±HH>,
-C<±H:MM>, or C<±H> depending on the regex matched. Use C<parse_tz_offset>
+C<±H:MM>, or C<±H> depending on the regex matched. Single-digit hour
+forms (C<±H>, C<±H:MM>) are only accepted in C<DateTime> when preceded
+by a UTC designator (e.g., C<UTC+5>, C<GMT+5:30>). Use C<parse_tz_offset>
 from L<Time::Str::Token> to convert to minutes.
 
 Both C<tz_utc> and C<tz_offset> may be present in the same match
