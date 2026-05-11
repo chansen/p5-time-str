@@ -16,7 +16,7 @@ our @EXPORT_OK   = qw[ leap_year
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 BEGIN {
-  our $VERSION = '0.08';
+  our $VERSION = '0.09';
 
   my $xs_loaded = exists &Time::Str::Calendar::leap_year;
   eval {

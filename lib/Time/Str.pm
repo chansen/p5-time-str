@@ -9,7 +9,7 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION        = '0.08';
+  our $VERSION        = '0.09';
   our $IMPLEMENTATION = 'PP';
 
   my @import;

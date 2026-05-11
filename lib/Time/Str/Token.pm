@@ -13,7 +13,7 @@ our @EXPORT_OK   = qw[ parse_day
 our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
 BEGIN {
-  our $VERSION = '0.08';
+  our $VERSION = '0.09';
 
   my $xs_loaded = exists &Time::Str::Token::parse_day;
   eval {

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 
-our $VERSION   = '0.08';
+our $VERSION   = '0.09';
 our @EXPORT_OK = qw[ $ANSIC_Rx
                      $ASN1GT_Rx
                      $ASN1UT_Rx
