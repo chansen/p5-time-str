@@ -121,7 +121,7 @@ sub resolve_century {
   my ($year, $pivot_year) = @_;
 
   ($year >= 0 && $year <= 99)
-    or croak q/Parameter 'year' is out of range [1, 99]/;
+    or croak q/Parameter 'year' is out of range [0, 99]/;
   ($pivot_year >= 0 && $pivot_year <= 9899)
     or croak q/Parameter 'pivot_year' is out of range [0, 9899]/;
 
