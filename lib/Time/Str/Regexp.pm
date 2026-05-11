@@ -107,9 +107,6 @@ our $DateTime_Rx = qr{
 
   \A
 
-  # Note: Ordinal suffixes (e.g., "st", "th") are matched by the regex but are not
-  # validated against the parsed date.
-
   (?: (?<day_name> (?&DayName)) [.]?[,]? [ ] )?
 
   (?:
@@ -128,12 +125,12 @@ our $DateTime_Rx = qr{
       )
     |
       (?:
-               (?<day>   [0-9]{1,2}) (?: (?&OrdinalSuffix) | [.] )?
+               (?<day>   [0-9]{1,2} (?&OrdinalSuffix)?) [.]?
            [ ] (?<month> (?&MonthTextual)) [.,]?
            [ ] (?<year>  [0-9]{4})
         |
                (?<month> (?&MonthName)) [.,]?
-           [ ] (?<day>   [0-9]{1,2}) (?&OrdinalSuffix)? [,]?
+           [ ] (?<day>   [0-9]{1,2} (?&OrdinalSuffix)?) [,]?
            [ ] (?<year>  [0-9]{4})
       )
     |

@@ -142,6 +142,10 @@ sub str2date {
     $r{month} = parse_month($r{month});
   }
 
+  if (exists $r{day}) {
+    $r{day} = parse_day($r{day});
+  }
+
   valid_ymd($r{year}, $r{month} // 1, $r{day} // 1)
     or croak q/Unable to parse: date is out of range/;
 
