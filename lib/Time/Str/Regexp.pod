@@ -39,14 +39,14 @@ from L<Time::Str::Calendar> to expand to four digits.
 
 =item C<month>
 
-Month number or name, depending on format. May be a Roman numeral
+Month (1-2 digits or name, depending on format). May be a Roman numeral
 (C<I>-C<XII>) in C<DateTime>. Use C<parse_month> from
 L<Time::Str::Token> to convert to an integer.
 
 =item C<day>
 
-Day of month. May include an ordinal suffix (e.g., C<24th>) in
-C<DateTime>; use C<parse_day> from L<Time::Str::Token> to convert.
+Day of month (1-2 digits). May include an ordinal suffix (e.g., C<24th>)
+in C<DateTime>; use C<parse_day> from L<Time::Str::Token> to convert.
 
 =item C<hour>
 
