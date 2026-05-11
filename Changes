@@ -1,10 +1,10 @@
-0.09
+0.09 2026-05-12
   - Add Time::Str::Token module for converting captured date/time tokens
     to semantic values (parse_day, parse_month, parse_day_name,
     parse_meridiem, parse_tz_offset). Includes XS implementation.
   - Add Time::Str::Calendar module for Gregorian calendar validation and
     computation (leap_year, month_days, valid_ymd, ymd_to_rdn, rdn_to_ymd,
-    ymd_to_dow, rdn_to_dow, resolve_century).
+    ymd_to_dow, rdn_to_dow, resolve_century). Includes XS implementation.
   - Validate ordinal day suffixes against day number (previously matched
     but not verified). Mismatched suffixes are now rejected.
   - Capture ordinal suffixes inside the day field in DateTime_Rx.
