@@ -8,11 +8,14 @@ our @EXPORT_OK = qw[ time2str str2time str2date ];
 use Exporter qw[import];
 use Carp     qw[croak];
 
-use Time::Str::Token qw[ parse_day
-                         parse_day_name
-                         parse_month
-                         parse_meridiem
-                         parse_tz_offset ];
+use Time::Str::Token    qw[ parse_day
+                            parse_day_name
+                            parse_month
+                            parse_meridiem
+                            parse_tz_offset ];
+use Time::Str::Calendar qw[ valid_ymd
+                            ymd_to_dow
+                            resolve_century ];
 
 BEGIN {
   if ($^V ge v5.40) {
@@ -34,69 +37,11 @@ BEGIN {
 
 sub DEFAULT_PIVOT_YEAR () { 1950 }
 
-sub leap_year {
-    my ($y) = @_;
-    return ($y % 4 == 0 && ($y % 100 != 0 || $y % 400 == 0));
-}
-
-# 1 <= $m <= 12
-sub month_days {
-    my ($y, $m) = @_;
-    return 29 if $m == 2 && leap_year($y);
-    return (0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)[$m];
-}
-
-sub valid_ymd {
-    my ($y, $m, $d) = @_;
-    return ($y >= 1 && $y <= 9999)
-        && ($m >= 1 && $m <= 12)
-        && ($d >= 1 && ($d <= 28 || $d <= month_days($y, $m)));
-}
-
 sub valid_hms {
     my ($h, $m, $s) = @_;
     return ($h >= 0 && $h <= 23
          && $m >= 0 && $m <= 59
          && $s >= 0 && ($s <= 59 || ($s == 60 && $h == 23 && $m == 59)));
-}
-
-# Validates that the day-of-week (1=Mon .. 7=Sun) matches the given
-# Gregorian date. Based on Tomohiko Sakamoto's algorithm, adjusted
-# for Monday-based numbering
-{
-  my @DayOffset = (0, 6, 2, 1, 4, 6, 2, 4, 0, 3, 5, 1, 3);
-
-  # 1 <= $y
-  # 1 <= $m <= 12
-  sub valid_dow {
-    my ($dow, $y, $m, $d) = @_;
-
-    use integer;
-    if ($m < 3) {
-      $y--;
-    }
-
-    return $dow == 1 + ($y + $y/4 - $y/100 + $y/400 + $DayOffset[$m] + $d) % 7;
-  }
-}
-
-sub expand_two_digit_year {
-  @_ == 2 or croak q/Usage: expand_two_digit_year(yy, pivot_year)/;
-  my ($yy, $pivot_year) = @_;
-
-  ($pivot_year >= 0 && $pivot_year <= 9899)
-    or croak q/Parameter 'pivot_year' is out of range [0, 9899]/;
-
-  use integer;
-  my $century = $pivot_year / 100;
-  my $base = $century * 100;
-  my $pivot_offset = $pivot_year - $base;
-
-  my $year = $base + $yy;
-  if ($yy < $pivot_offset) {
-    $year += 100;
-  }
-  return $year;
 }
 
 my %CanonicalFormatName = (
@@ -190,7 +135,7 @@ sub str2date {
   my %r = %+;
 
   if (length $r{year} == 2) {
-    $r{year} = expand_two_digit_year($r{year}, $pivot_year // DEFAULT_PIVOT_YEAR);
+    $r{year} = resolve_century($r{year}, $pivot_year // DEFAULT_PIVOT_YEAR);
   }
 
   if (exists $r{month}) {
@@ -203,7 +148,7 @@ sub str2date {
   if (exists $r{day_name}) {
     my $dow = parse_day_name(delete $r{day_name});
 
-    valid_dow($dow, $r{year}, $r{month} // 1, $r{day} // 1)
+    ($dow == ymd_to_dow($r{year}, $r{month} // 1, $r{day} // 1))
       or croak q/Unable to parse: day name does not match date/;
   }
 
