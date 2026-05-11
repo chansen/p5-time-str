@@ -8,6 +8,7 @@
 #include "tstr_datetime.h"
 #include "tstr_time2str.h"
 #include "tstr_token_parse.h"
+#include "tstr_calendar.h"
 
 #if NVSIZE > 8
 # define DEFAULT_PRECISION 9
@@ -200,3 +201,120 @@ parse_tz_offset(...)
     if (!tstr_token_parse_tz_offset(src, len, &value))
       croak("Unable to parse: timezone offset is invalid");
     mPUSHi(value);
+
+
+MODULE = Time::Str  PACKAGE = Time::Str::Calendar
+
+PROTOTYPES: DISABLE
+
+void
+leap_year(...)
+  PPCODE:
+    if (items != 1)
+      croak("Usage: leap_year(year)");
+    if (tstr_calendar_leap_year((int)SvIV(ST(0))))
+      XSRETURN_YES;
+    XSRETURN_NO;
+
+void
+month_days(...)
+  PREINIT:
+    int y, m;
+  PPCODE:
+    if (items != 2)
+      croak("Usage: month_days(year, month)");
+    y = (int)SvIV(ST(0));
+    m = (int)SvIV(ST(1));
+    if (m < 1 || m > 12)
+      croak("Parameter 'month' is out of range [1, 12]");
+    mPUSHi(tstr_calendar_month_days(y, m));
+
+void
+valid_ymd(...)
+  PPCODE:
+    if (items != 3)
+      croak("Usage: valid_ymd(year, month, day)");
+    if (tstr_calendar_valid_ymd((int)SvIV(ST(0)), (int)SvIV(ST(1)), (int)SvIV(ST(2))))
+      XSRETURN_YES;
+    XSRETURN_NO;
+
+void
+ymd_to_rdn(...)
+  PREINIT:
+    int y, m, d;
+  PPCODE:
+    if (items != 3)
+      croak("Usage: ymd_to_rdn(year, month, day)");
+    y = (int)SvIV(ST(0));
+    m = (int)SvIV(ST(1));
+    d = (int)SvIV(ST(2));
+    if (y < 1 || y > 9999)
+      croak("Parameter 'year' is out of range [1, 9999]");
+    if (m < 1 || m > 12)
+      croak("Parameter 'month' is out of range [1, 12]");
+    if (d < 1 || d > 31)
+      croak("Parameter 'day' is out of range [1, 31]");
+    mPUSHi((IV)tstr_calendar_ymd_to_rdn(y, m, d));
+
+void
+rdn_to_ymd(...)
+  PREINIT:
+    IV rdn;
+    int y, m, d;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: rdn_to_ymd(rdn)");
+    rdn = SvIV(ST(0));
+    if (rdn < TSTR_CALENDAR_RDN_MIN || rdn > TSTR_CALENDAR_RDN_MAX)
+      croak("Parameter 'rdn' is out of range");
+    tstr_calendar_rdn_to_ymd((uint32_t)rdn, &y, &m, &d);
+    EXTEND(SP, 3);
+    mPUSHi(y);
+    mPUSHi(m);
+    mPUSHi(d);
+
+void
+rdn_to_dow(...)
+  PREINIT:
+    IV rdn;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: rdn_to_dow(rdn)");
+    rdn = SvIV(ST(0));
+    if (rdn < TSTR_CALENDAR_RDN_MIN || rdn > TSTR_CALENDAR_RDN_MAX)
+      croak("Parameter 'rdn' is out of range");
+    mPUSHi(tstr_calendar_rdn_to_dow((uint32_t)rdn));
+
+void
+ymd_to_dow(...)
+  PREINIT:
+    int y, m, d;
+  PPCODE:
+    if (items != 3)
+      croak("Usage: ymd_to_dow(year, month, day)");
+    y = (int)SvIV(ST(0));
+    m = (int)SvIV(ST(1));
+    d = (int)SvIV(ST(2));
+    if (y < 1 || y > 9999)
+      croak("Parameter 'year' is out of range [1, 9999]");
+    if (m < 1 || m > 12)
+      croak("Parameter 'month' is out of range [1, 12]");
+    if (d < 1 || d > 31)
+      croak("Parameter 'day' is out of range [1, 31]");
+    mPUSHi(tstr_calendar_ymd_to_dow(y, m, d));
+
+void
+resolve_century(...)
+  PREINIT:
+    int year, pivot_year;
+  PPCODE:
+    if (items != 2)
+      croak("Usage: resolve_century(year, pivot_year)");
+    year = (int)SvIV(ST(0));
+    pivot_year = (int)SvIV(ST(1));
+    if (year < 0 || year > 99)
+      croak("Parameter 'year' is out of range [0, 99]");
+    if (pivot_year < 0 || pivot_year > 9899)
+      croak("Parameter 'pivot_year' is out of range [0, 9899]");
+    mPUSHi(tstr_calendar_resolve_century(year, pivot_year));
+

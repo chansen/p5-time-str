@@ -2,7 +2,7 @@
 #define TSTR_DATETIME_H
 
 #include <stdint.h>
-#include "tstr_rdn.h"
+#include "tstr_calendar.h"
 
 typedef struct {
   int32_t year;       // 1-9999
@@ -27,13 +27,13 @@ static inline void tstr_datetime_from_epoch(tstr_datetime_t* dt,
   uint64_t local, days, sod;
 
   local = (uint64_t)(epoch + (int64_t)offset * TSTR_SECS_PER_MIN
-                     + (int64_t)TSTR_RDN_UNIX_EPOCH * TSTR_SECS_PER_DAY);
+                     + (int64_t)TSTR_CALENDAR_RDN_UNIX_EPOCH * TSTR_SECS_PER_DAY);
 
   days = local / TSTR_SECS_PER_DAY;
   sod  = local % TSTR_SECS_PER_DAY;
 
   dt->rdn = (uint32_t)days;
-  tstr_rdn_to_ymd(dt->rdn, &dt->year, &dt->month, &dt->day);
+  tstr_calendar_rdn_to_ymd(dt->rdn, &dt->year, &dt->month, &dt->day);
 
   dt->hour = (int32_t)(sod / TSTR_SECS_PER_HOUR);
   dt->minute = (int32_t)((sod % TSTR_SECS_PER_HOUR) / TSTR_SECS_PER_MIN);
