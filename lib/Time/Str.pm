@@ -36,7 +36,10 @@ BEGIN {
     Time::Str::PP->import(@import);
   }
   
-  *IMPLEMENTATION = sub () { $implementation };
+  eval sprintf <<'EOC', $implementation;
+sub IMPLEMENTATION () { '%s' }
+EOC
+  die $@ if $@;
 }
 
 sub MIN_TIME () { -62135596800 } # 0001-01-01T00:00:00Z
