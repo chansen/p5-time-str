@@ -9,14 +9,14 @@ our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION        = '0.09';
-  our $IMPLEMENTATION = 'PP';
+  our $VERSION = '0.09';
 
   my @import;
+  my $implementation = 'PP';
 
   eval {
     require XSLoader; XSLoader::load(__PACKAGE__, $VERSION);
-    $IMPLEMENTATION = 'XS';
+    $implementation = 'XS';
   } unless $ENV{TIME_STR_PP};
 
   if (!defined &Time::Str::time2str) {
@@ -35,6 +35,8 @@ BEGIN {
     require Time::Str::PP;
     Time::Str::PP->import(@import);
   }
+  
+  *IMPLEMENTATION = sub () { $implementation };
 }
 
 sub MIN_TIME () { -62135596800 } # 0001-01-01T00:00:00Z

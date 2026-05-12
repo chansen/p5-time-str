@@ -11,6 +11,8 @@ BEGIN {
   use_ok('Time::Str', qw[str2time str2date time2str]);
 }
 
+diag('Test::Str IMPLEMENTATION: ', Time::Str::IMPLEMENTATION);
+
 # str2date usage
 throws_ok { str2date() }
   qr/^Usage: str2date/,
