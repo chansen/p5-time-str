@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "tstr_rdn.h"
 
 #define TSTR_CALENDAR_RDN_MIN 1       /* 0001-01-01 */
 #define TSTR_CALENDAR_RDN_MAX 3652059 /* 9999-12-31 */

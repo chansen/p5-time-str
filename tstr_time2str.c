@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "tstr_time2str.h"
+#include "tstr_calendar.h"
 
 static const char* const kShortDayName[7] = {"Mon", "Tue", "Wed", "Thu",
                                              "Fri", "Sat", "Sun"};
@@ -255,7 +256,7 @@ static void tstr_time2str_format(pTHX_ SV* dsv,
 
     switch (*s++) {
       case 'a':
-        dow = tstr_rdn_dow(dt->rdn);
+        dow = tstr_calendar_rdn_to_dow(dt->rdn);
         sv_catpvn_nomg(dsv, kShortDayName[dow - 1], 3);
         break;
 
