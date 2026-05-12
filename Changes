@@ -1,3 +1,10 @@
+0.50 2026-05-12 Milestone
+  - Implement str2time and str2date in C/XS. All public functions
+    (time2str, str2time, str2date) now have optional XS implementations
+    using C99. The XS backend uses the same precompiled regexps from
+    Time::Str::Regexp as the Pure-Perl implementation. Performance of
+    str2time is approximately 10x faster than Pure-Perl.
+
 0.10 2026-05-12
   - Fix build failure caused by missing tstr_calendar.c in C source list.
   - Consolidate Pure-Perl Token and Calendar implementations into
