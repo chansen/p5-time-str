@@ -1,7 +1,7 @@
 package Time::Str::PP;
 use strict;
 use warnings;
-use v5.10;
+use v5.10.1;
 
 our @EXPORT_OK = qw[ time2str
                      str2date

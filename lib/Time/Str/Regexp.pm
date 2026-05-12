@@ -1,7 +1,7 @@
 package Time::Str::Regexp;
 use strict;
 use warnings;
-use v5.10;
+use v5.10.1;
 
 our $VERSION   = '0.09';
 our @EXPORT_OK = qw[ $ANSIC_Rx
