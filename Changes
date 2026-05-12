@@ -1,3 +1,9 @@
+0.10 2026-05-12
+  - Fix build failure caused by missing tstr_calendar.c in C source list.
+  - Consolidate Pure-Perl Token and Calendar implementations into
+    Time::Str::PP.
+  - Declare v5.10.1 minimum in all source files.
+
 0.09 2026-05-12
   - Add Time::Str::Token module for converting captured date/time tokens
     to semantic values (parse_day, parse_month, parse_day_name,
