@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10.1;
 
-our $VERSION     = '0.09';
+our $VERSION     = '0.10';
 our @EXPORT_OK   = qw[ leap_year
                        month_days
                        valid_ymd

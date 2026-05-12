@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10.1;
 
-our $VERSION     = '0.09';
+our $VERSION     = '0.10';
 our @EXPORT_OK   = qw[ parse_day
                        parse_day_name
                        parse_month
