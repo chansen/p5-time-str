@@ -1,0 +1,102 @@
+#ifndef TSTR_SV_H
+#define TSTR_SV_H
+
+#include "tstr_format.h"
+#include "tstr_parsed.h"
+
+typedef struct {
+  SV *k_year;
+  SV *k_month;
+  SV *k_day;
+  SV *k_hour;
+  SV *k_minute;
+  SV *k_second;
+  SV *k_nanosecond;
+  SV *k_tz_offset;
+  SV *k_tz_utc;
+  SV *k_tz_abbrev;
+  SV *k_tz_annotation;
+  SV *k_fraction;
+  SV *k_day_name;
+  SV *k_meridiem;
+} tstr_sv_keys_t;
+
+static inline tstr_format_t tstr_sv_format(pTHX_ SV *sv) {
+  const char *s;
+  STRLEN len;
+  tstr_format_t fmt;
+  s = SvPV_const(sv, len);
+  fmt = tstr_format_from_string(s, len);
+  if (fmt == TSTR_FORMAT_UNKNOWN)
+    croak("Parameter 'format' is unknown: '%"SVf"'", sv);
+  return fmt;
+}
+
+static inline int tstr_sv_nanosecond(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 0 || v > 999999999)
+    croak("Parameter 'nanosecond' is out of range [0, 999_999_999]");
+  return v;
+}
+
+static inline int tstr_sv_precision(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 0 || v > 9)
+    croak("Parameter 'precision' is out of range [0, 9]");
+  return v;
+}
+
+static inline int tstr_sv_offset(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < -1439 || v > 1439)
+    croak("Parameter 'offset' is out of range [-1439, 1439]");
+  return v;
+}
+
+static inline int tstr_sv_pivot_year(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 0 || v > 9899)
+    croak("Parameter 'pivot_year' is out of range [0, 9899]");
+  return v;
+}
+
+static inline HV * tstr_sv_parsed_to_hv(pTHX_ const tstr_parsed_t *p,
+                                        tstr_sv_keys_t *k) {
+  HV *hv = newHV();
+  int hour;
+
+  hv_store_ent(hv, k->k_year, newSViv(p->year), 0);
+  if (p->flags & TSTR_PARSED_HAS_MONTH)
+    hv_store_ent(hv, k->k_month, newSViv(p->month), 0);
+  if (p->flags & TSTR_PARSED_HAS_DAY)
+    hv_store_ent(hv, k->k_day, newSViv(p->day), 0);
+
+  if (p->flags & TSTR_PARSED_HAS_TIME) {
+    hour = p->hour;
+    if (p->flags & TSTR_PARSED_HAS_MERIDIEM)
+      hour = p->hour % 12 + p->meridiem;
+    hv_store_ent(hv, k->k_hour, newSViv(hour), 0);
+    if (p->flags & TSTR_PARSED_HAS_MINUTE)
+      hv_store_ent(hv, k->k_minute, newSViv(p->minute), 0);
+    if (p->flags & TSTR_PARSED_HAS_SECOND)
+      hv_store_ent(hv, k->k_second, newSViv(p->second), 0);
+    if (p->flags & TSTR_PARSED_HAS_NANOSECOND)
+      hv_store_ent(hv, k->k_nanosecond, newSViv(p->nanosecond), 0);
+    if (p->flags & TSTR_PARSED_HAS_OFFSET)
+      hv_store_ent(hv, k->k_tz_offset, newSViv(p->offset), 0);
+  }
+
+  if (p->flags & TSTR_PARSED_HAS_TZ_UTC)
+    hv_store_ent(hv, k->k_tz_utc,
+      newSVpvn(p->tz_utc, p->tz_utc_len), 0);
+  if (p->flags & TSTR_PARSED_HAS_TZ_ABBREV)
+    hv_store_ent(hv, k->k_tz_abbrev,
+      newSVpvn(p->tz_abbrev, p->tz_abbrev_len), 0);
+  if (p->flags & TSTR_PARSED_HAS_TZ_ANNOTATION)
+    hv_store_ent(hv, k->k_tz_annotation,
+      newSVpvn(p->tz_annotation, p->tz_annotation_len), 0);
+
+  return hv;
+}
+
+#endif /* TSTR_SV_H */

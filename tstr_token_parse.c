@@ -342,3 +342,71 @@ bool tstr_token_parse_tz_offset(const char* src, size_t len, int* offset) {
   *offset = sign * (h * 60 + m);
   return true;
 }
+
+bool tstr_token_parse_year(const char* src, size_t len, int* year) {
+  if (len != 2 && len != 4)
+    return false;
+
+  int v = 0;
+  for (size_t i = 0; i < len; i++) {
+    if (!is_digit(src[i]))
+      return false;
+    v = v * 10 + (src[i] - '0');
+  }
+
+  *year = v;
+  return true;
+}
+
+bool tstr_token_parse_hour(const char* src, size_t len, int* hour) {
+  if (len < 1 || len > 2)
+    return false;
+
+  int v = 0;
+  for (size_t i = 0; i < len; i++) {
+    if (!is_digit(src[i]))
+      return false;
+    v = v * 10 + (src[i] - '0');
+  }
+
+  *hour = v;
+  return true;
+}
+
+bool tstr_token_parse_minute(const char* src, size_t len, int* minute) {
+  if (len != 2)
+    return false;
+  if (!is_digit(src[0]) || !is_digit(src[1]))
+    return false;
+
+  *minute = (src[0] - '0') * 10 + (src[1] - '0');
+  return true;
+}
+
+bool tstr_token_parse_second(const char* src, size_t len, int* second) {
+  if (len != 2)
+    return false;
+  if (!is_digit(src[0]) || !is_digit(src[1]))
+    return false;
+
+  *second = (src[0] - '0') * 10 + (src[1] - '0');
+  return true;
+}
+
+bool tstr_token_parse_fraction(const char* src, size_t len, int* nanosecond) {
+  if (len < 1 || len > 9)
+    return false;
+
+  int v = 0;
+  for (size_t i = 0; i < len; i++) {
+    if (!is_digit(src[i]))
+      return false;
+    v = v * 10 + (src[i] - '0');
+  }
+
+  for (size_t i = len; i < 9; i++)
+    v *= 10;
+
+  *nanosecond = v;
+  return true;
+}

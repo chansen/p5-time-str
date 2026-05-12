@@ -3,40 +3,27 @@ use strict;
 use warnings;
 use v5.10.1;
 
-our @EXPORT_OK   = qw[ time2str str2time str2date ];
-our %EXPORT_TAGS = ( all => \@EXPORT_OK );
-
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION = '0.10';
+  our $VERSION     = '0.10';
+  our @EXPORT_OK   = qw[ str2date
+                         str2time
+                         time2str ];
+  our %EXPORT_TAGS = ( all => \@EXPORT_OK );
 
-  my @import;
-  my $implementation = 'PP';
-
+  my $xs_loaded = 0;
   eval {
     require XSLoader; XSLoader::load(__PACKAGE__, $VERSION);
-    $implementation = 'XS';
+    $xs_loaded = 1;
   } unless $ENV{TIME_STR_PP};
 
-  if (!defined &Time::Str::time2str) {
-    push @import, 'time2str';
-  }
-
-  if (!defined &Time::Str::str2time) {
-    push @import, 'str2time';
-  }
-
-  if (!defined &Time::Str::str2date) {
-    push @import, 'str2date';
-  }
-
-  if (@import) {
+  unless ($xs_loaded) {
     require Time::Str::PP;
-    Time::Str::PP->import(@import);
+    Time::Str::PP->import(@EXPORT_OK);
   }
-  
-  eval sprintf <<'EOC', $implementation;
+
+  eval sprintf <<'EOC', $xs_loaded ? 'XS' : 'PP';
 sub IMPLEMENTATION () { '%s' }
 EOC
   die $@ if $@;
