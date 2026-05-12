@@ -1533,6 +1533,30 @@ EXPORTS
       use Time::Str qw(time2str str2time str2date);  # individual functions
       use Time::Str qw(:all);                        # all functions
 
+PREREQUISITES
+    Requires Perl v5.10.1 or later. A C99 compiler is recommended but not
+    required; if unavailable, the module falls back to a Pure-Perl
+    implementation.
+
+IMPLEMENTATION
+    Time::Str ships with two backends: an optional C/XS implementation
+    (compiled with C99) and a Pure-Perl fallback. The XS backend is selected
+    automatically when a C99 compiler is available at install time.
+
+    Both backends use the same precompiled regular expressions from
+    Time::Str::Regexp and produce identical results. The XS backend provides
+    approximately 10x faster parsing with "str2time".
+
+    To force the Pure-Perl backend, set the environment variable
+    "TIME_STR_PP" before loading the module:
+
+        BEGIN { $ENV{TIME_STR_PP} = 1 }
+        use Time::Str;
+
+    The active backend can be queried at runtime:
+
+        say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
+
 SEE ALSO
     Time::Str::Regexp, Time::Str::Token, Time::Str::Calendar, Time::Moment,
     DateTime, Time::Piece
