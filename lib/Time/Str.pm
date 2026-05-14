@@ -6,7 +6,7 @@ use v5.10.1;
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION     = '0.50';
+  our $VERSION     = '0.60';
   our @EXPORT_OK   = qw[ str2date
                          str2time
                          time2str ];
