@@ -274,7 +274,11 @@ str2time(...)
         NV fraction = Perl_floor((NV)parsed.nanosecond * scale / NANOS_PER_SECOND) / scale;
         mPUSHn((NV)epoch + fraction);
       } else {
+#if IVSIZE == 4
+        mPUSHn((NV)epoch);
+#else
         mPUSHi(epoch);
+#endif
       }
     }
 

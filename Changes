@@ -1,3 +1,6 @@
+0.51
+  - Fix str2time integer overflow on perls built with 32-bit IV.
+
 0.50 2026-05-12 Milestone
   - Implement str2time and str2date in C/XS. All public functions
     (time2str, str2time, str2date) now have optional XS implementations
