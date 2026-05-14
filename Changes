@@ -1,5 +1,8 @@
-0.51
+0.60 2026-05-14
   - Fix str2time integer overflow on perls built with 32-bit IV.
+  - Add native C parsers (Ragel) for RFC 3339, RFC 2822, and ECMAScript
+    formats. The XS backend tries native parsers first and falls back to
+    the regexp path for formats without a C parser.
 
 0.50 2026-05-12 Milestone
   - Implement str2time and str2date in C/XS. All public functions
