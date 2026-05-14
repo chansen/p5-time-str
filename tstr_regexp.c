@@ -7,6 +7,7 @@
 #include "tstr_parsed.h"
 #include "tstr_format.h"
 #include "tstr_token_parse.h"
+#include "tstr_parse_result.h"
 
 static bool fetch_cap_pv(pTHX_ REGEXP *rx, SV *namesv,
                          const char **sp, STRLEN *lenp) {
@@ -21,9 +22,9 @@ static bool fetch_cap_pv(pTHX_ REGEXP *rx, SV *namesv,
   return false;
 }
 
-void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
-                         tstr_format_t fmt, int pivot_year,
-                         tstr_sv_keys_t *keys) {
+tstr_parse_result_t tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
+                                        tstr_format_t fmt, int pivot_year,
+                                        tstr_sv_keys_t *keys) {
   const char *s;
   STRLEN len;
   int v;
@@ -35,7 +36,7 @@ void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
   if (!CAP_PV(year))
     croak("panic: regexp matched but no 'year' capture");
   if (!tstr_token_parse_year(s, len, &v))
-    croak("Unable to parse: year is invalid");
+    return TSTR_PARSE_ERR_YEAR;
   if (len == 2)
     tstr_parsed_set_year2(p, v, pivot_year);
   else
@@ -43,7 +44,7 @@ void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
 
   if (CAP_PV(month)) {
     if (!tstr_token_parse_month(s, len, &v))
-      croak("Unable to parse: month is invalid");
+      return TSTR_PARSE_ERR_MONTH;
     tstr_parsed_set_month(p, v);
   } else {
     p->month = 1;
@@ -51,7 +52,7 @@ void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
 
   if (CAP_PV(day)) {
     if (!tstr_token_parse_day(s, len, &v))
-      croak("Unable to parse: day is invalid");
+      return TSTR_PARSE_ERR_DAY;
     tstr_parsed_set_day(p, v);
   } else {
     p->day = 1;
@@ -59,45 +60,42 @@ void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
 
   if (CAP_PV(day_name)) {
     if (!tstr_token_parse_day_name(s, len, &v))
-      croak("Unable to parse: day name is invalid");
+      return TSTR_PARSE_ERR_DAY_NAME;
     tstr_parsed_set_day_name(p, v);
   }
 
   if (CAP_PV(hour)) {
     if (!tstr_token_parse_hour(s, len, &v))
-      croak("Unable to parse: hour is invalid");
+      return TSTR_PARSE_ERR_HOUR;
     tstr_parsed_set_hour(p, v);
 
     if (CAP_PV(meridiem)) {
       if (!tstr_token_parse_meridiem(s, len, &v))
-        croak("Unable to parse: meridiem is invalid");
+        return TSTR_PARSE_ERR_MERIDIEM;
       tstr_parsed_set_meridiem(p, v);
     }
 
     if (CAP_PV(minute)) {
       if (!tstr_token_parse_minute(s, len, &v))
-        croak("Unable to parse: minute is invalid");
+        return TSTR_PARSE_ERR_MINUTE;
       tstr_parsed_set_minute(p, v);
     }
 
     if (CAP_PV(second)) {
       if (!tstr_token_parse_second(s, len, &v))
-        croak("Unable to parse: second is invalid");
+        return TSTR_PARSE_ERR_SECOND;
       tstr_parsed_set_second(p, v);
     }
 
-    {
-      int nanos;
-      if (CAP_PV(fraction)) {
-        if (!tstr_token_parse_fraction(s, len, &nanos))
-          croak("Unable to parse: fraction is invalid");
-        tstr_parsed_set_fraction(p, nanos);
-      }
+    if (CAP_PV(fraction)) {
+      if (!tstr_token_parse_fraction(s, len, &v))
+        return TSTR_PARSE_ERR_FRACTION;
+      tstr_parsed_set_fraction(p, v);
     }
 
     if (CAP_PV(tz_offset)) {
       if (!tstr_token_parse_tz_offset(s, len, &v))
-        croak("Unable to parse: timezone offset is invalid");
+        return TSTR_PARSE_ERR_OFFSET;
       tstr_parsed_set_offset(p, v);
     }
 
@@ -116,4 +114,6 @@ void tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
     tstr_parsed_set_tz_utc(p, "GMT", 3);
 
 #undef CAP_PV
+
+  return TSTR_PARSE_OK;
 }

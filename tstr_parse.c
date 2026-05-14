@@ -8,6 +8,7 @@
 #include "tstr_calendar.h"
 #include "tstr_sv.h"
 #include "tstr_regexp.h"
+#include "tstr_parse_result.h"
 
 #define DEFAULT_PIVOT_YEAR 1950
 
@@ -44,6 +45,7 @@ void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
   REGEXP *rx = regexps[fmt];
   char *s;
   STRLEN slen;
+  tstr_parse_result_t rc;
 
   if (!rx)
     croak("panic: no regexp for format '%s'", tstr_format_name(fmt));
@@ -56,6 +58,10 @@ void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
   if (pivot_year < 0)
     pivot_year = DEFAULT_PIVOT_YEAR;
 
-  tstr_regexp_extract(aTHX_ rx, p, fmt, pivot_year, keys);
+  rc = tstr_regexp_extract(aTHX_ rx, p, fmt, pivot_year, keys);
+  if (rc != TSTR_PARSE_OK) {
+    const char *msg = tstr_parse_error_message(rc);
+    croak("Unable to parse: %s", msg);
+  }
   validate_parsed(aTHX_ p);
 }
