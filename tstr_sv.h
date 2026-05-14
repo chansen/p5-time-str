@@ -60,6 +60,34 @@ static inline int tstr_sv_pivot_year(pTHX_ SV *sv) {
   return v;
 }
 
+static inline int tstr_sv_year(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 1 || v > 9999)
+    croak("Parameter 'year' is out of range [1, 9999]");
+  return v;
+}
+
+static inline int tstr_sv_month(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 1 || v > 12)
+    croak("Parameter 'month' is out of range [1, 12]");
+  return v;
+}
+
+static inline int tstr_sv_day(pTHX_ SV *sv) {
+  int v = (int)SvIV(sv);
+  if (v < 1 || v > 31)
+    croak("Parameter 'day' is out of range [1, 31]");
+  return v;
+}
+
+static inline void tstr_sv_ymd(pTHX_ SV *sv_y, SV *sv_m, SV *sv_d,
+                               int *yp, int *mp, int *dp) {
+  *yp = tstr_sv_year(aTHX_ sv_y);
+  *mp = tstr_sv_month(aTHX_ sv_m);
+  *dp = tstr_sv_day(aTHX_ sv_d);
+}
+
 static inline HV * tstr_sv_parsed_to_hv(pTHX_ const tstr_parsed_t *p,
                                         tstr_sv_keys_t *k) {
   HV *hv = newHV();

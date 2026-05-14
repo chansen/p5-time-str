@@ -425,9 +425,7 @@ month_days(...)
     if (items != 2)
       croak("Usage: month_days(year, month)");
     y = (int)SvIV(ST(0));
-    m = (int)SvIV(ST(1));
-    if (m < 1 || m > 12)
-      croak("Parameter 'month' is out of range [1, 12]");
+    m = tstr_sv_month(aTHX_ ST(1));
     mPUSHi(tstr_calendar_month_days(y, m));
 
 void
@@ -446,15 +444,7 @@ ymd_to_rdn(...)
   PPCODE:
     if (items != 3)
       croak("Usage: ymd_to_rdn(year, month, day)");
-    y = (int)SvIV(ST(0));
-    m = (int)SvIV(ST(1));
-    d = (int)SvIV(ST(2));
-    if (y < 1 || y > 9999)
-      croak("Parameter 'year' is out of range [1, 9999]");
-    if (m < 1 || m > 12)
-      croak("Parameter 'month' is out of range [1, 12]");
-    if (d < 1 || d > 31)
-      croak("Parameter 'day' is out of range [1, 31]");
+    tstr_sv_ymd(aTHX_ ST(0), ST(1), ST(2), &y, &m, &d);
     mPUSHi((IV)tstr_calendar_ymd_to_rdn(y, m, d));
 
 void
@@ -493,15 +483,7 @@ ymd_to_dow(...)
   PPCODE:
     if (items != 3)
       croak("Usage: ymd_to_dow(year, month, day)");
-    y = (int)SvIV(ST(0));
-    m = (int)SvIV(ST(1));
-    d = (int)SvIV(ST(2));
-    if (y < 1 || y > 9999)
-      croak("Parameter 'year' is out of range [1, 9999]");
-    if (m < 1 || m > 12)
-      croak("Parameter 'month' is out of range [1, 12]");
-    if (d < 1 || d > 31)
-      croak("Parameter 'day' is out of range [1, 31]");
+    tstr_sv_ymd(aTHX_ ST(0), ST(1), ST(2), &y, &m, &d);
     mPUSHi(tstr_calendar_ymd_to_dow(y, m, d));
 
 void
@@ -512,10 +494,8 @@ resolve_century(...)
     if (items != 2)
       croak("Usage: resolve_century(year, pivot_year)");
     year = (int)SvIV(ST(0));
-    pivot_year = (int)SvIV(ST(1));
     if (year < 0 || year > 99)
       croak("Parameter 'year' is out of range [0, 99]");
-    if (pivot_year < 0 || pivot_year > 9899)
-      croak("Parameter 'pivot_year' is out of range [0, 9899]");
+    pivot_year = tstr_sv_pivot_year(aTHX_ ST(1));
     mPUSHi(tstr_calendar_resolve_century(year, pivot_year));
 
