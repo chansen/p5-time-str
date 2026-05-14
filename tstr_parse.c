@@ -8,6 +8,7 @@
 #include "tstr_calendar.h"
 #include "tstr_sv.h"
 #include "tstr_regexp.h"
+#include "tstr_cparse.h"
 #include "tstr_parse_result.h"
 
 #define DEFAULT_PIVOT_YEAR 1950
@@ -44,20 +45,27 @@ static tstr_parse_result_t validate_parsed(const tstr_parsed_t *p) {
 
 void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
                 REGEXP **regexps, tstr_sv_keys_t *keys, tstr_parsed_t *p) {
-  REGEXP *rx = regexps[fmt];
   char *s;
   STRLEN slen;
   tstr_parse_result_t rc;
 
-  if (!rx)
-    croak("panic: no regexp for format '%s'", tstr_format_name(fmt));
-
   s = SvPV(input, slen);
-  if (!pregexec(rx, s, s + slen, s, 0, input, 1))
-    croak("Unable to parse: string does not match the %s format",
-          tstr_format_name(fmt));
 
-  rc = tstr_regexp_extract(aTHX_ rx, p, keys);
+  rc = tstr_cparse_dispatch(s, slen, fmt, p);
+
+  if (rc == TSTR_PARSE_NOMATCH) {
+    REGEXP *rx = regexps[fmt];
+
+    if (!rx)
+      croak("panic: no regexp for format '%s'", tstr_format_name(fmt));
+
+    if (!pregexec(rx, s, s + slen, s, 0, input, 1))
+      croak("Unable to parse: string does not match the %s format",
+            tstr_format_name(fmt));
+
+    rc = tstr_regexp_extract(aTHX_ rx, p, keys);
+  }
+
   if (rc != TSTR_PARSE_OK)
     croak("Unable to parse: %s", tstr_parse_error_message(rc));
 

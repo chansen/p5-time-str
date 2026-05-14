@@ -8,6 +8,10 @@ use warnings;
 use 5.010001;
 use ExtUtils::MakeMaker;
 
+my @CSourceFiles = qw(
+  XS.c tstr_time2str.c tstr_token_parse.c tstr_regexp.c tstr_parse
+  tstr_cparse_rfc3339.c tstr_cparse_rfc2822.c tstr_cparse_ecmascript.c
+);
 use Config;
 my $xs_ok = 0;
 if (eval { require ExtUtils::CBuilder; ExtUtils::CBuilder->new(quiet => 1)->have_compiler }) {
@@ -62,7 +66,7 @@ my %WriteMakefileArgs = (
 %WriteMakefileArgs = (
     %WriteMakefileArgs,
     XS => ($xs_ok ? { 'XS.xs' => 'XS.c' } : {}),
-    C => ($xs_ok ? ['XS.c', 'tstr_time2str.c', 'tstr_token_parse.c', 'tstr_regexp.c', 'tstr_parse.c'] : []),
+    C => ($xs_ok ? [@CSourceFiles] : []),
     OBJECT => ($xs_ok ? '$(O_FILES)' : ''),
     INC => ($xs_ok ? '-I.' : ''),
     CCFLAGS => ($xs_ok ? "$Config{ccflags} -std=c99" : $Config{ccflags}),

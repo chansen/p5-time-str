@@ -1,8 +1,8 @@
 #ifndef TSTR_PARSED_H
 #define TSTR_PARSED_H
 
+#include <stddef.h>
 #include <stdint.h>
-#include "tstr_format.h"
 
 enum {
   TSTR_PARSED_HAS_TIME          = (1 << 0),
@@ -37,9 +37,9 @@ typedef struct {
   const char *tz_utc;
   const char *tz_abbrev;
   const char *tz_annotation;
-  STRLEN tz_utc_len;
-  STRLEN tz_abbrev_len;
-  STRLEN tz_annotation_len;
+  size_t tz_utc_len;
+  size_t tz_abbrev_len;
+  size_t tz_annotation_len;
 } tstr_parsed_t;
 
 static inline void tstr_parsed_set_year4(tstr_parsed_t *p, int v) {
@@ -96,7 +96,7 @@ static inline void tstr_parsed_set_offset(tstr_parsed_t *p, int v) {
   p->flags |= TSTR_PARSED_HAS_OFFSET;
 }
 
-static inline void tstr_parsed_set_tz_utc(tstr_parsed_t *p, const char *s, STRLEN len) {
+static inline void tstr_parsed_set_tz_utc(tstr_parsed_t *p, const char *s, size_t len) {
   p->tz_utc = s;
   p->tz_utc_len = len;
   p->flags |= TSTR_PARSED_HAS_TZ_UTC;
@@ -106,13 +106,13 @@ static inline void tstr_parsed_set_tz_utc(tstr_parsed_t *p, const char *s, STRLE
   }
 }
 
-static inline void tstr_parsed_set_tz_abbrev(tstr_parsed_t *p, const char *s, STRLEN len) {
+static inline void tstr_parsed_set_tz_abbrev(tstr_parsed_t *p, const char *s, size_t len) {
   p->tz_abbrev = s;
   p->tz_abbrev_len = len;
   p->flags |= TSTR_PARSED_HAS_TZ_ABBREV;
 }
 
-static inline void tstr_parsed_set_tz_annotation(tstr_parsed_t *p, const char *s, STRLEN len) {
+static inline void tstr_parsed_set_tz_annotation(tstr_parsed_t *p, const char *s, size_t len) {
   p->tz_annotation = s;
   p->tz_annotation_len = len;
   p->flags |= TSTR_PARSED_HAS_TZ_ANNOTATION;
