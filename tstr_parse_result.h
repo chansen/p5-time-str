@@ -16,6 +16,10 @@ typedef enum {
   TSTR_PARSE_ERR_FRACTION,
   TSTR_PARSE_ERR_OFFSET,
   TSTR_PARSE_ERR_MERIDIEM,
+  TSTR_PARSE_ERR_DATE_RANGE,
+  TSTR_PARSE_ERR_DAY_NAME_MISMATCH,
+  TSTR_PARSE_ERR_HOUR_RANGE,
+  TSTR_PARSE_ERR_TIME_RANGE,
 } tstr_parse_result_t;
 
 static inline const char* tstr_parse_error_message(tstr_parse_result_t err) {
@@ -40,6 +44,14 @@ static inline const char* tstr_parse_error_message(tstr_parse_result_t err) {
       return "timezone offset is invalid";
     case TSTR_PARSE_ERR_MERIDIEM:
       return "meridiem is invalid";
+    case TSTR_PARSE_ERR_DATE_RANGE:
+      return "date is out of range";
+    case TSTR_PARSE_ERR_DAY_NAME_MISMATCH:
+      return "day name does not match date";
+    case TSTR_PARSE_ERR_HOUR_RANGE:
+      return "hour is out of range for 12-hour clock";
+    case TSTR_PARSE_ERR_TIME_RANGE:
+      return "time of day is out of range";
     default:
       return NULL;
   }

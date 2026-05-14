@@ -5,7 +5,6 @@
 
 #include "tstr_sv.h"
 #include "tstr_parsed.h"
-#include "tstr_format.h"
 #include "tstr_token_parse.h"
 #include "tstr_parse_result.h"
 
@@ -23,7 +22,6 @@ static bool fetch_cap_pv(pTHX_ REGEXP *rx, SV *namesv,
 }
 
 tstr_parse_result_t tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
-                                        tstr_format_t fmt, int pivot_year,
                                         tstr_sv_keys_t *keys) {
   const char *s;
   STRLEN len;
@@ -38,7 +36,7 @@ tstr_parse_result_t tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
   if (!tstr_token_parse_year(s, len, &v))
     return TSTR_PARSE_ERR_YEAR;
   if (len == 2)
-    tstr_parsed_set_year2(p, v, pivot_year);
+    tstr_parsed_set_year2(p, v);
   else
     tstr_parsed_set_year4(p, v);
 
@@ -108,10 +106,6 @@ tstr_parse_result_t tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
     if (CAP_PV(tz_annotation))
       tstr_parsed_set_tz_annotation(p, s, len);
   }
-
-  /* RFC2616 implies GMT */
-  if (fmt == TSTR_FORMAT_RFC2616 && !(p->flags & TSTR_PARSED_HAS_TZ_UTC))
-    tstr_parsed_set_tz_utc(p, "GMT", 3);
 
 #undef CAP_PV
 

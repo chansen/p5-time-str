@@ -2,7 +2,6 @@
 #define TSTR_PARSED_H
 
 #include <stdint.h>
-#include "tstr_calendar.h"
 #include "tstr_format.h"
 
 enum {
@@ -17,7 +16,8 @@ enum {
   TSTR_PARSED_HAS_DAY_NAME      = (1 << 8),
   TSTR_PARSED_HAS_MERIDIEM      = (1 << 9),
   TSTR_PARSED_HAS_MONTH         = (1 << 10),
-  TSTR_PARSED_HAS_DAY           = (1 << 11)
+  TSTR_PARSED_HAS_DAY           = (1 << 11),
+  TSTR_PARSED_HAS_YEAR2         = (1 << 12)
 };
 
 #define TSTR_NANOS_PER_SECOND 1000000000
@@ -46,8 +46,9 @@ static inline void tstr_parsed_set_year4(tstr_parsed_t *p, int v) {
   p->year = v;
 }
 
-static inline void tstr_parsed_set_year2(tstr_parsed_t *p, int v, int pivot_year) {
-  p->year = tstr_calendar_resolve_century(v, pivot_year);
+static inline void tstr_parsed_set_year2(tstr_parsed_t *p, int v) {
+  p->year = v;
+  p->flags |= TSTR_PARSED_HAS_YEAR2;
 }
 
 static inline void tstr_parsed_set_month(tstr_parsed_t *p, int v) {
