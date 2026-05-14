@@ -9,7 +9,7 @@ use 5.010001;
 use ExtUtils::MakeMaker;
 
 my @CSourceFiles = qw(
-  XS.c tstr_time2str.c tstr_token_parse.c tstr_regexp.c tstr_parse
+  XS.c tstr_time2str.c tstr_token_parse.c tstr_regexp.c tstr_parse.c
   tstr_cparse_rfc3339.c tstr_cparse_rfc2822.c tstr_cparse_ecmascript.c
 );
 use Config;
