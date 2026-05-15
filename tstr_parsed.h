@@ -20,7 +20,8 @@ enum {
   TSTR_PARSED_HAS_YEAR2         = (1 << 12)
 };
 
-#define TSTR_NANOS_PER_SECOND 1000000000
+#define TSTR_NANOS_PER_SECOND  1000000000
+#define TSTR_PARSED_MAX_FIELDS 11
 
 typedef struct {
   int year;
@@ -41,6 +42,25 @@ typedef struct {
   size_t tz_abbrev_len;
   size_t tz_annotation_len;
 } tstr_parsed_t;
+
+static inline int tstr_parsed_field_count(const tstr_parsed_t *p) {
+  int n = 1; // year
+  unsigned int f = p->flags;
+
+  if (f & TSTR_PARSED_HAS_MONTH)         n++;
+  if (f & TSTR_PARSED_HAS_DAY)           n++;
+  if (f & TSTR_PARSED_HAS_TIME) {
+    n++;
+    if (f & TSTR_PARSED_HAS_MINUTE)      n++;
+    if (f & TSTR_PARSED_HAS_SECOND)      n++;
+    if (f & TSTR_PARSED_HAS_NANOSECOND)  n++;
+    if (f & TSTR_PARSED_HAS_OFFSET)      n++;
+  }
+  if (f & TSTR_PARSED_HAS_TZ_UTC)        n++;
+  if (f & TSTR_PARSED_HAS_TZ_ABBREV)     n++;
+  if (f & TSTR_PARSED_HAS_TZ_ANNOTATION) n++;
+  return n;
+}
 
 static inline void tstr_parsed_set_year4(tstr_parsed_t *p, int v) {
   p->year = v;

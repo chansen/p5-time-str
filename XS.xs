@@ -320,7 +320,7 @@ str2date(...)
 
     if (GIMME_V == G_ARRAY) {
       int n;
-      EXTEND(SP, 28);
+      EXTEND(SP, tstr_parsed_field_count(&parsed) * 2);
       n = tstr_sv_parsed_to_stack(aTHX_ &parsed, &MY_CXT.keys, SP);
       SP += n;
     } else {
