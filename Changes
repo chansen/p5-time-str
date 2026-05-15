@@ -1,3 +1,9 @@
+0.70
+  - Add example scripts for DateTime and Time::Moment integration
+    (eg/datetime.pl, eg/time-moment.pl).
+  - Optimize str2date in list context by pushing key-value pairs
+    directly onto the Perl stack, avoiding intermediate HV allocation
+
 0.60 2026-05-14
   - Fix str2time integer overflow on perls built with 32-bit IV.
   - Add native C parsers (Ragel) for RFC 3339, RFC 2822, and ECMAScript
