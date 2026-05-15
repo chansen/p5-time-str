@@ -318,18 +318,13 @@ str2date(...)
     tstr_parse(aTHX_ ST(0), fmt, pivot_year,
                MY_CXT.regexps, &MY_CXT.keys, &parsed);
 
-    result = tstr_sv_parsed_to_hv(aTHX_ &parsed, &MY_CXT.keys);
-
     if (GIMME_V == G_ARRAY) {
-      HE *entry;
-      hv_iterinit(result);
-      EXTEND(SP, HvUSEDKEYS(result) * 2);
-      while ((entry = hv_iternext(result))) {
-        PUSHs(hv_iterkeysv(entry));
-        PUSHs(sv_mortalcopy(HeVAL(entry)));
-      }
-      SvREFCNT_dec(result);
+      int n;
+      EXTEND(SP, 28);
+      n = tstr_sv_parsed_to_stack(aTHX_ &parsed, &MY_CXT.keys, SP);
+      SP += n;
     } else {
+      HV *result = tstr_sv_parsed_to_hv(aTHX_ &parsed, &MY_CXT.keys);
       mPUSHs(newRV_noinc((SV *)result));
     }
 

@@ -127,4 +127,61 @@ static inline HV * tstr_sv_parsed_to_hv(pTHX_ const tstr_parsed_t *p,
   return hv;
 }
 
+static inline int tstr_sv_parsed_to_stack(pTHX_ const tstr_parsed_t* p,
+                                          tstr_sv_keys_t* k,
+                                          SV** sp) {
+  int hour;
+  SV** start = sp;
+
+  *++sp = k->k_year;
+  *++sp = sv_2mortal(newSViv(p->year));
+  if (p->flags & TSTR_PARSED_HAS_MONTH) {
+    *++sp = k->k_month;
+    *++sp = sv_2mortal(newSViv(p->month));
+  }
+  if (p->flags & TSTR_PARSED_HAS_DAY) {
+    *++sp = k->k_day;
+    *++sp = sv_2mortal(newSViv(p->day));
+  }
+
+  if (p->flags & TSTR_PARSED_HAS_TIME) {
+    hour = p->hour;
+    if (p->flags & TSTR_PARSED_HAS_MERIDIEM)
+      hour = p->hour % 12 + p->meridiem;
+    *++sp = k->k_hour;
+    *++sp = sv_2mortal(newSViv(hour));
+    if (p->flags & TSTR_PARSED_HAS_MINUTE) {
+      *++sp = k->k_minute;
+      *++sp = sv_2mortal(newSViv(p->minute));
+    }
+    if (p->flags & TSTR_PARSED_HAS_SECOND) {
+      *++sp = k->k_second;
+      *++sp = sv_2mortal(newSViv(p->second));
+    }
+    if (p->flags & TSTR_PARSED_HAS_NANOSECOND) {
+      *++sp = k->k_nanosecond;
+      *++sp = sv_2mortal(newSViv(p->nanosecond));
+    }
+    if (p->flags & TSTR_PARSED_HAS_OFFSET) {
+      *++sp = k->k_tz_offset;
+      *++sp = sv_2mortal(newSViv(p->offset));
+    }
+  }
+
+  if (p->flags & TSTR_PARSED_HAS_TZ_UTC) {
+    *++sp = k->k_tz_utc;
+    *++sp = sv_2mortal(newSVpvn(p->tz_utc, p->tz_utc_len));
+  }
+  if (p->flags & TSTR_PARSED_HAS_TZ_ABBREV) {
+    *++sp = k->k_tz_abbrev;
+    *++sp = sv_2mortal(newSVpvn(p->tz_abbrev, p->tz_abbrev_len));
+  }
+  if (p->flags & TSTR_PARSED_HAS_TZ_ANNOTATION) {
+    *++sp = k->k_tz_annotation;
+    *++sp = sv_2mortal(newSVpvn(p->tz_annotation, p->tz_annotation_len));
+  }
+
+  return (int)(sp - start);
+}
+
 #endif /* TSTR_SV_H */
