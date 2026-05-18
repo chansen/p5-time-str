@@ -1685,6 +1685,25 @@ abbreviation is present.
 
 =back
 
+=head1 ERROR HANDLING
+
+Both the Pure-Perl and C/XS backends raise parse errors via
+C<Carp::croak>. This means C<@CARP_NOT> works as expected,
+allowing wrapper modules to control error attribution in the
+call stack.
+
+    package My::Wrapper;
+    our @CARP_NOT = ('Time::Str');
+
+    sub parse {
+      return Time::Str::str2time($_[0]);
+      # errors report from My::Wrapper's caller
+    }
+
+Usage errors (wrong number of arguments, invalid parameter values)
+in the C/XS backend are not routed through C<Carp::croak> and are
+not subject to C<@CARP_NOT>.
+
 =head1 CONSTANTS
 
 =head2 IMPLEMENTATION
