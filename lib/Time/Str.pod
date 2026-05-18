@@ -1685,6 +1685,48 @@ abbreviation is present.
 
 =back
 
+=head1 CONSTANTS
+
+=head2 IMPLEMENTATION
+
+    say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
+
+Returns the active backend: C<XS> when the C/XS implementation is
+loaded, C<PP> when using Pure Perl. Set the C<TIME_STR_PP> environment
+variable before loading the module to force the Pure-Perl backend.
+
+=head2 MIN_TIME
+
+    Time::Str::MIN_TIME  # -62135596800 (0001-01-01T00:00:00Z)
+
+The smallest Unix timestamp accepted by C<time2str>.
+
+=head2 MAX_TIME
+
+    Time::Str::MAX_TIME  # 253402300799 (9999-12-31T23:59:59Z)
+
+The largest Unix timestamp accepted by C<time2str>.
+
+=head2 NON_CONSTRUCTOR_KEYS
+
+    my %date = str2date($string);
+
+    my $tm = do {
+      delete local @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+      Time::Moment->new(%date, offset => $offset);
+    };
+
+Returns a list of keys that C<str2date> may return which are not
+direct constructor parameters for L<DateTime> or L<Time::Moment>:
+C<tz_abbrev>, C<tz_annotation>, C<tz_offset>, and C<tz_utc>.
+This list is maintained across releases - if future versions of
+C<str2date> add new non-component keys, they will be included here.
+Using this constant instead of a hard-coded list ensures your code
+remains forward-compatible.
+
+Use C<local>/C<delete> to temporarily/permanently remove these keys 
+before forwarding the remaining components to a constructor.
+
 =head1 EXPORTS
 
 Nothing is exported by default. Functions can be imported individually or by category:
