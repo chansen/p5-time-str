@@ -30,4 +30,8 @@ BEGIN {
 use constant MIN_TIME => -62135596800; # 0001-01-01T00:00:00Z
 use constant MAX_TIME => 253402300799; # 9999-12-31T23:59:59Z
 
+use constant NON_CONSTRUCTOR_KEYS => qw[ tz_abbrev
+                                         tz_annotation
+                                         tz_offset
+                                         tz_utc ];
 1;
