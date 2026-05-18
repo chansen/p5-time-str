@@ -1,8 +1,17 @@
-0.70
-  - Add example scripts for DateTime and Time::Moment integration
-    (eg/datetime.pl, eg/time-moment.pl).
+0.70 2026-05-18
+  - Use Carp::croak for parse errors in C/XS backend to support
+    @CARP_NOT in wrapper modules.
+  - Add example scripts for DateTime, Time::Moment, and Time::HiRes
+    integration (eg/datetime.pl, eg/time-moment.pl, eg/time-hires.pl).
+  - Add NON_CONSTRUCTOR_KEYS constant for safe forwarding of
+    str2date results to DateTime or Time::Moment constructors.
+  - Document INTEROPERABILITY with DateTime, Time::HiRes, and
+    Time::Moment including NON_CONSTRUCTOR_KEYS usage.
   - Optimize str2date in list context by pushing key-value pairs
     directly onto the Perl stack, avoiding intermediate HV allocation
+  - Add benchmark scripts for str2time and time2str comparing
+    performance across formats and against other modules
+    (bench/, repository only).
 
 0.60 2026-05-14
   - Fix str2time integer overflow on perls built with 32-bit IV.
