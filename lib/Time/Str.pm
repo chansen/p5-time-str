@@ -23,13 +23,11 @@ BEGIN {
     Time::Str::PP->import(@EXPORT_OK);
   }
 
-  eval sprintf <<'EOC', $xs_loaded ? 'XS' : 'PP';
-sub IMPLEMENTATION () { '%s' }
-EOC
-  die $@ if $@;
+  require constant;
+  constant->import(IMPLEMENTATION => $xs_loaded ? 'XS' : 'PP');
 }
 
-sub MIN_TIME () { -62135596800 } # 0001-01-01T00:00:00Z
-sub MAX_TIME () { 253402300799 } # 9999-12-31T23:59:59Z
+use constant MIN_TIME => -62135596800; # 0001-01-01T00:00:00Z
+use constant MAX_TIME => 253402300799; # 9999-12-31T23:59:59Z
 
 1;

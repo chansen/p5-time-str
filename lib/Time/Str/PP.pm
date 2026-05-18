@@ -28,8 +28,8 @@ use Exporter qw[import];
    use Carp     qw[croak];
    use Exporter qw[import];
 
-   sub RDN_MIN () {       1 }  # 0001-01-01
-   sub RDN_MAX () { 3652059 }  # 9999-12-31
+   use constant RDN_MIN =>       1; # 0001-01-01
+   use constant RDN_MAX => 3652059; # 9999-12-31
 
    sub leap_year {
      @_ == 1 or croak q/Usage: leap_year(year)/;
@@ -332,12 +332,9 @@ use Exporter qw[import];
   Time::Str::PP::Token->import(@import);
 }
 
-BEGIN {
-  *DEFAULT_PRECISION = (length pack('F', 0) > 8) ? sub () {9} : sub () {6};
-}
-
-sub DEFAULT_PIVOT_YEAR () { 1950 }
-sub NANOS_PER_SECOND   () { 1_000_000_000 }
+use constant DEFAULT_PRECISION  => length pack('F', 0) > 8 ? 9 : 6;
+use constant DEFAULT_PIVOT_YEAR => 1950;
+use constant NANOS_PER_SECOND   => 1_000_000_000;
 
 my %CanonicalFormatName = (
   ansic      => 'ANSIC',
@@ -794,8 +791,8 @@ BEGIN {
   }
 }
 
-sub MIN_TIME () { -62135596800 } # 0001-01-01T00:00:00Z
-sub MAX_TIME () { 253402300799 } # 9999-12-31T23:59:59Z
+use constant MIN_TIME => -62135596800; # 0001-01-01T00:00:00Z
+use constant MAX_TIME => 253402300799; # 9999-12-31T23:59:59Z
 
 sub time2str {
   @_ & 1 or croak(q/Usage: time2str(time [, format => 'RFC3339' ])/);
