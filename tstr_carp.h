@@ -6,7 +6,7 @@
 static inline void tstr_carp_croak(pTHX_ const char *msg) {
   dSP;
   PUSHMARK(SP);
-  mXPUSHs(newSVpv(msg, 0));
+  XPUSHs(sv_2mortal(newSVpv(msg, 0)));
   PUTBACK;
   call_pv("Carp::croak", G_DISCARD);
   croak("Time::Str panic: unexpected return from Carp::croak");
@@ -22,7 +22,7 @@ static inline void tstr_carp_croakf(pTHX_ const char *fmt, ...) {
   va_end(ap);
 
   PUSHMARK(SP);
-  mXPUSHs(msg);
+  XPUSHs(sv_2mortal(msg));
   PUTBACK;
   call_pv("Carp::croak", G_DISCARD);
   croak("Time::Str panic: unexpected return from Carp::croak");

@@ -10,6 +10,7 @@
 #include "tstr_regexp.h"
 #include "tstr_cparse.h"
 #include "tstr_parse_result.h"
+#include "tstr_carp.h"
 
 #define DEFAULT_PIVOT_YEAR 1950
 
@@ -60,14 +61,14 @@ void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
       croak("panic: no regexp for format '%s'", tstr_format_name(fmt));
 
     if (!pregexec(rx, s, s + slen, s, 0, input, 1))
-      croak("Unable to parse: string does not match the %s format",
-            tstr_format_name(fmt));
+      tstr_croakf("Unable to parse: string does not match the %s format",
+                  tstr_format_name(fmt));
 
     rc = tstr_regexp_extract(aTHX_ rx, p, keys);
   }
 
   if (rc != TSTR_PARSE_OK)
-    croak("Unable to parse: %s", tstr_parse_error_message(rc));
+    tstr_croakf("Unable to parse: %s", tstr_parse_error_message(rc));
 
   if (p->flags & TSTR_PARSED_HAS_YEAR2)
     p->year = tstr_calendar_resolve_century(
@@ -78,5 +79,5 @@ void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
 
   rc = validate_parsed(p);
   if (rc != TSTR_PARSE_OK)
-    croak("Unable to parse: %s", tstr_parse_error_message(rc));
+    tstr_croakf("Unable to parse: %s", tstr_parse_error_message(rc));
 }

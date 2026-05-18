@@ -13,6 +13,7 @@
 #include "tstr_regexp.h"
 #include "tstr_parse.h"
 #include "tstr_sv.h"
+#include "tstr_carp.h"
 
 #if NVSIZE > 8
 # define DEFAULT_PRECISION 9
@@ -255,7 +256,7 @@ str2time(...)
                MY_CXT.regexps, &MY_CXT.keys, &parsed);
 
     if (!(parsed.flags & TSTR_PARSED_HAS_OFFSET))
-      croak("Unable to convert: timestamp string without a UTC designator or numeric offset");
+      tstr_croak("Unable to convert: timestamp string without a UTC designator or numeric offset");
 
     {
       int hour = parsed.hour;
@@ -343,7 +344,7 @@ parse_day(...)
       croak("Usage: parse_day(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_day(src, len, &value))
-      croak("Unable to parse: day is invalid");
+      tstr_croak("Unable to parse: day is invalid");
     mPUSHi(value);
 
 void
@@ -357,7 +358,7 @@ parse_day_name(...)
       croak("Usage: parse_day_name(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_day_name(src, len, &value))
-      croak("Unable to parse: day name is invalid");
+      tstr_croak("Unable to parse: day name is invalid");
     mPUSHi(value);
 
 void
@@ -371,7 +372,7 @@ parse_month(...)
       croak("Usage: parse_month(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_month(src, len, &value))
-      croak("Unable to parse: month is invalid");
+      tstr_croak("Unable to parse: month is invalid");
     mPUSHi(value);
 
 void
@@ -385,7 +386,7 @@ parse_meridiem(...)
       croak("Usage: parse_meridiem(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_meridiem(src, len, &value))
-      croak("Unable to parse: meridiem is invalid");
+      tstr_croak("Unable to parse: meridiem is invalid");
     mPUSHi(value);
 
 void
@@ -399,7 +400,7 @@ parse_tz_offset(...)
       croak("Usage: parse_tz_offset(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_tz_offset(src, len, &value))
-      croak("Unable to parse: timezone offset is invalid");
+      tstr_croak("Unable to parse: timezone offset is invalid");
     mPUSHi(value);
 
 
