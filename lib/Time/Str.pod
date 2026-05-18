@@ -1746,6 +1746,102 @@ remains forward-compatible.
 Use C<local>/C<delete> to temporarily/permanently remove these keys 
 before forwarding the remaining components to a constructor.
 
+=head1 INTEROPERABILITY
+
+C<str2date> returns date/time components that can be forwarded to 
+constructors of other date/time modules. C<str2time> returns a Unix
+epoch suitable for C<from_epoch> style constructors.
+
+=head2 DateTime
+
+    use Time::Str qw(str2time str2date);
+
+    # From epoch
+    my $dt = DateTime->from_epoch( epoch => str2time('2024-12-24T15:30:45Z') );
+
+    # From components (preserves nanoseconds)
+    my %date   = str2date('2024-12-24T15:30:45.500+01:00');
+    my $offset = $date{tz_offset};
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone =>
+      DateTime::TimeZone->offset_as_string($offset * 60));
+
+When no timezone offset is present, the datetime is floating:
+
+    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone => 'floating');
+
+Timezone abbreviations are not resolved by C<str2date>. Map them to
+IANA names in your application:
+
+    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
+    # $date{tz_abbrev} is 'CET', no tz_offset
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone => 'Europe/Stockholm');
+
+See F<eg/datetime.pl> for a complete example with timezone resolution.
+
+=head2 Time::HiRes
+
+C<time2str> accepts the floating-point timestamps returned by
+C<Time::HiRes::time>. Fractional seconds are preserved up to
+the requested precision.
+
+    use Time::HiRes qw(time);
+    use Time::Str   qw(time2str str2time);
+
+    say time2str(time);
+    # '2024-12-24T15:30:45.123456Z'
+
+    say time2str(time, precision => 3);
+    # '2024-12-24T15:30:45.123Z'
+
+    say time2str(time, format => 'RFC2822', offset => 60);
+    # 'Tue, 24 Dec 2024 16:30:45 +0100'
+
+    # Round-trip
+    my $str  = time2str(time);
+    my $back = str2time($str);
+
+See F<eg/time-hires.pl> for a complete example with format and precision options.
+
+=head2 Time::Moment
+
+    use Time::Str qw(str2time str2date);
+
+    # From epoch
+    my $tm = Time::Moment->from_epoch(str2time('2024-12-24T15:30:45Z'));
+
+    # From components (preserves nanoseconds and offset)
+    my %date = str2date('2024-12-24T15:30:45.500+01:00');
+    my $offset = $date{tz_offset};
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date, offset => $offset // 0);
+
+When no timezone is present, resolve to a local IANA timezone using
+C<DateTime::TimeZone>:
+
+    use DateTime::TimeZone;
+    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date);
+    my $tz = DateTime::TimeZone->new(name => 'local');
+    $tm = $tm->with_offset_same_local(
+      $tz->offset_for_local_datetime($tm) / 60);
+
+Timezone abbreviations require explicit mapping:
+
+    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
+    # $date{tz_abbrev} is 'CET'
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date);
+    my $tz = DateTime::TimeZone->new(name => 'Europe/Stockholm');
+    $tm = $tm->with_offset_same_local(
+      $tz->offset_for_local_datetime($tm) / 60);
+
+See F<eg/time-moment.pl> for a complete example with timezone resolution.
+
 =head1 EXPORTS
 
 Nothing is exported by default. Functions can be imported individually or by category:
