@@ -28,7 +28,23 @@ static inline void tstr_carp_croakf(pTHX_ const char *fmt, ...) {
   croak("Time::Str panic: unexpected return from Carp::croak");
 }
 
-#define tstr_croak(msg)       tstr_carp_croak(aTHX_ msg)
-#define tstr_croakf(fmt, ...) tstr_carp_croakf(aTHX_ fmt, __VA_ARGS__)
+static inline void tstr_carp_function_croakf(pTHX_ const char *fn, const char *fmt, ...) {
+  dSP;
+  va_list ap;
+  SV *msg;
+
+  va_start(ap, fmt);
+  msg = vnewSVpvf(fmt, &ap);
+  va_end(ap);
+
+  PUSHMARK(SP);
+  XPUSHs(sv_2mortal(msg));
+  PUTBACK;
+  call_pv(fn, G_DISCARD);
+  croak("Time::Str panic: unexpected return from Carp::croak");
+}
+#define tstr_croak(msg)       tstr_carp_function_croakf(aTHX_ "Time::Str::_croak", msg)
+#define tstr_croakf(fmt, ...) tstr_carp_function_croakf(aTHX_ "Time::Str::_croak", fmt, __VA_ARGS__)
+#define tstr_token_croakf(...) tstr_carp_function_croakf(aTHX_ "Time::Str::Token::_croak", __VA_ARGS__)
 
 #endif /* TSTR_CARP_H */

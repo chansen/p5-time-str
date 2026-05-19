@@ -344,7 +344,7 @@ parse_day(...)
       croak("Usage: parse_day(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_day(src, len, &value))
-      tstr_croak("Unable to parse: day is invalid");
+      tstr_token_croakf("Unable to parse: day is invalid");
     mPUSHi(value);
 
 void
@@ -358,7 +358,7 @@ parse_day_name(...)
       croak("Usage: parse_day_name(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_day_name(src, len, &value))
-      tstr_croak("Unable to parse: day name is invalid");
+      tstr_token_croakf("Unable to parse: day name is invalid");
     mPUSHi(value);
 
 void
@@ -372,7 +372,7 @@ parse_month(...)
       croak("Usage: parse_month(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_month(src, len, &value))
-      tstr_croak("Unable to parse: month is invalid");
+      tstr_token_croakf("Unable to parse: month is invalid");
     mPUSHi(value);
 
 void
@@ -386,7 +386,7 @@ parse_meridiem(...)
       croak("Usage: parse_meridiem(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_meridiem(src, len, &value))
-      tstr_croak("Unable to parse: meridiem is invalid");
+      tstr_token_croakf("Unable to parse: meridiem is invalid");
     mPUSHi(value);
 
 void
@@ -400,7 +400,7 @@ parse_tz_offset(...)
       croak("Usage: parse_tz_offset(string)");
     src = SvPV_const(ST(0), len);
     if (!tstr_token_parse_tz_offset(src, len, &value))
-      tstr_croak("Unable to parse: timezone offset is invalid");
+      tstr_token_croakf("Unable to parse: timezone offset is invalid");
     mPUSHi(value);
 
 

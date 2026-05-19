@@ -36,4 +36,23 @@ use constant NON_CONSTRUCTOR_KEYS => qw[ tz_abbrev
                                          tz_annotation
                                          tz_offset
                                          tz_utc ];
+
+
+# XS call_pv("Carp::croak") inherits the caller's cop, causing
+# Carp to see the wrong package. These wrappers give Carp the
+# correct package for @CARP_NOT resolution.
+{
+  package Time::Str;
+  sub _croak {
+    &Carp::croak;
+  }
+}
+
+{
+  package Time::Str::Token;
+  sub _croak {
+    &Carp::croak;
+  }
+}
+
 1;
