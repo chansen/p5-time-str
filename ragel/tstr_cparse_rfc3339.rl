@@ -13,14 +13,15 @@
   ZoneOffset = [+\-] digit{2} [:] digit{2};
 
   main :=
-        (digit{4})   >mark %set_year
-  [\-]  (digit{2})   >mark %set_month
-  [\-]  (digit{2})   >mark %set_day
-  [Tt ] (digit{2})   >mark %set_hour
-  [:]   (digit{2})   >mark %set_minute
-  [:]   (digit{2})   >mark %set_second ([.] (digit{1,9}) >mark %set_fraction)?
-  (     ZoneOffset  >mark %set_tz_offset
-      | [Zz]        >mark %set_tz_utc
+        digit{4}    >mark %set_year
+  [\-]  digit{2}    >mark %set_month
+  [\-]  digit{2}    >mark %set_day
+  [Tt ] digit{2}    >mark %set_hour
+  [:]   digit{2}    >mark %set_minute
+  [:]   digit{2}    >mark %set_second ([.] (digit{1,9}) >mark %set_fraction)?
+  (  
+      ZoneOffset  >mark %set_tz_offset
+    | [Zz]        >mark %set_tz_utc
   )
   ;
 }%%
