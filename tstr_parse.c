@@ -54,7 +54,11 @@ void tstr_parse(pTHX_ SV *input, tstr_format_t fmt, int pivot_year,
 
   rc = tstr_cparse_dispatch(s, slen, fmt, p);
 
-  if (rc == TSTR_PARSE_NOMATCH) {
+  if (rc == TSTR_PARSE_NOMATCH)
+    tstr_croakf("Unable to parse: string does not match the %s format",
+                tstr_format_name(fmt));
+
+  if (rc == TSTR_PARSE_NOPARSER) {
     REGEXP *rx = regexps[fmt];
 
     if (!rx)

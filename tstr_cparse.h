@@ -28,7 +28,7 @@ static inline tstr_parse_result_t tstr_cparse_dispatch(const char *s,
     case TSTR_FORMAT_RFC2822:
       return tstr_cparse_rfc2822(s, len, parsed);
     default:
-      return TSTR_PARSE_NOMATCH;
+      return TSTR_PARSE_NOPARSER;
   }
 }
 
