@@ -10,8 +10,8 @@ use ExtUtils::MakeMaker;
 
 my @CSourceFiles = qw(
   XS.c tstr_time2str.c tstr_token_parse.c tstr_regexp.c tstr_parse.c
-  tstr_cparse_ecmascript.c tstr_cparse_rfc3339.c tstr_cparse_rfc2822.c
-  tstr_cparse_w3cdtf.c
+  tstr_cparse_ecmascript.c tstr_cparse_rfc2822.c tstr_cparse_rfc3339.c
+  tstr_cparse_rfc4287.c tstr_cparse_w3cdtf.c
 );
 use Config;
 my $xs_ok = 0;
@@ -58,7 +58,7 @@ my %WriteMakefileArgs = (
     "Test::More" => "0.47",
     "Test::Number::Delta" => "1.06"
   },
-  "VERSION" => "0.71",
+  "VERSION" => "0.80",
   "test" => {
     "TESTS" => "t/*.t t/*/*.t"
   }
