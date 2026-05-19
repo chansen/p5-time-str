@@ -21,7 +21,10 @@ static inline bool valid_hms(int h, int m, int s) {
 }
 
 static tstr_parse_result_t validate_parsed(const tstr_parsed_t *p) {
-  if (!tstr_calendar_valid_ymd(p->year, p->month, p->day))
+  int m = (p->flags & TSTR_PARSED_HAS_MONTH) ? p->month : 1;
+  int d = (p->flags & TSTR_PARSED_HAS_DAY)   ? p->day   : 1;
+
+  if (!tstr_calendar_valid_ymd(p->year, m, d))
     return TSTR_PARSE_ERR_DATE_RANGE;
 
   if ((p->flags & TSTR_PARSED_HAS_DAY_NAME) &&
