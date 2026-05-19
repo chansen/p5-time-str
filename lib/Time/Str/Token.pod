@@ -8,8 +8,11 @@ Time::Str::Token - Convert captured date/time tokens to semantic values
 
 =head1 SYNOPSIS
 
-    use Time::Str::Token qw( parse_day parse_month parse_day_name
-                             parse_meridiem parse_tz_offset );
+    use Time::Str::Token qw( parse_day
+                             parse_day_name
+                             parse_meridiem
+                             parse_month
+                             parse_tz_offset );
 
 =head1 DESCRIPTION
 
@@ -29,7 +32,7 @@ All functions are exportable on request. Use C<:all> to import everything.
     my $day = parse_day($string);
 
 Converts a day-of-month string to an integer (1-31). Accepts numeric
-values with or without leading zero, and ordinal suffixes.
+values with or without leading zero, and ordinal suffixes. Case-insensitive.
 
     parse_day('3')     # 3
     parse_day('03')    # 3
@@ -90,16 +93,16 @@ Croaks with C<Unable to parse: meridiem is invalid> on failure.
 
     my $minutes = parse_tz_offset($string);
 
-Converts a timezone offset string to a signed offset in minutes. Accepts
-multiple formats.
+Converts a timezone offset string to a signed offset in minutes
+from UTC. Positive is east, negative is west.
 
-    parse_tz_offset('+0100')   #  60
-    parse_tz_offset('-05:00')  # -300
-    parse_tz_offset('+05')     #  300
-    parse_tz_offset('+0530')   #  330
-    parse_tz_offset('+5')      #  300
-    parse_tz_offset('+5:30')   #  330
-    parse_tz_offset('+00:00')  #  0
+Accepted formats:
+
+    ±H       +5, -5
+    ±HH      +05, -05
+    ±H:MM    +5:30, -5:30
+    ±HHMM    +0530, -0500
+    ±HH:MM   +05:30, -05:00
 
 Croaks with C<Unable to parse: timezone offset is invalid> on failure.
 
