@@ -1,4 +1,4 @@
-0.71
+0.71 2026-05-19
   - Fix @CARP_NOT support in C/XS backend by routing parse errors
     through per-package _croak wrappers.
 
