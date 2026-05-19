@@ -12,6 +12,7 @@ BEGIN {
                          str2time
                          time2str ];
   our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+  our @CARP_NOT    = qw[Time::Str::PP];
 
   my $xs_loaded = 0;
   eval {

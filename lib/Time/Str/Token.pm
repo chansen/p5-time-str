@@ -13,6 +13,7 @@ BEGIN {
                          parse_meridiem
                          parse_tz_offset ];
   our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+  our @CARP_NOT    = qw[Time::Str::PP::Token];
 
   require Time::Str;
   unless (Time::Str::IMPLEMENTATION() eq 'XS') {

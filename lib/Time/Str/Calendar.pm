@@ -16,6 +16,7 @@ BEGIN {
                          rdn_to_dow
                          resolve_century ];
   our %EXPORT_TAGS = ( all => \@EXPORT_OK );
+  our @CARP_NOT    = qw[Time::Str::PP::Calendar];
 
   require Time::Str;
   unless (Time::Str::IMPLEMENTATION() eq 'XS') {
