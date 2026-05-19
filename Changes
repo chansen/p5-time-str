@@ -1,3 +1,6 @@
+0.80 2026-05-19
+  - Add native C parsers (Ragel) for RFC 4287 and W3CDTF formats.
+
 0.71 2026-05-19
   - Fix @CARP_NOT support in C/XS backend by routing parse errors
     through per-package _croak wrappers.
