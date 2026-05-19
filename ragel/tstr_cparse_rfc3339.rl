@@ -36,7 +36,7 @@ tstr_parse_result_t tstr_cparse_rfc3339(const char* p,
   const char* mark = NULL;
   tstr_parse_result_t result = TSTR_PARSE_OK;
 
-  memset(parsed, 0, sizeof(*parsed));
+  (void)tstr_parsed_init(parsed);
 
   %% write init;
   %% write exec;

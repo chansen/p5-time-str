@@ -29,7 +29,7 @@ tstr_parse_result_t tstr_regexp_extract(pTHX_ REGEXP *rx, tstr_parsed_t *p,
 
 #define CAP_PV(field) fetch_cap_pv(aTHX_ rx, keys->k_##field, &s, &len)
 
-  Zero(p, 1, tstr_parsed_t);
+  (void)tstr_parsed_init(p);
 
   if (!CAP_PV(year))
     croak("panic: regexp matched but no 'year' capture");

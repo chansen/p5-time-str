@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 enum {
   TSTR_PARSED_HAS_TIME          = (1 << 0),
@@ -42,6 +43,11 @@ typedef struct {
   size_t tz_abbrev_len;
   size_t tz_annotation_len;
 } tstr_parsed_t;
+
+static inline tstr_parsed_t * tstr_parsed_init(tstr_parsed_t *p) {
+  memset(p, 0, sizeof(*p));
+  return p;
+};
 
 static inline int tstr_parsed_field_count(const tstr_parsed_t *p) {
   int n = 1; // year
