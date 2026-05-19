@@ -380,99 +380,6 @@ Croaks if:
     my $str = time2str(1735052445, format => 'CLF', offset => 60);
     # '24/Dec/2024:16:30:45 +0100'
 
-=head1 PRECISION HANDLING
-
-The module handles fractional seconds differently when parsing versus
-formatting.
-
-=head2 Parsing (str2time)
-
-Fractional seconds beyond the specified precision are B<truncated>. This 
-preserves the exact digits provided in the input up to the requested 
-precision:
-
-    str2time('2024-12-24T15:30:45.123456Z', precision => 3)
-    # Returns: 1735052445.123 (digits beyond 3rd truncated)
-
-    str2time('2024-12-24T15:30:45.999999Z', precision => 3)
-    # Returns: 1735052445.999 (NOT .000 of next second)
-
-B<Note>: C<str2date> does not accept a precision parameter. It always
-preserves fractional seconds at full nanosecond resolution in the
-C<nanosecond> component.
-
-=head2 Formatting (time2str)
-
-Fractional seconds are B<rounded> to the specified precision. Rounding
-prevents floating-point artifacts from appearing in formatted output:
-
-    time2str(1735052445.123456, precision => 3)
-    # '2024-12-24T15:30:45.123Z'
-
-    time2str(1735052445.999999, precision => 3)
-    # '2024-12-24T15:30:46.000Z' (rounds up to next second)
-
-    time2str(1735052445.999999, precision => 0)
-    # '2024-12-24T15:30:46Z' (rounds up, fraction omitted)
-
-=head2 Bypassing Rounding
-
-The C<nanosecond> parameter overrides the fractional part of C<$time> and
-is not subject to rounding, giving exact control over the output:
-
-    time2str(1735052445, nanosecond => 999_999_000, precision => 6)
-    # '2024-12-24T15:30:45.999999Z' (exact, no rounding)
-
-    time2str(1735052445, nanosecond => 0)
-    # '2024-12-24T15:30:45Z' (no fractional part)
-
-=head1 FLOATING-POINT PRECISION
-
-Perl's floating-point type (NV) is typically IEEE 754 double-precision
-(64-bit), providing approximately 15-17 significant decimal digits
-shared between the integer and fractional parts of a number.
-
-=head2 Implications for Timestamps
-
-Whole seconds are always represented exactly within the supported date
-range (0001-01-01 to 9999-12-31).
-
-Fractional precision depends on the magnitude of the timestamp:
-
-=over 4
-
-=item * B<Millisecond precision> (C<precision =E<gt> 3>) is exact and stable
-across the entire supported date range.
-
-=item * B<Microsecond precision> (C<precision =E<gt> 6>) is reliable for
-timestamps within roughly ±140 years of the Unix epoch (1830-2110). Beyond
-this range, values may shift by ±1 microsecond due to floating-point spacing.
-
-=item * B<Nanosecond precision> cannot be represented faithfully in a
-floating-point timestamp. Use the C<nanosecond> parameter for exact
-sub-microsecond values.
-
-=back
-
-=head2 Default Precision
-
-When C<time2str> formats a timestamp with fractional seconds and neither
-C<precision> nor C<nanosecond> is specified, it uses a default based on
-Perl's NV (floating-point) type:
-
-=over 4
-
-=item * B<6 decimal places> when NV is double-precision (64-bit)
-
-=item * B<9 decimal places> when NV has extended precision
-(e.g., long double)
-
-=back
-
-This default prevents spurious trailing digits caused by floating-point
-representation. For explicit control, always specify C<precision> or
-C<nanosecond>.
-
 =head1 FORMAT OVERVIEW
 
 =head2 Profiles of ISO 8601
@@ -1409,6 +1316,99 @@ discarded.
   24DEC2024 12:30:45.500
   24.Dec.2024 15:30:45
 
+=head1 PRECISION HANDLING
+
+The module handles fractional seconds differently when parsing versus
+formatting.
+
+=head2 Parsing (str2time)
+
+Fractional seconds beyond the specified precision are B<truncated>. This 
+preserves the exact digits provided in the input up to the requested 
+precision:
+
+    str2time('2024-12-24T15:30:45.123456Z', precision => 3)
+    # Returns: 1735052445.123 (digits beyond 3rd truncated)
+
+    str2time('2024-12-24T15:30:45.999999Z', precision => 3)
+    # Returns: 1735052445.999 (NOT .000 of next second)
+
+B<Note>: C<str2date> does not accept a precision parameter. It always
+preserves fractional seconds at full nanosecond resolution in the
+C<nanosecond> component.
+
+=head2 Formatting (time2str)
+
+Fractional seconds are B<rounded> to the specified precision. Rounding
+prevents floating-point artifacts from appearing in formatted output:
+
+    time2str(1735052445.123456, precision => 3)
+    # '2024-12-24T15:30:45.123Z'
+
+    time2str(1735052445.999999, precision => 3)
+    # '2024-12-24T15:30:46.000Z' (rounds up to next second)
+
+    time2str(1735052445.999999, precision => 0)
+    # '2024-12-24T15:30:46Z' (rounds up, fraction omitted)
+
+=head2 Bypassing Rounding
+
+The C<nanosecond> parameter overrides the fractional part of C<$time> and
+is not subject to rounding, giving exact control over the output:
+
+    time2str(1735052445, nanosecond => 999_999_000, precision => 6)
+    # '2024-12-24T15:30:45.999999Z' (exact, no rounding)
+
+    time2str(1735052445, nanosecond => 0)
+    # '2024-12-24T15:30:45Z' (no fractional part)
+
+=head1 FLOATING-POINT PRECISION
+
+Perl's floating-point type (NV) is typically IEEE 754 double-precision
+(64-bit), providing approximately 15-17 significant decimal digits
+shared between the integer and fractional parts of a number.
+
+=head2 Implications for Timestamps
+
+Whole seconds are always represented exactly within the supported date
+range (0001-01-01 to 9999-12-31).
+
+Fractional precision depends on the magnitude of the timestamp:
+
+=over 4
+
+=item * B<Millisecond precision> (C<precision =E<gt> 3>) is exact and stable
+across the entire supported date range.
+
+=item * B<Microsecond precision> (C<precision =E<gt> 6>) is reliable for
+timestamps within roughly ±140 years of the Unix epoch (1830-2110). Beyond
+this range, values may shift by ±1 microsecond due to floating-point spacing.
+
+=item * B<Nanosecond precision> cannot be represented faithfully in a
+floating-point timestamp. Use the C<nanosecond> parameter for exact
+sub-microsecond values.
+
+=back
+
+=head2 Default Precision
+
+When C<time2str> formats a timestamp with fractional seconds and neither
+C<precision> nor C<nanosecond> is specified, it uses a default based on
+Perl's NV (floating-point) type:
+
+=over 4
+
+=item * B<6 decimal places> when NV is double-precision (64-bit)
+
+=item * B<9 decimal places> when NV has extended precision
+(e.g., long double)
+
+=back
+
+This default prevents spurious trailing digits caused by floating-point
+representation. For explicit control, always specify C<precision> or
+C<nanosecond>.
+
 =head1 TIMEZONE ABBREVIATIONS
 
 The C<DateTime>, C<RFC2822>, and C<Unix> parsers accept timezone
@@ -1438,37 +1438,257 @@ components including C<tz_abbrev>, then resolve externally:
     my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
     # (..., tz_abbrev => 'IST')
 
-=head1 STANDARDS
+=back
+
+=head1 CONSTANTS
+
+=head2 IMPLEMENTATION
+
+    say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
+
+Returns the active backend: C<XS> when the C/XS implementation is
+loaded, C<PP> when using Pure Perl. Set the C<TIME_STR_PP> environment
+variable before loading the module to force the Pure-Perl backend.
+
+=head2 MIN_TIME
+
+    Time::Str::MIN_TIME  # -62135596800 (0001-01-01T00:00:00Z)
+
+The smallest Unix timestamp accepted by C<time2str>.
+
+=head2 MAX_TIME
+
+    Time::Str::MAX_TIME  # 253402300799 (9999-12-31T23:59:59Z)
+
+The largest Unix timestamp accepted by C<time2str>.
+
+=head2 NON_CONSTRUCTOR_KEYS
+
+    my %date = str2date($string);
+
+    my $tm = do {
+      delete local @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+      Time::Moment->new(%date, offset => $offset);
+    };
+
+Returns a list of keys that C<str2date> may return which are not
+direct constructor parameters for L<DateTime> or L<Time::Moment>:
+C<tz_abbrev>, C<tz_annotation>, C<tz_offset>, and C<tz_utc>.
+This list is maintained across releases - if future versions of
+C<str2date> add new non-component keys, they will be included here.
+Using this constant instead of a hard-coded list ensures your code
+remains forward-compatible.
+
+Use C<local>/C<delete> to temporarily/permanently remove these keys 
+before forwarding the remaining components to a constructor.
+
+=head1 INTEROPERABILITY
+
+C<str2date> returns date/time components that can be forwarded to 
+constructors of other date/time modules. C<str2time> returns a Unix
+epoch suitable for C<from_epoch> style constructors.
+
+=head2 DateTime
+
+    use Time::Str qw(str2time str2date);
+
+    # From epoch
+    my $dt = DateTime->from_epoch( epoch => str2time('2024-12-24T15:30:45Z') );
+
+    # From components (preserves nanoseconds)
+    my %date   = str2date('2024-12-24T15:30:45.500+01:00');
+    my $offset = $date{tz_offset};
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone =>
+      DateTime::TimeZone->offset_as_string($offset * 60));
+
+When no timezone offset is present, the datetime is floating:
+
+    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone => 'floating');
+
+Timezone abbreviations are not resolved by C<str2date>. Map them to
+IANA names in your application:
+
+    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
+    # $date{tz_abbrev} is 'CET', no tz_offset
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $dt = DateTime->new(%date, time_zone => 'Europe/Stockholm');
+
+See F<eg/datetime.pl> for a complete example with timezone resolution.
+
+=head2 Time::HiRes
+
+C<time2str> accepts the floating-point timestamps returned by
+C<Time::HiRes::time>. Fractional seconds are preserved up to
+the requested precision.
+
+    use Time::HiRes qw(time);
+    use Time::Str   qw(time2str str2time);
+
+    say time2str(time);
+    # '2024-12-24T15:30:45.123456Z'
+
+    say time2str(time, precision => 3);
+    # '2024-12-24T15:30:45.123Z'
+
+    say time2str(time, format => 'RFC2822', offset => 60);
+    # 'Tue, 24 Dec 2024 16:30:45 +0100'
+
+    # Round-trip
+    my $str  = time2str(time);
+    my $back = str2time($str);
+
+See F<eg/time-hires.pl> for a complete example with format and precision options.
+
+=head2 Time::Moment
+
+    use Time::Str qw(str2time str2date);
+
+    # From epoch
+    my $tm = Time::Moment->from_epoch(str2time('2024-12-24T15:30:45Z'));
+
+    # From components (preserves nanoseconds and offset)
+    my %date = str2date('2024-12-24T15:30:45.500+01:00');
+    my $offset = $date{tz_offset};
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date, offset => $offset // 0);
+
+When no timezone is present, resolve to a local IANA timezone using
+C<DateTime::TimeZone>:
+
+    use DateTime::TimeZone;
+    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date);
+    my $tz = DateTime::TimeZone->new(name => 'local');
+    $tm = $tm->with_offset_same_local(
+      $tz->offset_for_local_datetime($tm) / 60);
+
+Timezone abbreviations require explicit mapping:
+
+    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
+    # $date{tz_abbrev} is 'CET'
+    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
+    my $tm = Time::Moment->new(%date);
+    my $tz = DateTime::TimeZone->new(name => 'Europe/Stockholm');
+    $tm = $tm->with_offset_same_local(
+      $tz->offset_for_local_datetime($tm) / 60);
+
+See F<eg/time-moment.pl> for a complete example with timezone resolution.
+
+=head1 ERROR HANDLING
+
+Both the Pure-Perl and C/XS backends raise parse errors via
+C<Carp::croak>. This means C<@CARP_NOT> works as expected,
+allowing wrapper modules to control error attribution in the
+call stack.
+
+    package My::Wrapper;
+    our @CARP_NOT = ('Time::Str');
+
+    sub parse {
+      return Time::Str::str2time($_[0]);
+      # errors report from My::Wrapper's caller
+    }
+
+Usage errors (wrong number of arguments, invalid parameter values)
+in the C/XS backend are not routed through C<Carp::croak> and are
+not subject to C<@CARP_NOT>.
+
+=head1 DIAGNOSTICS
 
 =over 4
 
-=item * L<ISO 8601:2019 - Data elements and interchange formats|https://www.iso.org/obp/ui/#iso:std:iso:8601>
+=item Usage: %s
 
-=item * L<RFC 3339 - Date and Time on the Internet: Timestamps|https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>
+(F) A function was called with an incorrect number of arguments.
 
-=item * L<RFC 2822|https://datatracker.ietf.org/doc/html/rfc2822#section-3.3> / L<RFC 5322|https://datatracker.ietf.org/doc/html/rfc5322#section-3.3> - Internet Message Format
+=item Parameter 'format' is unknown: '%s'
 
-=item * L<RFC 2616|https://datatracker.ietf.org/doc/html/rfc2616#section-3.3> / L<RFC 7231|https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1> - HTTP/1.1
+(F) The format specifier is not recognised.
 
-=item * L<RFC 3501|https://datatracker.ietf.org/doc/html/rfc3501#section-2.3.3> / L<RFC 9051|https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3> - Internet Message Access Protocol (IMAP)
+=item Parameter '%s' is out of range
 
-=item * L<RFC 4287 - The Atom Syndication Format|https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
+(F) A parameter value is outside its valid range.
 
-=item * L<RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)|https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
+=item Unrecognised named parameter: '%s'
 
-=item * L<RFC 5545 - Internet Calendaring and Scheduling (iCalendar)|https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
+(F) An unrecognised named parameter was given.
 
-=item * L<RFC 9557 - Date and Time on the Internet: Timestamps with Additional Information|https://datatracker.ietf.org/doc/html/rfc9557>
+=item Unable to parse: %s
 
-=item * L<ISO 9075 - SQL Database Language|https://www.iso.org/standard/76583.html>
+(F) C<str2date> or C<str2time> could not parse the input string.
 
-=item * L<ITU-T X.680 (ISO/IEC 8824-1) - ASN.1|https://www.itu.int/rec/T-REC-X.680-202102-I>
+=item Unable to convert: timestamp string without a UTC designator or numeric offset
 
-=item * L<W3C Date and Time Formats|https://www.w3.org/TR/NOTE-datetime>
-
-=item * L<ECMAScript Date.prototype.toString|https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date.prototype.tostring>
+(F) C<str2time> successfully parsed the input string but cannot convert
+it to a Unix timestamp without a UTC designator or numeric offset.
 
 =back
+
+=head1 LIMITATIONS
+
+=over 4
+
+=item *
+
+No support for locale-specific formatting or parsing. Month and day
+names are English only.
+
+=item *
+
+No support for ISO 8601 week-dates (e.g., C<2024-W52-2>) or ordinal
+dates (e.g., C<2024-359>).
+
+=item *
+
+Timestamps are limited to the year range 0001-9999. Most string
+representation formats cannot represent years outside this range.
+
+=item *
+
+Timezone abbreviations (e.g., C<EST>, C<IST>) are captured in
+C<tz_abbrev> but are not resolved to UTC offsets. C<str2time> requires
+a UTC designator or numeric offset and will croak if only an
+abbreviation is present.
+
+=head1 EXPORTS
+
+Nothing is exported by default. Functions can be imported individually or by category:
+
+  use Time::Str qw(time2str str2time str2date);  # individual functions
+  use Time::Str qw(:all);                        # all functions
+
+=head1 IMPLEMENTATION
+
+Time::Str ships with two backends: an optional C/XS implementation
+(compiled with C99) and a Pure-Perl fallback. The XS backend is
+selected automatically when a C99 compiler is available at install
+time.
+
+The XS backend includes native C parsers (generated by Ragel) for
+RFC 3339, RFC 2822, and ECMAScript formats. When available, these
+are tried first; if no native parser exists for the requested format,
+parsing falls back to the precompiled regular expressions from
+L<Time::Str::Regexp>. Both paths produce identical results.
+
+To force the Pure-Perl backend, set the environment variable
+C<TIME_STR_PP> before loading the module:
+
+    BEGIN { $ENV{TIME_STR_PP} = 1 }
+    use Time::Str;
+
+The active backend can be queried at runtime:
+
+    say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
+
+=head1 PREREQUISITES
+
+Requires Perl v5.10.1 or later. A C99 compiler is recommended but not
+required; if unavailable, the module falls back to a Pure-Perl
+implementation.
 
 =head1 RATIONALE
 
@@ -1626,257 +1846,37 @@ cannot account for these changes across time.
 Time::Str captures abbreviations in C<tz_abbrev> without attempting
 to resolve them, leaving interpretation to the caller.
 
-=head1 DIAGNOSTICS
+=head1 STANDARDS
 
 =over 4
 
-=item Usage: %s
+=item * L<ISO 8601:2019 - Data elements and interchange formats|https://www.iso.org/obp/ui/#iso:std:iso:8601>
 
-(F) A function was called with an incorrect number of arguments.
+=item * L<RFC 3339 - Date and Time on the Internet: Timestamps|https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>
 
-=item Parameter 'format' is unknown: '%s'
+=item * L<RFC 2822|https://datatracker.ietf.org/doc/html/rfc2822#section-3.3> / L<RFC 5322|https://datatracker.ietf.org/doc/html/rfc5322#section-3.3> - Internet Message Format
 
-(F) The format specifier is not recognised.
+=item * L<RFC 2616|https://datatracker.ietf.org/doc/html/rfc2616#section-3.3> / L<RFC 7231|https://datatracker.ietf.org/doc/html/rfc7231#section-7.1.1.1> - HTTP/1.1
 
-=item Parameter '%s' is out of range
+=item * L<RFC 3501|https://datatracker.ietf.org/doc/html/rfc3501#section-2.3.3> / L<RFC 9051|https://datatracker.ietf.org/doc/html/rfc9051#section-2.3.3> - Internet Message Access Protocol (IMAP)
 
-(F) A parameter value is outside its valid range.
+=item * L<RFC 4287 - The Atom Syndication Format|https://datatracker.ietf.org/doc/html/rfc4287#section-3.3>
 
-=item Unrecognised named parameter: '%s'
+=item * L<RFC 5280 - Internet X.509 Public Key Infrastructure (PKIX)|https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.5>
 
-(F) An unrecognised named parameter was given.
+=item * L<RFC 5545 - Internet Calendaring and Scheduling (iCalendar)|https://datatracker.ietf.org/doc/html/rfc5545#section-3.3.4>
 
-=item Unable to parse: %s
+=item * L<RFC 9557 - Date and Time on the Internet: Timestamps with Additional Information|https://datatracker.ietf.org/doc/html/rfc9557>
 
-(F) C<str2date> or C<str2time> could not parse the input string.
+=item * L<ISO 9075 - SQL Database Language|https://www.iso.org/standard/76583.html>
 
-=item Unable to convert: timestamp string without a UTC designator or numeric offset
+=item * L<ITU-T X.680 (ISO/IEC 8824-1) - ASN.1|https://www.itu.int/rec/T-REC-X.680-202102-I>
 
-(F) C<str2time> successfully parsed the input string but cannot convert
-it to a Unix timestamp without a UTC designator or numeric offset.
+=item * L<W3C Date and Time Formats|https://www.w3.org/TR/NOTE-datetime>
 
-=back
-
-=head1 LIMITATIONS
-
-=over 4
-
-=item *
-
-No support for locale-specific formatting or parsing. Month and day
-names are English only.
-
-=item *
-
-No support for ISO 8601 week-dates (e.g., C<2024-W52-2>) or ordinal
-dates (e.g., C<2024-359>).
-
-=item *
-
-Timestamps are limited to the year range 0001-9999. Most string
-representation formats cannot represent years outside this range.
-
-=item *
-
-Timezone abbreviations (e.g., C<EST>, C<IST>) are captured in
-C<tz_abbrev> but are not resolved to UTC offsets. C<str2time> requires
-a UTC designator or numeric offset and will croak if only an
-abbreviation is present.
+=item * L<ECMAScript Date.prototype.toString|https://tc39.es/ecma262/multipage/numbers-and-dates.html#sec-date.prototype.tostring>
 
 =back
-
-=head1 ERROR HANDLING
-
-Both the Pure-Perl and C/XS backends raise parse errors via
-C<Carp::croak>. This means C<@CARP_NOT> works as expected,
-allowing wrapper modules to control error attribution in the
-call stack.
-
-    package My::Wrapper;
-    our @CARP_NOT = ('Time::Str');
-
-    sub parse {
-      return Time::Str::str2time($_[0]);
-      # errors report from My::Wrapper's caller
-    }
-
-Usage errors (wrong number of arguments, invalid parameter values)
-in the C/XS backend are not routed through C<Carp::croak> and are
-not subject to C<@CARP_NOT>.
-
-=head1 CONSTANTS
-
-=head2 IMPLEMENTATION
-
-    say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
-
-Returns the active backend: C<XS> when the C/XS implementation is
-loaded, C<PP> when using Pure Perl. Set the C<TIME_STR_PP> environment
-variable before loading the module to force the Pure-Perl backend.
-
-=head2 MIN_TIME
-
-    Time::Str::MIN_TIME  # -62135596800 (0001-01-01T00:00:00Z)
-
-The smallest Unix timestamp accepted by C<time2str>.
-
-=head2 MAX_TIME
-
-    Time::Str::MAX_TIME  # 253402300799 (9999-12-31T23:59:59Z)
-
-The largest Unix timestamp accepted by C<time2str>.
-
-=head2 NON_CONSTRUCTOR_KEYS
-
-    my %date = str2date($string);
-
-    my $tm = do {
-      delete local @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-      Time::Moment->new(%date, offset => $offset);
-    };
-
-Returns a list of keys that C<str2date> may return which are not
-direct constructor parameters for L<DateTime> or L<Time::Moment>:
-C<tz_abbrev>, C<tz_annotation>, C<tz_offset>, and C<tz_utc>.
-This list is maintained across releases - if future versions of
-C<str2date> add new non-component keys, they will be included here.
-Using this constant instead of a hard-coded list ensures your code
-remains forward-compatible.
-
-Use C<local>/C<delete> to temporarily/permanently remove these keys 
-before forwarding the remaining components to a constructor.
-
-=head1 INTEROPERABILITY
-
-C<str2date> returns date/time components that can be forwarded to 
-constructors of other date/time modules. C<str2time> returns a Unix
-epoch suitable for C<from_epoch> style constructors.
-
-=head2 DateTime
-
-    use Time::Str qw(str2time str2date);
-
-    # From epoch
-    my $dt = DateTime->from_epoch( epoch => str2time('2024-12-24T15:30:45Z') );
-
-    # From components (preserves nanoseconds)
-    my %date   = str2date('2024-12-24T15:30:45.500+01:00');
-    my $offset = $date{tz_offset};
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $dt = DateTime->new(%date, time_zone =>
-      DateTime::TimeZone->offset_as_string($offset * 60));
-
-When no timezone offset is present, the datetime is floating:
-
-    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $dt = DateTime->new(%date, time_zone => 'floating');
-
-Timezone abbreviations are not resolved by C<str2date>. Map them to
-IANA names in your application:
-
-    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
-    # $date{tz_abbrev} is 'CET', no tz_offset
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $dt = DateTime->new(%date, time_zone => 'Europe/Stockholm');
-
-See F<eg/datetime.pl> for a complete example with timezone resolution.
-
-=head2 Time::HiRes
-
-C<time2str> accepts the floating-point timestamps returned by
-C<Time::HiRes::time>. Fractional seconds are preserved up to
-the requested precision.
-
-    use Time::HiRes qw(time);
-    use Time::Str   qw(time2str str2time);
-
-    say time2str(time);
-    # '2024-12-24T15:30:45.123456Z'
-
-    say time2str(time, precision => 3);
-    # '2024-12-24T15:30:45.123Z'
-
-    say time2str(time, format => 'RFC2822', offset => 60);
-    # 'Tue, 24 Dec 2024 16:30:45 +0100'
-
-    # Round-trip
-    my $str  = time2str(time);
-    my $back = str2time($str);
-
-See F<eg/time-hires.pl> for a complete example with format and precision options.
-
-=head2 Time::Moment
-
-    use Time::Str qw(str2time str2date);
-
-    # From epoch
-    my $tm = Time::Moment->from_epoch(str2time('2024-12-24T15:30:45Z'));
-
-    # From components (preserves nanoseconds and offset)
-    my %date = str2date('2024-12-24T15:30:45.500+01:00');
-    my $offset = $date{tz_offset};
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $tm = Time::Moment->new(%date, offset => $offset // 0);
-
-When no timezone is present, resolve to a local IANA timezone using
-C<DateTime::TimeZone>:
-
-    use DateTime::TimeZone;
-    my %date = str2date('2024-12-24 15:30:45', format => 'DateTime');
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $tm = Time::Moment->new(%date);
-    my $tz = DateTime::TimeZone->new(name => 'local');
-    $tm = $tm->with_offset_same_local(
-      $tz->offset_for_local_datetime($tm) / 60);
-
-Timezone abbreviations require explicit mapping:
-
-    my %date = str2date('24 Dec 2024 15:30:45 CET', format => 'RFC2822');
-    # $date{tz_abbrev} is 'CET'
-    delete @date{Time::Str::NON_CONSTRUCTOR_KEYS};
-    my $tm = Time::Moment->new(%date);
-    my $tz = DateTime::TimeZone->new(name => 'Europe/Stockholm');
-    $tm = $tm->with_offset_same_local(
-      $tz->offset_for_local_datetime($tm) / 60);
-
-See F<eg/time-moment.pl> for a complete example with timezone resolution.
-
-=head1 EXPORTS
-
-Nothing is exported by default. Functions can be imported individually or by category:
-
-  use Time::Str qw(time2str str2time str2date);  # individual functions
-  use Time::Str qw(:all);                        # all functions
-
-=head1 PREREQUISITES
-
-Requires Perl v5.10.1 or later. A C99 compiler is recommended but not
-required; if unavailable, the module falls back to a Pure-Perl
-implementation.
-
-=head1 IMPLEMENTATION
-
-Time::Str ships with two backends: an optional C/XS implementation
-(compiled with C99) and a Pure-Perl fallback. The XS backend is
-selected automatically when a C99 compiler is available at install
-time.
-
-The XS backend includes native C parsers (generated by Ragel) for
-RFC 3339, RFC 2822, and ECMAScript formats. When available, these
-are tried first; if no native parser exists for the requested format,
-parsing falls back to the precompiled regular expressions from
-L<Time::Str::Regexp>. Both paths produce identical results.
-
-To force the Pure-Perl backend, set the environment variable
-C<TIME_STR_PP> before loading the module:
-
-    BEGIN { $ENV{TIME_STR_PP} = 1 }
-    use Time::Str;
-
-The active backend can be queried at runtime:
-
-    say Time::Str::IMPLEMENTATION;  # "XS" or "PP"
 
 =head1 SEE ALSO
 
