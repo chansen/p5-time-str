@@ -1438,8 +1438,6 @@ components including C<tz_abbrev>, then resolve externally:
     my %d = str2date('24 Dec 2012 15:30:45 IST', format => 'RFC2822');
     # (..., tz_abbrev => 'IST')
 
-=back
-
 =head1 CONSTANTS
 
 =head2 IMPLEMENTATION
@@ -1653,6 +1651,8 @@ Timezone abbreviations (e.g., C<EST>, C<IST>) are captured in
 C<tz_abbrev> but are not resolved to UTC offsets. C<str2time> requires
 a UTC designator or numeric offset and will croak if only an
 abbreviation is present.
+
+=back
 
 =head1 EXPORTS
 
