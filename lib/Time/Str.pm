@@ -49,7 +49,8 @@ use constant NON_CONSTRUCTOR_KEYS => qw[ tz_abbrev
 }
 
 {
-  package Time::Str::Token;
+  package
+  Time::Str::Token; # hide from PAUSE/indexers
   sub _croak {
     &Carp::croak;
   }

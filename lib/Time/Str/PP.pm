@@ -14,7 +14,8 @@ use Carp     qw[croak];
 use Exporter qw[import];
 
 {
-  package Time::Str::PP::Calendar;
+  package
+  Time::Str::PP::Calendar; # hide from PAUSE/indexers
 
   our @EXPORT_OK = qw[ month_days
                        leap_year
@@ -150,7 +151,8 @@ use Exporter qw[import];
 }
 
 {
-  package Time::Str::PP::Token;
+  package
+  Time::Str::PP::Token; # hide from PAUSE/indexers
 
   our @EXPORT_OK  = qw[ parse_day
                         parse_day_name
