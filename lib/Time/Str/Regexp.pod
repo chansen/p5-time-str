@@ -103,7 +103,7 @@ Both C<tz_utc> and C<tz_offset> may be present in the same match
 =item C<tz_abbrev>
 
 Timezone abbreviation matching C<[A-Z][A-Za-z][A-Z]{1,4}> (e.g.,
-C<EST>, C<CET>, C<AEST>). Not validated against any timezone database.
+C<EST>, C<CET>, C<AEST>).
 
 =item C<tz_annotation>
 
