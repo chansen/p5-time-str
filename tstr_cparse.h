@@ -14,6 +14,10 @@ tstr_parse_result_t tstr_cparse_ecmascript(const char *p,
                                            size_t len,
                                            tstr_parsed_t *parsed);
 
+tstr_parse_result_t tstr_cparse_iso8601(const char *p,
+                                        size_t len,
+                                        tstr_parsed_t *parsed);
+
 tstr_parse_result_t tstr_cparse_rfc2822(const char *p,
                                         size_t len,
                                         tstr_parsed_t *parsed);
@@ -39,6 +43,8 @@ static inline tstr_parse_result_t tstr_cparse_dispatch(const char *s,
       return tstr_cparse_asn1gt(s, len, parsed);
     case TSTR_FORMAT_ECMASCRIPT:
       return tstr_cparse_ecmascript(s, len, parsed);
+    case TSTR_FORMAT_ISO8601:
+      return tstr_cparse_iso8601(s, len, parsed);
     case TSTR_FORMAT_RFC2822:
       return tstr_cparse_rfc2822(s, len, parsed);
     case TSTR_FORMAT_RFC3339:
