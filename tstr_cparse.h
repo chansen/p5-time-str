@@ -34,6 +34,10 @@ tstr_parse_result_t tstr_cparse_rfc4287(const char *p,
                                         size_t len,
                                         tstr_parsed_t *parsed);
 
+tstr_parse_result_t tstr_cparse_rfc9557(const char *p,
+                                        size_t len,
+                                        tstr_parsed_t *parsed);
+
 tstr_parse_result_t tstr_cparse_w3cdtf(const char *p,
                                        size_t len,
                                        tstr_parsed_t *parsed);
@@ -57,6 +61,8 @@ static inline tstr_parse_result_t tstr_cparse_dispatch(const char *s,
       return tstr_cparse_rfc3339(s, len, parsed);
     case TSTR_FORMAT_RFC4287:
       return tstr_cparse_rfc4287(s, len, parsed);
+    case TSTR_FORMAT_RFC9557:
+      return tstr_cparse_rfc9557(s, len, parsed);
     case TSTR_FORMAT_W3CDTF:
       return tstr_cparse_w3cdtf(s, len, parsed);
 
