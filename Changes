@@ -1,3 +1,7 @@
+0.85 2026-05-21
+  - Add native C parsers (Ragel) for ASN.1 GeneralizedTime, ISO 8601,
+    ISO 9075 and RFC 9557.
+
 0.80 2026-05-19
   - Add native C parsers (Ragel) for RFC 4287 and W3CDTF formats.
 
