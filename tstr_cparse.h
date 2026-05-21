@@ -6,6 +6,10 @@
 #include "tstr_parse_result.h"
 #include "tstr_parsed.h"
 
+tstr_parse_result_t tstr_cparse_asn1gt(const char *p,
+                                       size_t len,
+                                       tstr_parsed_t *parsed);
+
 tstr_parse_result_t tstr_cparse_ecmascript(const char *p,
                                            size_t len,
                                            tstr_parsed_t *parsed);
@@ -31,6 +35,8 @@ static inline tstr_parse_result_t tstr_cparse_dispatch(const char *s,
                                                        tstr_format_t fmt,
                                                        tstr_parsed_t *parsed) {
   switch (fmt) {
+    case TSTR_FORMAT_ASN1GT:
+      return tstr_cparse_asn1gt(s, len, parsed);
     case TSTR_FORMAT_ECMASCRIPT:
       return tstr_cparse_ecmascript(s, len, parsed);
     case TSTR_FORMAT_RFC2822:
