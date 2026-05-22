@@ -9,9 +9,9 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
     use Time::TZif;
     
     my $tz = Time::TZif->new(
-      filename   => '/usr/share/zoneinfo/US/Eastern',
-      on_gap     => 'later',      # default policy for gaps
-      on_overlap => 'earlier',    # default policy for overlaps
+      filename       => '/usr/share/zoneinfo/US/Eastern',
+      policy_gap     => 'later',      # default policy for gaps
+      policy_overlap => 'earlier',    # default policy for overlaps
     );
     
     # UTC to offset (always unambiguous)
@@ -21,11 +21,11 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
     my $offset = $tz->offset_for_local($epoch);
     
     # Local time to offset (override per call)
-    my $offset = $tz->offset_for_local($epoch, on_gap => 'croak');
+    my $offset = $tz->offset_for_local($epoch, policy_gap => 'croak');
     
     # Full type info: ($offset, $is_dst, $abbreviation)
     my ($off, $dst, $abbr) = $tz->type_info_for_utc($epoch);
-    my ($off, $dst, $abbr) = $tz->type_info_for_local($epoch, on_gap => 'std');
+    my ($off, $dst, $abbr) = $tz->type_info_for_local($epoch, policy_gap => 'std');
 
 =head1 DESCRIPTION
 
@@ -65,9 +65,9 @@ that can be set as defaults in the constructor or overridden per call.
 =head2 new
 
     my $tz = Time::TZif->new(
-      filename   => $filename,
-      on_gap     => 'croak',    # optional, default: 'croak'
-      on_overlap => 'croak',    # optional, default: 'croak'
+      filename       => $filename,
+      policy_gap     => 'croak',    # optional, default: 'croak'
+      policy_overlap => 'croak',    # optional, default: 'croak'
     );
 
 Creates a new C<Time::TZif> object by parsing the specified TZif file.
@@ -78,13 +78,13 @@ Creates a new C<Time::TZif> object by parsing the specified TZif file.
 
 Path to a TZif binary timezone file (e.g., C</usr/share/zoneinfo/US/Eastern>).
 
-=item C<on_gap> (optional, default: C<'croak'>)
+=item C<policy_gap> (optional, default: C<'croak'>)
 
 Default policy for resolving non-existing local times (during
 spring-forward gaps). See L</POLICIES>. Can be overridden per call in
 C<offset_for_local> and C<type_info_for_local>.
 
-=item C<on_overlap> (optional, default: C<'croak'>)
+=item C<policy_overlap> (optional, default: C<'croak'>)
 
 Default policy for resolving ambiguous local times (during fall-back
 overlaps). See L</POLICIES>. Can be overridden per call in
@@ -115,11 +115,11 @@ the epoch value obtained by treating the wall-clock time as if it were UTC).
 
 =over 4
 
-=item C<on_gap> (default: constructor value)
+=item C<policy_gap> (default: constructor value)
 
 Policy for non-existing local times. See L</POLICIES>.
 
-=item C<on_overlap> (default: constructor value)
+=item C<policy_overlap> (default: constructor value)
 
 Policy for ambiguous local times. See L</POLICIES>.
 
@@ -146,7 +146,7 @@ Returns the full type information for the given UTC epoch time:
     my ($offset, $is_dst, $abbreviation) = $tz->type_info_for_local($time, %opts);
 
 Returns the full type information for the given local epoch time. Accepts
-the same C<on_gap> and C<on_overlap> options as C<offset_for_local>.
+the same C<policy_gap> and C<policy_overlap> options as C<offset_for_local>.
 
 =head2 filename
 
@@ -154,15 +154,15 @@ the same C<on_gap> and C<on_overlap> options as C<offset_for_local>.
 
 Returns the filename used to construct the object.
 
-=head2 on_gap
+=head2 policy_gap
 
-    my $policy = $tz->on_gap;
+    my $policy = $tz->policy_gap;
 
 Returns the default gap policy set in the constructor.
 
-=head2 on_overlap
+=head2 policy_overlap
 
-    my $policy = $tz->on_overlap;
+    my $policy = $tz->policy_overlap;
 
 Returns the default overlap policy set in the constructor.
 
@@ -237,7 +237,7 @@ before the POSIX TZ string footer.
 
 The TZif file declares zero type records, which is invalid per RFC 8536.
 
-=item C<Unable to parse TZif: too many transitions: %d (max: %d)>
+=item C<Unable to parse TZif: too many transitions times: %d (max: %d)>
 
 The TZif file declares more transitions than the compiled limit of 2400.
 This guard prevents excessive memory allocation from malformed files.
@@ -268,12 +268,12 @@ A type record references an abbreviation index that is out of range.
 =item C<Unable to resolve local time: non-existing time (gap)>
 
 The given local time falls within a gap created by a spring-forward
-transition and the C<on_gap> policy is set to C<'croak'>.
+transition and the C<policy_gap> policy is set to C<'croak'>.
 
 =item C<Unable to resolve local time: ambiguous time (overlap)>
 
 The given local time falls within an overlap created by a fall-back
-transition and the C<on_overlap> policy is set to C<'croak'>.
+transition and the C<policy_overlap> policy is set to C<'croak'>.
 
 =back
 

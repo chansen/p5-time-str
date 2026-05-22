@@ -11,8 +11,10 @@ my %ValidPolicy = (
   earlier => 1, later => 1, std => 1, dst => 1, croak => 1
 );
 
-use constant TZIF_MAGIC           =>  0x545A6966;
-use constant TZIF_MAX_TRANSITIONS =>  2400;
+use constant TZIF_MAGIC     => 0x545A6966;
+use constant TZIF_MAX_TIMES => 2400;
+use constant TZIF_MAX_TYPES => 256;
+use constant TZIF_MAX_CHARS => 256;
 
 use constant HAS_QUAD => eval { my $x = pack('q>', 0); 1 };
 
@@ -20,40 +22,40 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(filename => $filename)/;
   my ($class, %p) = @_;
 
-  my ($filename, $on_gap, $on_overlap);
+  my ($filename, $policy_gap, $policy_overlap);
 
-  while (my ($name, $v) = each %p) {
-    if ($name eq 'filename') {
+  while (my ($key, $v) = each %p) {
+    if ($key eq 'filename') {
       $filename = $v;
     }
-    elsif ($name eq 'on_gap') {
+    elsif ($key eq 'policy_gap') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'on_gap'/;
-      $on_gap = $v;
+        or croak qq/Invalid policy value for the parameter 'policy_gap'/;
+      $policy_gap = $v;
     }
-    elsif ($name eq 'on_overlap') {
+    elsif ($key eq 'policy_overlap') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'on_overlap'/;
-      $on_overlap = $v;
+        or croak qq/Invalid policy value for the parameter 'policy_overlap'/;
+      $policy_overlap = $v;
     }
     else {
-      croak qq/Unrecognised named parameter: '$name'/;
+      croak qq/Unrecognised named parameter: '$key'/;
     }
   }
 
   (defined $filename)
     or croak q/Parameter 'filename' is required/;
 
-  $on_gap     //= 'croak';
-  $on_overlap //= 'croak';
+  $policy_gap     //= 'croak';
+  $policy_overlap //= 'croak';
 
   open(my $fh, '<:raw', $filename)
     or croak qq/Unable to parse TZif: could not open '$filename': '$!'/;
 
   my $self = bless {
     filename   => $filename,
-    on_gap     => $on_gap,
-    on_overlap => $on_overlap,
+    policy_gap     => $policy_gap,
+    policy_overlap => $policy_overlap,
   }, $class;
 
   $self->_parse($fh);
@@ -61,9 +63,9 @@ sub new {
   return $self;
 }
 
-sub filename   { $_[0]->{filename}   }
-sub on_gap     { $_[0]->{on_gap}     }
-sub on_overlap { $_[0]->{on_overlap} }
+sub filename       { $_[0]->{filename}   }
+sub policy_gap     { $_[0]->{policy_gap}     }
+sub policy_overlap { $_[0]->{policy_overlap} }
 
 sub _readn {
   my ($fh, $len) = @_;
@@ -134,8 +136,12 @@ sub _parse_data {
 
   ($typecnt >= 1)
     or croak q/Unable to parse TZif: must have at least one type/;
-  ($timecnt <= TZIF_MAX_TRANSITIONS)
-    or croak qq/Unable to parse TZif: too many transitions: $timecnt (max: @{[TZIF_MAX_TRANSITIONS]})/;
+  ($timecnt <= TZIF_MAX_TIMES)
+    or croak qq/Unable to parse TZif: too many transitions times: $timecnt (max: @{[TZIF_MAX_TIMES]})/;
+  ($typecnt <= TZIF_MAX_TYPES)
+    or croak qq/Unable to parse TZif: too many type records: $typecnt (max: @{[TZIF_MAX_TYPES]})/;
+  ($charcnt <= TZIF_MAX_CHARS)
+    or croak qq/Unable to parse TZif: too many chars: $charcnt (max: @{[TZIF_MAX_CHARS]})/;
 
   my $time_fmt = ($time_size == 8) ? 'q>' : 'l>';
 
@@ -260,21 +266,21 @@ sub _resolve_local {
   ((@_ & 1) == 0 && @_ >= 2) or croak q/Usage: $tz->offset_for_local($time, %opts)/;
   my ($self, $time, %p) = @_;
 
-  my ($on_gap, $on_overlap);
+  my ($policy_gap, $policy_overlap);
 
-  while (my ($name, $v) = each %p) {
-    if ($name eq 'on_gap') {
+  while (my ($key, $v) = each %p) {
+    if ($key eq 'policy_gap') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'on_gap'/;
-      $on_gap = $v;
+        or croak qq/Invalid policy value for the parameter 'policy_gap'/;
+      $policy_gap = $v;
     }
-    elsif ($name eq 'on_overlap') {
+    elsif ($key eq 'policy_overlap') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'on_overlap'/;
-      $on_overlap = $v;
+        or croak qq/Invalid policy value for the parameter 'policy_overlap'/;
+      $policy_overlap = $v;
     }
     else {
-      croak qq/Unrecognised named parameter: '$name'/;
+      croak qq/Unrecognised named parameter: '$key'/;
     }
   }
 
@@ -305,7 +311,8 @@ sub _resolve_local {
     if ($prev_off < $next_off) {
       # Spring forward: gap in [T + prev_off, T + next_off)
       if ($prev_off <= $boundary && $boundary < $next_off) {
-        return @{ _apply_policy($on_gap // $self->{on_gap}, $prev, $next,
+        $policy_gap //= $self->{policy_gap};
+        return @{ _apply_policy($policy_gap, $prev, $next,
           'Unable to resolve local time: non-existing time (gap)') };
       }
       $result_idx = $i + 1 if $boundary >= $next_off;
@@ -313,7 +320,8 @@ sub _resolve_local {
     elsif ($prev_off > $next_off) {
       # Fall back: overlap in [T + next_off, T + prev_off)
       if ($next_off <= $boundary && $boundary < $prev_off) {
-        return @{ _apply_policy($on_overlap // $self->{on_overlap}, $prev, $next,
+        $policy_overlap //= $self->{policy_overlap};
+        return @{ _apply_policy($policy_overlap, $prev, $next,
           'Unable to resolve local time: ambiguous time (overlap)') };
       }
       $result_idx = $i + 1 if $boundary >= $prev_off;
