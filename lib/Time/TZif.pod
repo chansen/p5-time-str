@@ -228,6 +228,16 @@ offset:
       policy_overlap => 'earlier',
     );
 
+B<Note:> C<Time::Local> assumes DST transitions of at least 60 minutes.
+Zones with smaller transitions (e.g., C<Australia/Lord_Howe>, 30 minutes)
+may not resolve correctly.
+
+=head2 L<POSIX>
+
+The behaviour of C<POSIX::mktime()> with C<tm_isdst = -1> for
+non-existing (gap) and ambiguous (overlap) local times is unspecified
+by the C standard and varies across platforms.
+
 =head1 DIAGNOSTICS
 
 All error messages are thrown as exceptions via C<Carp::croak>.
