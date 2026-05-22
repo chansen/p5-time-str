@@ -254,12 +254,14 @@ sub type_info_for_utc {
 
 sub offset_for_local {
   @_ >= 2 or croak q/Usage: $tz->offset_for_local($time, %opts)/;
-  return (&_resolve_local)[0];
+  my $type = &_resolve_local;
+  return $type->[0];
 }
 
 sub type_info_for_local {
   @_ >= 2 or croak q/Usage: $tz->type_info_for_local($time, %opts)/;
-  return &_resolve_local;
+  my $type = &_resolve_local;
+  return @$type;
 }
 
 sub _resolve_local {
@@ -288,7 +290,7 @@ sub _resolve_local {
   my $types = $self->{types};
 
   # No transitions
-  return @{ $types->[0] } unless @$times;
+  return $types->[0] unless @$times;
 
   # Find transitions within ±24 hours of the local time.
   # Since UTC offsets are bounded by (-86400, 86400), any transition
@@ -297,7 +299,7 @@ sub _resolve_local {
   my $hi = _upper_bound($times, $time + 86400, $lo);
 
   # No transitions nearby
-  return @{ $types->[$lo] } if $lo >= $hi;
+  return $types->[$lo] if $lo >= $hi;
 
   my $result_idx = $lo;
 
@@ -312,8 +314,8 @@ sub _resolve_local {
       # Spring forward: gap in [T + prev_off, T + next_off)
       if ($prev_off <= $boundary && $boundary < $next_off) {
         $policy_gap //= $self->{policy_gap};
-        return @{ _apply_policy($policy_gap, $prev, $next,
-          'Unable to resolve local time: non-existing time (gap)') };
+        return _apply_policy($policy_gap, $prev, $next,
+          'Unable to resolve local time: non-existing time (gap)');
       }
       $result_idx = $i + 1 if $boundary >= $next_off;
     }
@@ -321,8 +323,8 @@ sub _resolve_local {
       # Fall back: overlap in [T + next_off, T + prev_off)
       if ($next_off <= $boundary && $boundary < $prev_off) {
         $policy_overlap //= $self->{policy_overlap};
-        return @{ _apply_policy($policy_overlap, $prev, $next,
-          'Unable to resolve local time: ambiguous time (overlap)') };
+        return _apply_policy($policy_overlap, $prev, $next,
+          'Unable to resolve local time: ambiguous time (overlap)');
       }
       $result_idx = $i + 1 if $boundary >= $prev_off;
     }
@@ -331,7 +333,7 @@ sub _resolve_local {
     }
   }
 
-  return @{ $types->[$result_idx] };
+  return $types->[$result_idx];
 }
 
 sub _apply_policy {
