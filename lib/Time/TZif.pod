@@ -205,9 +205,7 @@ If you are migrating from or interoperating with other Perl timezone
 modules, the following constructor settings reproduce their local time
 resolution behaviour.
 
-=over 4
-
-=item L<DateTime::TimeZone>
+=head2 L<DateTime::TimeZone>
 
 C<DateTime::TimeZone-E<gt>offset_for_local_datetime()> croaks on gaps
 and selects the later (post-transition) offset for overlaps:
@@ -218,7 +216,7 @@ and selects the later (post-transition) offset for overlaps:
       policy_overlap => 'later',
     );
 
-=item L<Time::Local>
+=head2 L<Time::Local>
 
 C<Time::Local::timelocal()> folds gap times back into the pre-transition
 period and likewise resolves overlaps to the earlier (pre-transition)
@@ -229,8 +227,6 @@ offset:
       policy_gap     => 'earlier',
       policy_overlap => 'earlier',
     );
-
-=back
 
 =head1 DIAGNOSTICS
 
