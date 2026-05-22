@@ -169,33 +169,41 @@ Returns the default overlap policy set in the constructor.
 =head1 POLICIES
 
 The following policies control how C<offset_for_local> and
-C<type_info_for_local> handle problematic local times:
+C<type_info_for_local> handle the two problematic local time cases
+that arise from DST transitions.
+
+For B<gaps> (spring forward), the local time does not exist - clocks
+skipped over it. For B<overlaps> (fall back), the local time occurs
+twice - once before the transition and once after.
 
 =over 4
 
 =item C<'earlier'>
 
-Use the pre-transition offset. For overlaps, this is the earlier UTC
-interpretation. For gaps, this uses the offset from before the
-transition.
+Use the pre-transition offset. For gaps, this interprets the time as
+if the clock had not yet sprung forward. For overlaps, this selects
+the first occurrence (the earlier UTC instant).
 
 =item C<'later'>
 
-Use the post-transition offset. For overlaps, this is the later UTC
-interpretation. For gaps, this uses the offset from after the
-transition.
+Use the post-transition offset. For gaps, this interprets the time as
+if the clock had already sprung forward. For overlaps, this selects
+the second occurrence (the later UTC instant).
 
 =item C<'std'>
 
-Use whichever offset corresponds to standard time (C<is_dst = 0>).
+Use whichever offset corresponds to standard time (C<is_dst = 0>),
+regardless of which side of the transition it falls on.
 
 =item C<'dst'>
 
-Use whichever offset corresponds to daylight saving time (C<is_dst = 1>).
+Use whichever offset corresponds to daylight saving time
+(C<is_dst = 1>), regardless of which side of the transition it
+falls on.
 
 =item C<'croak'>
 
-Die with an error message.
+Reject the time outright by throwing an exception.
 
 =back
 
