@@ -10,8 +10,8 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
     
     my $tz = Time::TZif->new(
       filename       => '/usr/share/zoneinfo/US/Eastern',
-      policy_gap     => 'later',      # default policy for gaps
-      policy_overlap => 'earlier',    # default policy for overlaps
+      gap_policy     => 'later',      # default policy for gaps
+      overlap_policy => 'earlier',    # default policy for overlaps
     );
     
     # UTC to offset (always unambiguous)
@@ -21,11 +21,11 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
     my $offset = $tz->offset_for_local($epoch);
     
     # Local time to offset (override per call)
-    my $offset = $tz->offset_for_local($epoch, policy_gap => 'croak');
+    my $offset = $tz->offset_for_local($epoch, gap_policy => 'reject');
     
     # Full type info: ($offset, $is_dst, $abbreviation)
     my ($off, $dst, $abbr) = $tz->type_info_for_utc($epoch);
-    my ($off, $dst, $abbr) = $tz->type_info_for_local($epoch, policy_gap => 'std');
+    my ($off, $dst, $abbr) = $tz->type_info_for_local($epoch, gap_policy => 'std');
 
 =head1 DESCRIPTION
 
@@ -66,8 +66,8 @@ that can be set as defaults in the constructor or overridden per call.
 
     my $tz = Time::TZif->new(
       filename       => $filename,
-      policy_gap     => 'croak',    # optional, default: 'croak'
-      policy_overlap => 'croak',    # optional, default: 'croak'
+      gap_policy     => 'reject',    # optional, default: 'reject'
+      overlap_policy => 'reject',    # optional, default: 'reject'
     );
 
 Creates a new C<Time::TZif> object by parsing the specified TZif file.
@@ -78,13 +78,13 @@ Creates a new C<Time::TZif> object by parsing the specified TZif file.
 
 Path to a TZif binary timezone file (e.g., C</usr/share/zoneinfo/US/Eastern>).
 
-=item C<policy_gap> (optional, default: C<'croak'>)
+=item C<gap_policy> (optional, default: C<'reject'>)
 
 Default policy for resolving non-existing local times (during
 spring-forward gaps). See L</POLICIES>. Can be overridden per call in
 C<offset_for_local> and C<type_info_for_local>.
 
-=item C<policy_overlap> (optional, default: C<'croak'>)
+=item C<overlap_policy> (optional, default: C<'reject'>)
 
 Default policy for resolving ambiguous local times (during fall-back
 overlaps). See L</POLICIES>. Can be overridden per call in
@@ -115,11 +115,11 @@ the epoch value obtained by treating the wall-clock time as if it were UTC).
 
 =over 4
 
-=item C<policy_gap> (default: constructor value)
+=item C<gap_policy> (default: constructor value)
 
 Policy for non-existing local times. See L</POLICIES>.
 
-=item C<policy_overlap> (default: constructor value)
+=item C<overlap_policy> (default: constructor value)
 
 Policy for ambiguous local times. See L</POLICIES>.
 
@@ -146,7 +146,7 @@ Returns the full type information for the given UTC epoch time:
     my ($offset, $is_dst, $abbreviation) = $tz->type_info_for_local($time, %opts);
 
 Returns the full type information for the given local epoch time. Accepts
-the same C<policy_gap> and C<policy_overlap> options as C<offset_for_local>.
+the same C<gap_policy> and C<overlap_policy> options as C<offset_for_local>.
 
 =head2 filename
 
@@ -154,15 +154,15 @@ the same C<policy_gap> and C<policy_overlap> options as C<offset_for_local>.
 
 Returns the filename used to construct the object.
 
-=head2 policy_gap
+=head2 gap_policy
 
-    my $policy = $tz->policy_gap;
+    my $policy = $tz->gap_policy;
 
 Returns the default gap policy set in the constructor.
 
-=head2 policy_overlap
+=head2 overlap_policy
 
-    my $policy = $tz->policy_overlap;
+    my $policy = $tz->overlap_policy;
 
 Returns the default overlap policy set in the constructor.
 
@@ -201,7 +201,7 @@ Use whichever offset corresponds to daylight saving time
 (C<is_dst = 1>), regardless of which side of the transition it
 falls on.
 
-=item C<'croak'>
+=item C<'reject'>
 
 Reject the time outright by throwing an exception.
 
@@ -215,13 +215,13 @@ resolution behaviour.
 
 =head2 L<DateTime::TimeZone>
 
-C<DateTime::TimeZone-E<gt>offset_for_local_datetime()> croaks on gaps
-and selects the later (post-transition) offset for overlaps:
+C<DateTime::TimeZone-E<gt>offset_for_local_datetime()> throws an exception
+on gaps and selects the later (post-transition) offset for overlaps:
 
     my $tz = Time::TZif->new(
       filename       => $filename,
-      policy_gap     => 'croak',
-      policy_overlap => 'later',
+      gap_policy     => 'reject',
+      overlap_policy => 'later',
     );
 
 =head2 L<Time::Local>
@@ -232,8 +232,8 @@ offset:
 
     my $tz = Time::TZif->new(
       filename       => $filename,
-      policy_gap     => 'earlier',
-      policy_overlap => 'earlier',
+      gap_policy     => 'earlier',
+      overlap_policy => 'earlier',
     );
 
 B<Note:> C<Time::Local> assumes DST transitions of at least 60 minutes.
@@ -315,12 +315,12 @@ A type record references an abbreviation index that is out of range.
 =item C<Unable to resolve local time: non-existing time (gap)>
 
 The given local time falls within a gap created by a spring-forward
-transition and the C<policy_gap> policy is set to C<'croak'>.
+transition and the C<gap_policy> policy is set to C<'reject'>.
 
 =item C<Unable to resolve local time: ambiguous time (overlap)>
 
 The given local time falls within an overlap created by a fall-back
-transition and the C<policy_overlap> policy is set to C<'croak'>.
+transition and the C<overlap_policy> policy is set to C<'reject'>.
 
 =back
 

@@ -32,30 +32,30 @@ throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", bogus => 1) }
   qr/Unrecognised named parameter: 'bogus'/,
   'new: unknown parameter';
 
-throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", policy_gap => 'invalid') }
-  qr/Invalid policy value for the parameter 'policy_gap'/,
-  'new: invalid policy_gap policy';
+throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", gap_policy => 'invalid') }
+  qr/Invalid policy value for the parameter 'gap_policy'/,
+  'new: invalid gap_policy policy';
 
-throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", policy_overlap => 'invalid') }
-  qr/Invalid policy value for the parameter 'policy_overlap'/,
-  'new: invalid policy_overlap policy';
+throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", overlap_policy => 'invalid') }
+  qr/Invalid policy value for the parameter 'overlap_policy'/,
+  'new: invalid overlap_policy policy';
 
 ## Constructor defaults
 
 {
   my $tz = Time::TZif->new(filename => "$TZDIR/UTC");
-  is($tz->policy_gap,     'croak', 'default policy_gap is croak');
-  is($tz->policy_overlap, 'croak', 'default policy_overlap is croak');
+  is($tz->gap_policy,     'reject', 'default gap_policy is reject');
+  is($tz->overlap_policy, 'reject', 'default overlap_policy is reject');
 }
 
 {
   my $tz = Time::TZif->new(
     filename   => "$TZDIR/UTC",
-    policy_gap     => 'later',
-    policy_overlap => 'std',
+    gap_policy     => 'later',
+    overlap_policy => 'std',
   );
-  is($tz->policy_gap,     'later', 'custom policy_gap preserved');
-  is($tz->policy_overlap, 'std',   'custom policy_overlap preserved');
+  is($tz->gap_policy,     'later', 'custom gap_policy preserved');
+  is($tz->overlap_policy, 'std',   'custom overlap_policy preserved');
 }
 
 ## UTC timezone (no DST transitions)
@@ -141,25 +141,25 @@ SKIP: {
   {
     my $in_gap = timegm(0, 30, 2, 10, 2, 2024);
 
-    # Default policy_gap is 'croak'
+    # Default gap_policy is 'reject'
     throws_ok { $tz->offset_for_local($in_gap) }
       qr/Unable to resolve local time: non-existing time \(gap\)/,
-      'offset_for_local: gap default (croak)';
+      'offset_for_local: gap default (reject)';
 
-    throws_ok { $tz->offset_for_local($in_gap, policy_gap => 'croak') }
+    throws_ok { $tz->offset_for_local($in_gap, gap_policy => 'reject') }
       qr/Unable to resolve local time: non-existing time \(gap\)/,
-      'offset_for_local: gap croak';
+      'offset_for_local: gap reject';
 
-    is($tz->offset_for_local($in_gap, policy_gap => 'earlier'), $EST,
+    is($tz->offset_for_local($in_gap, gap_policy => 'earlier'), $EST,
       'offset_for_local: gap earlier = EST (pre-transition)');
 
-    is($tz->offset_for_local($in_gap, policy_gap => 'later'), $EDT,
+    is($tz->offset_for_local($in_gap, gap_policy => 'later'), $EDT,
       'offset_for_local: gap later = EDT (post-transition)');
 
-    is($tz->offset_for_local($in_gap, policy_gap => 'std'), $EST,
+    is($tz->offset_for_local($in_gap, gap_policy => 'std'), $EST,
       'offset_for_local: gap std = EST');
 
-    is($tz->offset_for_local($in_gap, policy_gap => 'dst'), $EDT,
+    is($tz->offset_for_local($in_gap, gap_policy => 'dst'), $EDT,
       'offset_for_local: gap dst = EDT');
   }
 
@@ -191,26 +191,26 @@ SKIP: {
   {
     my $in_overlap = timegm(0, 30, 1, 3, 10, 2024);
 
-    # Default policy_overlap is 'croak'
+    # Default overlap_policy is 'reject'
     throws_ok { $tz->offset_for_local($in_overlap) }
       qr/Unable to resolve local time: ambiguous time \(overlap\)/,
-      'offset_for_local: overlap default (croak)';
+      'offset_for_local: overlap default (reject)';
 
-    is($tz->offset_for_local($in_overlap, policy_overlap => 'later'), $EST,
+    is($tz->offset_for_local($in_overlap, overlap_policy => 'later'), $EST,
       'offset_for_local: overlap later = EST (post-transition)');
 
-    is($tz->offset_for_local($in_overlap, policy_overlap => 'earlier'), $EDT,
+    is($tz->offset_for_local($in_overlap, overlap_policy => 'earlier'), $EDT,
       'offset_for_local: overlap earlier = EDT (pre-transition)');
 
-    is($tz->offset_for_local($in_overlap, policy_overlap => 'std'), $EST,
+    is($tz->offset_for_local($in_overlap, overlap_policy => 'std'), $EST,
       'offset_for_local: overlap std = EST');
 
-    is($tz->offset_for_local($in_overlap, policy_overlap => 'dst'), $EDT,
+    is($tz->offset_for_local($in_overlap, overlap_policy => 'dst'), $EDT,
       'offset_for_local: overlap dst = EDT');
 
-    throws_ok { $tz->offset_for_local($in_overlap, policy_overlap => 'croak') }
+    throws_ok { $tz->offset_for_local($in_overlap, overlap_policy => 'reject') }
       qr/Unable to resolve local time: ambiguous time \(overlap\)/,
-      'offset_for_local: overlap croak';
+      'offset_for_local: overlap reject';
   }
 
   # type_info_for_local
@@ -248,9 +248,9 @@ SKIP: {
 
   {
     my $overlap_start = timegm(0, 0, 1, 3, 10, 2024);
-    is($tz->offset_for_local($overlap_start, policy_overlap => 'earlier'), $EDT,
+    is($tz->offset_for_local($overlap_start, overlap_policy => 'earlier'), $EDT,
       'offset_for_local: exactly at overlap start (01:00:00) earlier = EDT');
-    is($tz->offset_for_local($overlap_start, policy_overlap => 'later'), $EST,
+    is($tz->offset_for_local($overlap_start, overlap_policy => 'later'), $EST,
       'offset_for_local: exactly at overlap start (01:00:00) later = EST');
   }
   {
@@ -264,23 +264,23 @@ SKIP: {
   {
     my $tz_custom = Time::TZif->new(
       filename   => "$TZDIR/US/Eastern",
-      policy_gap     => 'later',
-      policy_overlap => 'earlier',
+      gap_policy     => 'later',
+      overlap_policy => 'earlier',
     );
 
     my $in_gap = timegm(0, 30, 2, 10, 2, 2024);
     is($tz_custom->offset_for_local($in_gap), $EDT,
-      'constructor policy_gap=later: gap returns EDT');
+      'constructor gap_policy=later: gap returns EDT');
 
     my $in_overlap = timegm(0, 30, 1, 3, 10, 2024);
     is($tz_custom->offset_for_local($in_overlap), $EDT,
-      'constructor policy_overlap=earlier: overlap returns EDT');
+      'constructor overlap_policy=earlier: overlap returns EDT');
 
     # Per-call override takes precedence
-    is($tz_custom->offset_for_local($in_gap, policy_gap => 'earlier'), $EST,
-      'per-call policy_gap overrides constructor default');
-    is($tz_custom->offset_for_local($in_overlap, policy_overlap => 'later'), $EST,
-      'per-call policy_overlap overrides constructor default');
+    is($tz_custom->offset_for_local($in_gap, gap_policy => 'earlier'), $EST,
+      'per-call gap_policy overrides constructor default');
+    is($tz_custom->offset_for_local($in_overlap, overlap_policy => 'later'), $EST,
+      'per-call overlap_policy overrides constructor default');
   }
 }
 
@@ -316,11 +316,11 @@ SKIP: {
     my $in_gap = timegm(0, 30, 2, 31, 2, 2024);
     throws_ok { $tz->offset_for_local($in_gap) }
       qr/Unable to resolve local time: non-existing time \(gap\)/,
-      'Stockholm: spring gap croak';
+      'Stockholm: spring gap reject';
 
-    is($tz->offset_for_local($in_gap, policy_gap => 'earlier'), $CET,
+    is($tz->offset_for_local($in_gap, gap_policy => 'earlier'), $CET,
       'Stockholm: spring gap earlier = CET');
-    is($tz->offset_for_local($in_gap, policy_gap => 'later'), $CEST,
+    is($tz->offset_for_local($in_gap, gap_policy => 'later'), $CEST,
       'Stockholm: spring gap later = CEST');
   }
 
@@ -331,7 +331,7 @@ SKIP: {
     is($tz->offset_for_utc($fall),     $CET,  'Stockholm: at fall = CET');
 
     my $in_overlap = timegm(0, 30, 2, 27, 9, 2024);
-    is($tz->offset_for_local($in_overlap, policy_overlap => 'std'), $CET,
+    is($tz->offset_for_local($in_overlap, overlap_policy => 'std'), $CET,
       'Stockholm: fall overlap std = CET');
   }
 }
@@ -343,13 +343,13 @@ SKIP: {
     skip "UTC not available", 3 unless -f "$TZDIR/UTC";
     my $tz = Time::TZif->new(filename => "$TZDIR/UTC");
 
-    throws_ok { $tz->offset_for_local(0, policy_overlap => 'invalid') }
-      qr/Invalid policy value for the parameter 'policy_overlap'/,
-      'offset_for_local: invalid policy_overlap policy';
+    throws_ok { $tz->offset_for_local(0, overlap_policy => 'invalid') }
+      qr/Invalid policy value for the parameter 'overlap_policy'/,
+      'offset_for_local: invalid overlap_policy policy';
 
-    throws_ok { $tz->offset_for_local(0, policy_gap => 'invalid') }
-      qr/Invalid policy value for the parameter 'policy_gap'/,
-      'offset_for_local: invalid policy_gap policy';
+    throws_ok { $tz->offset_for_local(0, gap_policy => 'invalid') }
+      qr/Invalid policy value for the parameter 'gap_policy'/,
+      'offset_for_local: invalid gap_policy policy';
 
     throws_ok { $tz->offset_for_local(0, bogus => 1) }
       qr/Unrecognised named parameter: 'bogus'/,

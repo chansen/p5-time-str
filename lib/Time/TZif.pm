@@ -8,7 +8,7 @@ use Carp qw[croak];
 our $VERSION = '0.85';
 
 my %ValidPolicy = (
-  earlier => 1, later => 1, std => 1, dst => 1, croak => 1
+  earlier => 1, later => 1, std => 1, dst => 1, reject => 1
 );
 
 use constant TZIF_MAGIC     => 0x545A6966;
@@ -22,21 +22,21 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(filename => $filename)/;
   my ($class, %p) = @_;
 
-  my ($filename, $policy_gap, $policy_overlap);
+  my ($filename, $gap_policy, $overlap_policy);
 
   while (my ($key, $v) = each %p) {
     if ($key eq 'filename') {
       $filename = $v;
     }
-    elsif ($key eq 'policy_gap') {
+    elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'policy_gap'/;
-      $policy_gap = $v;
+        or croak qq/Invalid policy value for the parameter 'gap_policy'/;
+      $gap_policy = $v;
     }
-    elsif ($key eq 'policy_overlap') {
+    elsif ($key eq 'overlap_policy') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'policy_overlap'/;
-      $policy_overlap = $v;
+        or croak qq/Invalid policy value for the parameter 'overlap_policy'/;
+      $overlap_policy = $v;
     }
     else {
       croak qq/Unrecognised named parameter: '$key'/;
@@ -46,16 +46,16 @@ sub new {
   (defined $filename)
     or croak q/Parameter 'filename' is required/;
 
-  $policy_gap     //= 'croak';
-  $policy_overlap //= 'croak';
+  $gap_policy     //= 'reject';
+  $overlap_policy //= 'reject';
 
   open(my $fh, '<:raw', $filename)
     or croak qq/Unable to parse TZif: could not open '$filename': '$!'/;
 
   my $self = bless {
     filename   => $filename,
-    policy_gap     => $policy_gap,
-    policy_overlap => $policy_overlap,
+    gap_policy     => $gap_policy,
+    overlap_policy => $overlap_policy,
   }, $class;
 
   $self->_parse($fh);
@@ -64,8 +64,8 @@ sub new {
 }
 
 sub filename       { $_[0]->{filename}   }
-sub policy_gap     { $_[0]->{policy_gap}     }
-sub policy_overlap { $_[0]->{policy_overlap} }
+sub gap_policy     { $_[0]->{gap_policy}     }
+sub overlap_policy { $_[0]->{overlap_policy} }
 
 sub _readn {
   my ($fh, $len) = @_;
@@ -268,18 +268,18 @@ sub _resolve_local {
   ((@_ & 1) == 0 && @_ >= 2) or croak q/Usage: $tz->offset_for_local($time, %opts)/;
   my ($self, $time, %p) = @_;
 
-  my ($policy_gap, $policy_overlap);
+  my ($gap_policy, $overlap_policy);
 
   while (my ($key, $v) = each %p) {
-    if ($key eq 'policy_gap') {
+    if ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'policy_gap'/;
-      $policy_gap = $v;
+        or croak qq/Invalid policy value for the parameter 'gap_policy'/;
+      $gap_policy = $v;
     }
-    elsif ($key eq 'policy_overlap') {
+    elsif ($key eq 'overlap_policy') {
       (defined $v && exists $ValidPolicy{$v})
-        or croak qq/Invalid policy value for the parameter 'policy_overlap'/;
-      $policy_overlap = $v;
+        or croak qq/Invalid policy value for the parameter 'overlap_policy'/;
+      $overlap_policy = $v;
     }
     else {
       croak qq/Unrecognised named parameter: '$key'/;
@@ -313,8 +313,8 @@ sub _resolve_local {
     if ($prev_off < $next_off) {
       # Spring forward: gap in [T + prev_off, T + next_off)
       if ($prev_off <= $boundary && $boundary < $next_off) {
-        $policy_gap //= $self->{policy_gap};
-        return _apply_policy($policy_gap, $prev, $next,
+        $gap_policy //= $self->{gap_policy};
+        return _apply_policy($gap_policy, $prev, $next,
           'Unable to resolve local time: non-existing time (gap)');
       }
       $result_idx = $i + 1 if $boundary >= $next_off;
@@ -322,8 +322,8 @@ sub _resolve_local {
     elsif ($prev_off > $next_off) {
       # Fall back: overlap in [T + next_off, T + prev_off)
       if ($next_off <= $boundary && $boundary < $prev_off) {
-        $policy_overlap //= $self->{policy_overlap};
-        return _apply_policy($policy_overlap, $prev, $next,
+        $overlap_policy //= $self->{overlap_policy};
+        return _apply_policy($overlap_policy, $prev, $next,
           'Unable to resolve local time: ambiguous time (overlap)');
       }
       $result_idx = $i + 1 if $boundary >= $prev_off;
