@@ -36,7 +36,9 @@ GetOptions('tzdir=s' => \$TZDIR)
 
 $TZDIR //= find_tzdir();
 
-my @TZIDS = @ARGV ? @ARGV : qw[Europe/Stockholm America/New_York Australia/Lord_Howe];
+my @TZIDS = @ARGV ? @ARGV : qw[ America/New_York
+                                Australia/Lord_Howe
+                                Europe/Stockholm ];
 
 printf "IANA time zone database vesion: %s\n", 
   tzdb_version($TZDIR) // 'unknown';
