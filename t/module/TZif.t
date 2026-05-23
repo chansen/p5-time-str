@@ -7,16 +7,14 @@ use Test::More;
 use lib 't';
 use Util qw[throws_ok];
 
-BEGIN {
-  use_ok('Time::TZif');
-}
-
 my $TZDIR = '/usr/share/zoneinfo';
 
 # Skip all tests if zoneinfo is not available
 unless (-d $TZDIR && -f "$TZDIR/UTC") {
   plan skip_all => "zoneinfo directory not available at $TZDIR";
 }
+
+use_ok('Time::TZif');
 
 ## Constructor
 
