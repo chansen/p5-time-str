@@ -370,7 +370,7 @@ use Exporter qw[import];
       if ($m < 3) {
         $y--, $m += 12;
       }
-      return ((1461 * $y) >> 2) - $y / 100 + $y / 400
+      ((1461 * $y) >> 2) - $y / 100 + $y / 400
         + $d + ((979 * $m - 2918) >> 5) - 306;
     };
     return ($rdn - RDN_UNIX_EPOCH) * 86400 + $H * 3600 + $M * 60 + $S;
