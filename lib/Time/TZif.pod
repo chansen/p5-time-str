@@ -107,6 +107,15 @@ always unambiguous.
 
     my $offset = $tz->offset_for_local($time);
     my $offset = $tz->offset_for_local($time, %opts);
+    
+    use Time::Str::Time qw[timegm_modern];
+    
+    # Treat wall-clock 2024-03-10 02:30:00 as a UTC epoch
+    my $local  = timegm_modern(0, 30, 2, 10, 3, 2024);
+    my $offset = $tz->offset_for_local($local);
+    
+    # The actual UTC epoch is:
+    my $utc = $local - $offset;
 
 Returns the UTC offset in seconds for the given local epoch time (i.e.,
 the epoch value obtained by treating the wall-clock time as if it were UTC).
@@ -289,6 +298,15 @@ The TZif file declares zero type records, which is invalid per RFC 8536.
 The TZif file declares more transitions than the compiled limit of 2400.
 This guard prevents excessive memory allocation from malformed files.
 
+=item C<Unable to parse TZif: too many type records: %d (max: %d)>
+
+The TZif file declares more type records than the compiled limit of 256.
+
+=item C<Unable to parse TZif: too many chars: %d (max: %d)>
+
+The TZif file declares more abbreviation characters than the compiled
+limit of 256.
+
 =item C<Unable to parse TZif: invalid type index: %d (max: %d)>
 
 A transition references a type index that is out of range.
@@ -321,6 +339,27 @@ transition and the C<gap_policy> policy is set to C<'reject'>.
 
 The given local time falls within an overlap created by a fall-back
 transition and the C<overlap_policy> policy is set to C<'reject'>.
+
+=back
+
+=head2 Usage errors
+
+=over 4
+
+=item C<Parameter 'filename' is required>
+
+The C<new> constructor was called without the required C<filename>
+parameter.
+
+=item C<Invalid policy value for the parameter '%s'>
+
+The value given for C<policy_gap> or C<policy_overlap> is not one of
+the recognised policies (C<earlier>, C<later>, C<std>, C<dst>,
+C<reject>). See L</POLICIES>.
+
+=item C<Unrecognised named parameter: '%s'>
+
+An unrecognised named parameter was given.
 
 =back
 
