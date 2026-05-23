@@ -5,13 +5,13 @@ use warnings;
 use Test::More;
 
 use lib 't';
-use Util qw[throws_ok];
+use Util qw[find_tzdir throws_ok];
 
-my $TZDIR = '/usr/share/zoneinfo';
+my $TZDIR = find_tzdir();
 
 # Skip all tests if zoneinfo is not available
-unless (-d $TZDIR && -f "$TZDIR/UTC") {
-  plan skip_all => "zoneinfo directory not available at $TZDIR";
+unless (defined $TZDIR) {
+  plan skip_all => "zoneinfo directory not available";
 }
 
 use_ok('Time::TZif');
