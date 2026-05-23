@@ -564,12 +564,14 @@ timegm_posix(...)
     M = (int)SvIV(ST(1));
     H = (int)SvIV(ST(2));
     d = (int)SvIV(ST(3));
-    m = (int)SvIV(ST(4)) + 1;
-    y = (int)SvIV(ST(5)) + 1900;
-    if (y < 1 || y > 9999)
-      croak("Parameter 'year' is out of range [1, 9999]");
-    if (m < 1 || m > 12)
-      croak("Parameter 'month' is out of range [1, 12]");
+    m = (int)SvIV(ST(4));
+    y = (int)SvIV(ST(5));
+    if (y < -1899 || y > 8099)
+      croak("Parameter 'year' is out of range [-1899, 8099]");
+    y += 1900;
+    if (m < 0 || m > 11)
+      croak("Parameter 'month' is out of range [0, 11]");
+    m += 1;
     if (d < 1 || d > tstr_calendar_month_days(y, m))
       croak("Parameter 'day' is out of range");
     if (H < 0 || H > 23)

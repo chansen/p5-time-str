@@ -379,6 +379,10 @@ use Exporter qw[import];
   sub timegm_posix {
     @_ == 6 or croak q/Usage: timegm_posix(sec, min, hour, mday, mon, year)/;
     my ($S, $M, $H, $d, $m, $y) = @_;
+    ($y >= -1899 && $y <= 8099)
+      or croak q/Parameter 'year' is out of range [-1899, 8099]/;
+    ($m >= 0 && $m <= 11)
+      or croak q/Parameter 'month' is out of range [0, 11]/;
     return timegm_modern($S, $M, $H, $d, $m + 1, $y + 1900);
   }
 }

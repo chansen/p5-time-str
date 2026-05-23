@@ -163,6 +163,14 @@ is(timegm_posix(59, 59, 23, 31, 11, 8099), timegm_modern(59, 59, 23, 31, 12, 999
   'timegm_posix: year 9999 (posix: 8099)');
 
 # parameter validation
+throws_ok { timegm_posix(0, 0, 0, 1, 1, -1900) }
+  qr/Parameter 'year' is out of range/,
+  'timegm_posix: year -1900';
+
+throws_ok { timegm_posix(0, 0, 0, 1, 1, 8100) }
+  qr/Parameter 'year' is out of range/,
+  'timegm_posix: year 8100';
+
 throws_ok { timegm_posix(0, 0, 0, 1, -1, 70) }
   qr/Parameter 'month' is out of range/,
   'timegm_posix: month -1 (posix)';
