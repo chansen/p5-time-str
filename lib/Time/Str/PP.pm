@@ -356,7 +356,7 @@ use Exporter qw[import];
       or croak q/Parameter 'year' is out of range [1, 9999]/;
     ($m >= 1 && $m <= 12)
       or croak q/Parameter 'month' is out of range [1, 12]/;
-    ($d >= 1 && ($d <= 28 || $d <= Time::Str::PP::month_days($y, $m)))
+    ($d >= 1 && ($d <= 28 || $d <= Time::Str::PP::Calendar::month_days($y, $m)))
       or croak q/Parameter 'day' is out of range/;
     ($H >= 0 && $H <= 23)
       or croak q/Parameter 'hour' is out of range [0, 23]/;
@@ -380,6 +380,51 @@ use Exporter qw[import];
     @_ == 6 or croak q/Usage: timegm_posix(sec, min, hour, mday, mon, year)/;
     my ($S, $M, $H, $d, $m, $y) = @_;
     return timegm_modern($S, $M, $H, $d, $m + 1, $y + 1900);
+  }
+}
+
+{
+  package
+  Time::Str::PP::Util; # hide from PAUSE/indexers
+
+  our @EXPORT_OK = qw[ lower_bound
+                       upper_bound ];
+
+  use Carp     qw[croak];
+  use Exporter qw[import];
+
+  sub lower_bound {
+    (@_ >= 2 && @_ <= 4) or croak q/Usage: lower_bound(array, value [, lo [, h i]])/;
+    my ($array, $value, $lo, $hi) = @_;
+
+    ref $array eq 'ARRAY'
+      or croak q/Parameter 'array' must be an array reference/;
+
+    $lo //= 0;
+    $hi //= @$array;
+    while ($lo < $hi) {
+      my $mid = ($lo + $hi) >> 1;
+      if   ($array->[$mid] < $value) { $lo = $mid + 1 }
+      else                           { $hi = $mid     }
+    }
+    return $lo;
+  }
+
+  sub upper_bound {
+    (@_ >= 2 && @_ <= 4) or croak q/Usage: upper_bound(array, value [, lo [, hi ]])/;
+    my ($array, $value, $lo, $hi) = @_;
+
+    ref $array eq 'ARRAY'
+      or croak q/Parameter 'array' must be an array reference/;
+
+    $lo //= 0;
+    $hi //= @$array;
+    while ($lo < $hi) {
+      my $mid = ($lo + $hi) >> 1;
+      if   ($array->[$mid] <= $value) { $lo = $mid + 1 }
+      else                            { $hi = $mid     }
+    }
+    return $lo;
   }
 }
 

@@ -584,3 +584,77 @@ timegm_posix(...)
     mPUSHn((NV)tstr_time_timegm(y, m, d, H, M, S));
 #endif
 
+MODULE = Time::Str  PACKAGE = Time::Str::Util
+
+PROTOTYPES: DISABLE
+
+void
+lower_bound(...)
+  PREINIT:
+    AV *av;
+    IV value, lo, hi, mid;
+  PPCODE:
+    if (items < 2 || items > 4)
+      croak("Usage: lower_bound(array, value [, lo [, hi]])");
+    if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
+      croak("Parameter 'array' must be an array reference");
+    av = (AV *)SvRV(ST(0));
+    value = SvIV(ST(1));
+    {
+      IV len = av_len(av) + 1;
+      lo = (items >= 3) ? SvIV(ST(2)) : 0;
+      hi = (items >= 4) ? SvIV(ST(3)) : len;
+      if (lo < 0 || lo > len)
+        croak("Parameter 'lo' is out of range [0, %" IVdf "]", len);
+      if (hi < 0 || hi > len)
+        croak("Parameter 'hi' is out of range [0, %" IVdf "]", len);
+      if (lo > hi)
+        croak("Parameter 'lo' must not exceed 'hi'");
+    }
+    while (lo < hi) {
+      mid = (lo + hi) >> 1;
+      {
+        SV **elem = av_fetch(av, mid, 0);
+        if (elem && SvIV(*elem) < value)
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+    }
+    mPUSHi(lo);
+
+void
+upper_bound(...)
+  PREINIT:
+    AV *av;
+    IV value, lo, hi, mid;
+  PPCODE:
+    if (items < 2 || items > 4)
+      croak("Usage: upper_bound(array, value [, lo [, hi ]])");
+    if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
+      croak("Parameter 'array' must be an array reference");
+    av = (AV *)SvRV(ST(0));
+    value = SvIV(ST(1));
+    {
+      IV len = av_len(av) + 1;
+      lo = (items >= 3) ? SvIV(ST(2)) : 0;
+      hi = (items >= 4) ? SvIV(ST(3)) : len;
+      if (lo < 0 || lo > len)
+        croak("Parameter 'lo' is out of range [0, %" IVdf "]", len);
+      if (hi < 0 || hi > len)
+        croak("Parameter 'hi' is out of range [0, %" IVdf "]", len);
+      if (lo > hi)
+        croak("Parameter 'lo' must not exceed 'hi'");
+    }
+    while (lo < hi) {
+      mid = (lo + hi) >> 1;
+      {
+        SV **elem = av_fetch(av, mid, 0);
+        if (elem && SvIV(*elem) <= value)
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+    }
+    mPUSHi(lo);
+
