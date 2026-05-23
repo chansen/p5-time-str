@@ -302,7 +302,7 @@ This guard prevents excessive memory allocation from malformed files.
 
 The TZif file declares more type records than the compiled limit of 256.
 
-=item C<Unable to parse TZif: too many chars: %d (max: %d)>
+=item C<Unable to parse TZif: too many abbreviation characters: %d (max: %d)>
 
 The TZif file declares more abbreviation characters than the compiled
 limit of 256.
