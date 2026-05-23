@@ -73,13 +73,13 @@ throws_ok { Time::TZif->new(filename => "$TZDIR/UTC", overlap_policy => 'invalid
   is($info[2], 'UTC', 'UTC: type_info abbreviation');
 }
 
-## US/Eastern (EST/EDT with spring-forward and fall-back)
+## America/New_York (EST/EDT with spring-forward and fall-back)
 
 SKIP: {
-  skip "US/Eastern not available", 60
-    unless -f "$TZDIR/US/Eastern";
+  skip "America/New_York not available", 60
+    unless -f "$TZDIR/America/New_York";
 
-  my $tz = Time::TZif->new(filename => "$TZDIR/US/Eastern");
+  my $tz = Time::TZif->new(filename => "$TZDIR/America/New_York");
   isa_ok($tz, 'Time::TZif');
 
   # Known constants
@@ -261,7 +261,7 @@ SKIP: {
 
   {
     my $tz_custom = Time::TZif->new(
-      filename   => "$TZDIR/US/Eastern",
+      filename   => "$TZDIR/America/New_York",
       gap_policy     => 'later',
       overlap_policy => 'earlier',
     );

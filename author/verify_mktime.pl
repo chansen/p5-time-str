@@ -53,7 +53,7 @@ $TZDIR //= find_tzdir();
 printf "IANA time zone database vesion: %s\n", 
   tzdb_version($TZDIR) // 'unknown';
 
-my @TZIDS = @ARGV ? @ARGV : qw[Europe/Stockholm US/Eastern Australia/Lord_Howe];
+my @TZIDS = @ARGV ? @ARGV : qw[Europe/Stockholm America/New_York Australia/Lord_Howe];
 
 foreach my $TZID (@TZIDS) {
   my $filename = "${TZDIR}/${TZID}";
