@@ -178,30 +178,30 @@ twice - once before the transition and once after.
 
 =over 4
 
-=item C<'earlier'>
+=item C<earlier>
 
 Use the pre-transition offset. For gaps, this interprets the time as
 if the clock had not yet sprung forward. For overlaps, this selects
 the first occurrence (the earlier UTC instant).
 
-=item C<'later'>
+=item C<later>
 
 Use the post-transition offset. For gaps, this interprets the time as
 if the clock had already sprung forward. For overlaps, this selects
 the second occurrence (the later UTC instant).
 
-=item C<'std'>
+=item C<std>
 
 Use whichever offset corresponds to standard time (C<is_dst = 0>),
 regardless of which side of the transition it falls on.
 
-=item C<'dst'>
+=item C<dst>
 
 Use whichever offset corresponds to daylight saving time
 (C<is_dst = 1>), regardless of which side of the transition it
 falls on.
 
-=item C<'reject'>
+=item C<reject>
 
 Reject the time outright by throwing an exception.
 

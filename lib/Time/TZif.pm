@@ -53,7 +53,7 @@ sub new {
     or croak qq/Unable to parse TZif: could not open '$filename': '$!'/;
 
   my $self = bless {
-    filename   => $filename,
+    filename       => $filename,
     gap_policy     => $gap_policy,
     overlap_policy => $overlap_policy,
   }, $class;
@@ -141,7 +141,7 @@ sub _parse_data {
   ($typecnt <= TZIF_MAX_TYPES)
     or croak qq/Unable to parse TZif: too many type records: $typecnt (max: @{[TZIF_MAX_TYPES]})/;
   ($charcnt <= TZIF_MAX_CHARS)
-    or croak qq/Unable to parse TZif: too many chars: $charcnt (max: @{[TZIF_MAX_CHARS]})/;
+    or croak qq/Unable to parse TZif: too many abbreviation characters: $charcnt (max: @{[TZIF_MAX_CHARS]})/;
 
   my $time_fmt = ($time_size == 8) ? 'q>' : 'l>';
 
