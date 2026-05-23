@@ -6,7 +6,7 @@ use v5.10.1;
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION     = '0.85';
+  our $VERSION     = '0.86';
   our @EXPORT_OK   = qw[ lower_bound
                          upper_bound ];
   our %EXPORT_TAGS = ( all => \@EXPORT_OK );

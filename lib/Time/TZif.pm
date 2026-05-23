@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 
-our $VERSION = '0.85';
+our $VERSION = '0.86';
 
 use Carp            qw[croak];
 use Time::Str::Util qw[lower_bound upper_bound];
