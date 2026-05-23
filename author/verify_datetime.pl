@@ -16,17 +16,33 @@ use strict;
 use warnings;
 use v5.10;
 
-use Getopt::Long       qw[GetOptions];
-use DateTime::TimeZone qw[];
-use Time::Moment       qw[];
-use Time::TZif         qw[];
+BEGIN {
+  require FindBin;
+  require lib;
+  lib->import(qq[$FindBin::Bin/lib]);
+}
 
-my $TZDIR = '/usr/share/zoneinfo';
+use Getopt::Long                qw[GetOptions];
+use DateTime::TimeZone          qw[];
+use DateTime::TimeZone::Catalog qw[];
+use Time::Moment                qw[];
+use Time::TZif                  qw[];
+use Util                        qw[find_tzdir tzdb_version];
+
+my $TZDIR;
 
 GetOptions('tzdir=s' => \$TZDIR)
   or die "Usage: $0 [--tzdir DIR] [TZID ...]\n";
 
+$TZDIR //= find_tzdir();
+
 my @TZIDS = @ARGV ? @ARGV : qw[Europe/Stockholm US/Eastern Australia/Lord_Howe];
+
+printf "IANA time zone database vesion: %s\n", 
+  tzdb_version($TZDIR) // 'unknown';
+
+printf "DateTime::TimeZone IANA time zone database vesion: %s\n", 
+  DateTime::TimeZone::Catalog->OlsonVersion;
 
 foreach my $TZID (@TZIDS) {
   my $filename = "${TZDIR}/${TZID}";

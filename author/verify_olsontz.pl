@@ -17,9 +17,12 @@ use v5.10;
 
 use DateTime::TimeZone::Tzfile  qw[];
 use Time::OlsonTZ::Data         qw[ olson_canonical_names
-                                    olson_tzfile ];
+                                    olson_tzfile 
+                                    olson_version ];
 use Time::Moment                qw[];
 use Time::TZif                  qw[];
+
+printf "IANA time zone database vesion: %s\n", olson_version();
 
 my $total_tested     = 0;
 my $total_mismatches = 0;

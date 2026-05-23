@@ -32,14 +32,26 @@ use strict;
 use warnings;
 use v5.10;
 
+BEGIN {
+  require FindBin;
+  require lib;
+  lib->import(qq[$FindBin::Bin/lib]);
+}
+
 use Getopt::Long  qw[GetOptions];
 use POSIX         qw[mktime];
 use Time::TZif    qw[];
+use Util          qw[find_tzdir tzdb_version];
 
-my $TZDIR = '/usr/share/zoneinfo';
+my $TZDIR;
 
 GetOptions('tzdir=s' => \$TZDIR)
   or die "Usage: $0 [--tzdir DIR] [TZID ...]\n";
+
+$TZDIR //= find_tzdir();
+
+printf "IANA time zone database vesion: %s\n", 
+  tzdb_version($TZDIR) // 'unknown';
 
 my @TZIDS = @ARGV ? @ARGV : qw[Europe/Stockholm US/Eastern Australia/Lord_Howe];
 
