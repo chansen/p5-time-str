@@ -62,15 +62,15 @@ foreach my $TZID (@TZIDS) {
     overlap_policy => 'later',
   );
 
-  my $times = $tz2->{times}; # ooups, hack
+  my @times = $tz2->transitions_times;
 
   my @mismatches;
   my $tested = 0;
-  my $max = @$times;
+  my $max = @times;
 
   for (my $i = 0; $i < $max; $i++) {
     for (my $j = -24; $j < 24; $j++) {
-      my $epoch = $times->[$i] + ($j * 1800);
+      my $epoch = $times[$i] + ($j * 1800);
 
       my $tm = Time::Moment->from_epoch($epoch);
 

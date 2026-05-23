@@ -65,15 +65,15 @@ foreach my $TZID (@TZIDS) {
     overlap_policy => 'earlier',
   );
 
-  my $times = $tz->{times}; # ooups, hack
+  my @times = $tz->transitions_times;
 
   my @mismatches;
   my $tested = 0;
-  my $max = @$times;
+  my $max = @times;
 
   for (my $i = 0; $i < $max; $i++) {
     for (my $j = -24; $j < 24; $j++) {
-      my $epoch = $times->[$i] + ($j * 1800);
+      my $epoch = $times[$i] + ($j * 1800);
 
       my @gm = gmtime($epoch);
       my $o  = $tz->offset_for_local($epoch);

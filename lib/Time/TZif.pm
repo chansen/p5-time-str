@@ -214,6 +214,12 @@ sub _parse_data {
   $self->{types} = \@resolved;
 }
 
+sub transitions_times {
+  @_ == 1 or croak q/Usage: $tz->transitions_times()/;
+  my ($self) = @_;
+  return wantarray ? @{ $self->{times} } : [ @{ $self->{times} } ];
+}
+
 sub offset_for_utc {
   @_ == 2 or croak q/Usage: $tz->offset_for_utc($time)/;
   my ($self, $time) = @_;
