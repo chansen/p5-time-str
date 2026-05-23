@@ -3,9 +3,10 @@ use strict;
 use warnings;
 use v5.10;
 
-use Carp qw[croak];
-
 our $VERSION = '0.85';
+
+use Carp            qw[croak];
+use Time::Str::Util qw[lower_bound upper_bound];
 
 my %ValidPolicy = (
   earlier => 1, later => 1, std => 1, dst => 1, reject => 1
@@ -213,42 +214,16 @@ sub _parse_data {
   $self->{types} = \@resolved;
 }
 
-sub _lower_bound {
-  my ($array, $value, $lo, $hi) = @_;
-
-  $lo //= 0;
-  $hi //= @$array;
-  while ($lo < $hi) {
-    my $mid = ($lo + $hi) >> 1;
-    if   ($array->[$mid] < $value) { $lo = $mid + 1 }
-    else                           { $hi = $mid     }
-  }
-  return $lo;
-}
-
-sub _upper_bound {
-  my ($array, $value, $lo, $hi) = @_;
-
-  $lo //= 0;
-  $hi //= @$array;
-  while ($lo < $hi) {
-    my $mid = ($lo + $hi) >> 1;
-    if   ($array->[$mid] <= $value) { $lo = $mid + 1 }
-    else                            { $hi = $mid     }
-  }
-  return $lo;
-}
-
 sub offset_for_utc {
   @_ == 2 or croak q/Usage: $tz->offset_for_utc($time)/;
   my ($self, $time) = @_;
-  return $self->{types}[ _upper_bound($self->{times}, $time) ][0];
+  return $self->{types}[ upper_bound($self->{times}, $time) ][0];
 }
 
 sub type_info_for_utc {
   @_ == 2 or croak q/Usage: $tz->type_info_for_utc($time)/;
   my ($self, $time) = @_;
-  my $type = $self->{types}[ _upper_bound($self->{times}, $time) ];
+  my $type = $self->{types}[ upper_bound($self->{times}, $time) ];
   return @$type;
 }
 
@@ -295,8 +270,8 @@ sub _resolve_local {
   # Find transitions within ±24 hours of the local time.
   # Since UTC offsets are bounded by (-86400, 86400), any transition
   # that could affect this local time must fall within this range.
-  my $lo = _lower_bound($times, $time - 86400);
-  my $hi = _upper_bound($times, $time + 86400, $lo);
+  my $lo = lower_bound($times, $time - 86400);
+  my $hi = upper_bound($times, $time + 86400, $lo);
 
   # No transitions nearby
   return $types->[$lo] if $lo >= $hi;
