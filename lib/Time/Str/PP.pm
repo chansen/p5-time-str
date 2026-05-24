@@ -392,6 +392,7 @@ use Exporter qw[import];
   Time::Str::PP::Util; # hide from PAUSE/indexers
 
   our @EXPORT_OK = qw[ lower_bound
+                       range_bounds
                        upper_bound ];
 
   use Carp     qw[croak];
@@ -412,6 +413,23 @@ use Exporter qw[import];
       else                           { $hi = $mid     }
     }
     return $lo;
+  }
+
+  sub range_bounds {
+    @_ == 3 or croak q/Usage: range_bounds(array, min_value, max_value)/;
+    my ($array, $min_value, $max_value) = @_;
+
+    ref $array eq 'ARRAY'
+      or croak q/Parameter 'array' must be an array reference/;
+    ($min_value <= $max_value)
+      or croak q/Parameter 'min_value' must not exceed 'max_value'/;
+
+    my $lo = lower_bound($array, $min_value);
+    my $hi = $lo;
+    while ($hi < @$array && $array->[$hi] <= $max_value) {
+      $hi++;
+    }
+    return ($lo, $hi);
   }
 
   sub upper_bound {

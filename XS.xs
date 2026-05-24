@@ -626,6 +626,48 @@ lower_bound(...)
     mPUSHi(lo);
 
 void
+range_bounds(...)
+  PREINIT:
+    AV *av;
+    IV min_value, max_value, lo, hi, mid, len;
+  PPCODE:
+    if (items != 3)
+      croak("Usage: range_bounds(array, min_value, max_value)");
+    if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
+      croak("Parameter 'array' must be an array reference");
+    av = (AV *)SvRV(ST(0));
+    min_value = SvIV(ST(1));
+    max_value = SvIV(ST(2));
+    if (min_value > max_value)
+      croak("Parameter 'min_value' must not exceed 'max_value'");
+    len = av_len(av) + 1;
+    // lower_bound for min_value
+    lo = 0;
+    hi = len;
+    while (lo < hi) {
+      mid = (lo + hi) >> 1;
+      {
+        SV **elem = av_fetch(av, mid, 0);
+        if (elem && SvIV(*elem) < min_value)
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+    }
+    // linear scan for upper bound
+    hi = lo;
+    while (hi < len) {
+      SV **elem = av_fetch(av, hi, 0);
+      if (elem && SvIV(*elem) <= max_value)
+        hi++;
+      else
+        break;
+    }
+    EXTEND(SP, 2);
+    mPUSHi(lo);
+    mPUSHi(hi);
+
+void
 upper_bound(...)
   PREINIT:
     AV *av;

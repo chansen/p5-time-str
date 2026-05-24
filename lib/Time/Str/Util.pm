@@ -8,6 +8,7 @@ use Exporter qw[import];
 BEGIN {
   our $VERSION     = '0.86';
   our @EXPORT_OK   = qw[ lower_bound
+                         range_bounds
                          upper_bound ];
   our %EXPORT_TAGS = ( all => \@EXPORT_OK );
   our @CARP_NOT    = qw[Time::Str::PP::Util];
