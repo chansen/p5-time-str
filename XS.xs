@@ -449,6 +449,30 @@ ymd_to_rdn(...)
     mPUSHi((IV)tstr_calendar_ymd_to_rdn(y, m, d));
 
 void
+ymd_to_doy(...)
+  PREINIT:
+    int y, m, d;
+  PPCODE:
+    if (items != 3)
+      croak("Usage: ymd_to_doy(year, month, day)");
+    tstr_sv_ymd(aTHX_ ST(0), ST(1), ST(2), &y, &m, &d);
+    mPUSHi(tstr_calendar_ymd_to_doy(y, m, d));
+
+void
+yd_to_ymd(...)
+  PREINIT:
+    int y, doy, m, d;
+  PPCODE:
+    if (items != 2)
+      croak("Usage: yd_to_ymd(year, day)");
+    tstr_sv_yd(aTHX_ ST(0), ST(1), &y, &doy);
+    tstr_calendar_yd_to_md(y, doy, &m, &d);
+    EXTEND(SP, 3);
+    mPUSHi(y);
+    mPUSHi(m);
+    mPUSHi(d);
+
+void
 rdn_to_ymd(...)
   PREINIT:
     IV rdn;

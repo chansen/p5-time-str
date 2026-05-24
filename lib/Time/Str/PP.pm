@@ -19,10 +19,12 @@ use Exporter qw[import];
 
   our @EXPORT_OK = qw[ month_days
                        leap_year
+                       yd_to_ymd
                        rdn_to_dow
                        rdn_to_ymd
                        resolve_century
                        valid_ymd
+                       ymd_to_doy
                        ymd_to_dow
                        ymd_to_rdn ];
 
@@ -74,6 +76,50 @@ use Exporter qw[import];
      }
      return ((1461 * $y) >> 2) - $y / 100 + $y / 400
        + $d + ((979 * $m - 2918) >> 5) - 306;
+   }
+
+   {
+     my @CumDays = (0,  0,  31,  59,  90, 120, 151, 
+                      181, 212, 243, 273, 304, 334);
+
+     sub ymd_to_doy {
+       @_ == 3 or croak q/Usage: ymd_to_doy(year, month, day)/;
+       my ($y, $m, $d) = @_;
+
+       ($y >= 1 && $y <= 9999)
+         or croak q/Parameter 'year' is out of range [1, 9999]/;
+       ($m >= 1 && $m <= 12)
+         or croak q/Parameter 'month' is out of range [1, 12]/;
+       ($d >= 1 && $d <= 31)
+         or croak q/Parameter 'day' is out of range [1, 31]/;
+
+       return $CumDays[$m] + $d + ($m > 2 && leap_year($y));
+     }
+   }
+
+   sub yd_to_ymd {
+     @_ == 2 or croak q/Usage: yd_to_ymd(year, day)/;
+     my ($y, $doy) = @_;
+
+     ($y >= 1 && $y <= 9999)
+       or croak q/Parameter 'year' is out of range [1, 9999]/;
+     ($doy >= 1 && $doy <= 366)
+       or croak qq/Parameter 'day' is out of range [1, 366]/;
+
+     use integer;
+     my $jan_feb = 59 + leap_year($y);
+     if ($doy <= 31) {
+       return ($y, 1, $doy);
+     }
+     elsif ($doy <= $jan_feb) {
+       return ($y, 2, $doy - 31);
+     }
+     else {
+       my $C = $doy - $jan_feb;
+       my $m = (535 * $C + 48950) >> 14;
+       my $d = $C - ((979 * $m - 2918) >> 5);
+       return ($y, $m, $d);
+     }
    }
 
    sub rdn_to_ymd {

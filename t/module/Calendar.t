@@ -11,6 +11,8 @@ BEGIN {
   use_ok('Time::Str::Calendar', qw[ leap_year
                                     month_days
                                     valid_ymd
+                                    yd_to_ymd
+                                    ymd_to_doy
                                     ymd_to_dow
                                     ymd_to_rdn
                                     rdn_to_ymd
@@ -336,6 +338,115 @@ throws_ok { ymd_to_dow(2024, 1, 0) }
 throws_ok { ymd_to_dow(2024, 1, 32) }
   qr/Parameter 'day' is out of range/,
   'ymd_to_dow: day 32';
+
+## ymd_to_doy
+
+throws_ok { ymd_to_doy() }
+  qr/^Usage: ymd_to_doy/,
+  'ymd_to_doy: no arguments';
+
+# known values
+is(ymd_to_doy(2024,  1,  1),   1, 'ymd_to_doy: 2024-01-01 = 1');
+is(ymd_to_doy(2024,  1, 31),  31, 'ymd_to_doy: 2024-01-31 = 31');
+is(ymd_to_doy(2024,  2,  1),  32, 'ymd_to_doy: 2024-02-01 = 32');
+is(ymd_to_doy(2024,  2, 29),  60, 'ymd_to_doy: 2024-02-29 = 60 (leap year)');
+is(ymd_to_doy(2024,  3,  1),  61, 'ymd_to_doy: 2024-03-01 = 61 (leap year)');
+is(ymd_to_doy(2024, 12, 24), 359, 'ymd_to_doy: 2024-12-24 = 359');
+is(ymd_to_doy(2024, 12, 31), 366, 'ymd_to_doy: 2024-12-31 = 366 (leap year)');
+
+# non-leap year
+is(ymd_to_doy(2023,  3,  1),  60, 'ymd_to_doy: 2023-03-01 = 60 (non-leap)');
+is(ymd_to_doy(2023, 12, 31), 365, 'ymd_to_doy: 2023-12-31 = 365 (non-leap)');
+
+# boundaries
+is(ymd_to_doy(   1,  1,  1),   1, 'ymd_to_doy: 0001-01-01 = 1');
+is(ymd_to_doy(   1, 12, 31), 365, 'ymd_to_doy: 0001-12-31 = 365');
+is(ymd_to_doy(9999,  1,  1),   1, 'ymd_to_doy: 9999-01-01 = 1');
+is(ymd_to_doy(9999, 12, 31), 365, 'ymd_to_doy: 9999-12-31 = 365');
+
+# consistency: ymd_to_doy should equal ymd_to_rdn - rdn(Jan 1) + 1
+foreach my $date ([2024, 6, 15], [2000, 2, 29], [1970, 1, 1], [1, 1, 1]) {
+  my ($y, $m, $d) = @$date;
+  my $expected = ymd_to_rdn($y, $m, $d) - ymd_to_rdn($y, 1, 1) + 1;
+  is(ymd_to_doy($y, $m, $d), $expected,
+    "ymd_to_doy: $y-$m-$d consistent with ymd_to_rdn");
+}
+
+throws_ok { ymd_to_doy(0, 1, 1) }
+  qr/Parameter 'year' is out of range/,
+  'ymd_to_doy: year 0';
+
+throws_ok { ymd_to_doy(10000, 1, 1) }
+  qr/Parameter 'year' is out of range/,
+  'ymd_to_doy: year 10000';
+
+throws_ok { ymd_to_doy(2024, 0, 1) }
+  qr/Parameter 'month' is out of range/,
+  'ymd_to_doy: month 0';
+
+throws_ok { ymd_to_doy(2024, 13, 1) }
+  qr/Parameter 'month' is out of range/,
+  'ymd_to_doy: month 13';
+
+throws_ok { ymd_to_doy(2024, 1, 0) }
+  qr/Parameter 'day' is out of range/,
+  'ymd_to_doy: day 0';
+
+throws_ok { ymd_to_doy(2024, 1, 32) }
+  qr/Parameter 'day' is out of range/,
+  'ymd_to_doy: day 32';
+
+
+## yd_to_ymd
+
+throws_ok { yd_to_ymd() }
+  qr/^Usage: yd_to_ymd/,
+  'yd_to_ymd: no arguments';
+
+# known values
+is_deeply([yd_to_ymd(2024,   1)], [2024,  1,  1], 'yd_to_ymd: 2024 day 1');
+is_deeply([yd_to_ymd(2024,  31)], [2024,  1, 31], 'yd_to_ymd: 2024 day 31');
+is_deeply([yd_to_ymd(2024,  32)], [2024,  2,  1], 'yd_to_ymd: 2024 day 32');
+is_deeply([yd_to_ymd(2024,  60)], [2024,  2, 29], 'yd_to_ymd: 2024 day 60 (leap)');
+is_deeply([yd_to_ymd(2024,  61)], [2024,  3,  1], 'yd_to_ymd: 2024 day 61 (leap)');
+is_deeply([yd_to_ymd(2024, 359)], [2024, 12, 24], 'yd_to_ymd: 2024 day 359');
+is_deeply([yd_to_ymd(2024, 366)], [2024, 12, 31], 'yd_to_ymd: 2024 day 366 (leap)');
+
+# non-leap year
+is_deeply([yd_to_ymd(2023,  60)], [2023,  3,  1], 'yd_to_ymd: 2023 day 60 (non-leap)');
+is_deeply([yd_to_ymd(2023, 365)], [2023, 12, 31], 'yd_to_ymd: 2023 day 365 (non-leap)');
+
+# boundaries
+is_deeply([yd_to_ymd(   1,   1)], [   1,  1,  1], 'yd_to_ymd: 0001 day 1');
+is_deeply([yd_to_ymd(   1, 365)], [   1, 12, 31], 'yd_to_ymd: 0001 day 365');
+is_deeply([yd_to_ymd(9999,   1)], [9999,  1,  1], 'yd_to_ymd: 9999 day 1');
+is_deeply([yd_to_ymd(9999, 365)], [9999, 12, 31], 'yd_to_ymd: 9999 day 365');
+
+# round-trip: ymd_to_doy -> yd_to_ymd
+foreach my $date ([2024,  1,  1], [2024,  2, 29], [2024,  6, 15],
+                  [2024, 12, 31], [2023,  3,  1], [   1,  1,  1], 
+                  [9999, 12, 31]) {
+  my ($y, $m, $d) = @$date;
+  my $doy = ymd_to_doy($y, $m, $d);
+  is_deeply([yd_to_ymd($y, $doy)], [$y, $m, $d],
+    "yd_to_ymd: round-trip $y-$m-$d (doy=$doy)");
+}
+
+throws_ok { yd_to_ymd(0, 1) }
+  qr/Parameter 'year' is out of range/,
+  'yd_to_ymd: year 0';
+
+throws_ok { yd_to_ymd(10000, 1) }
+  qr/Parameter 'year' is out of range/,
+  'yd_to_ymd: year 10000';
+
+throws_ok { yd_to_ymd(2024, 0) }
+  qr/Parameter 'day' is out of range/,
+  'yd_to_ymd: day 0';
+
+throws_ok { yd_to_ymd(2024, 367) }
+  qr/Parameter 'day' is out of range/,
+  'yd_to_ymd: day 367';
 
 ## resolve_century
 

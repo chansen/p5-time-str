@@ -10,6 +10,8 @@ BEGIN {
   our @EXPORT_OK   = qw[ leap_year
                          month_days
                          valid_ymd
+                         yd_to_ymd
+                         ymd_to_doy
                          ymd_to_dow
                          ymd_to_rdn
                          rdn_to_ymd

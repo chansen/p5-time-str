@@ -57,6 +57,31 @@ static inline void tstr_calendar_rdn_to_ymd(uint32_t rdn, int* yp, int* mp, int*
     *dp = (int)d;
 }
 
+static inline int tstr_calendar_ymd_to_doy(int y, int m, int d) {
+  static const int kCumDays[] = {0,   0,  31,  59,  90, 120, 151,
+                                    181, 212, 243, 273, 304, 334};
+  return kCumDays[m] + d + (m > 2 && tstr_calendar_leap_year(y));
+}
+
+static inline void tstr_calendar_yd_to_md(int y, int doy, int *mp, int *dp) {
+  int m, d, jan_feb = 59 + tstr_calendar_leap_year(y);
+  if (doy <= 31) {
+    m = 1; 
+    d = doy;
+  } else if (doy <= jan_feb) {
+    m = 2; 
+    d = doy - 31;
+  } else {
+    int C = doy - jan_feb;
+    m = (535 * C + 48950) >> 14;
+    d = C - ((979 * m - 2918) >> 5);
+  }
+  if (mp)
+    *mp = m;
+  if (dp)
+    *dp = d;
+}
+
 static inline int tstr_calendar_rdn_to_dow(uint32_t rdn) {
   return 1 + (rdn + 6) % 7;
 }

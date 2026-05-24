@@ -9,6 +9,7 @@ Time::Str::Calendar - Gregorian calendar validation and computation
 =head1 SYNOPSIS
 
     use Time::Str::Calendar qw( valid_ymd ymd_to_rdn ymd_to_dow
+                                ymd_to_doy yd_to_ymd
                                 rdn_to_ymd resolve_century );
 
     # Validate a date
@@ -16,16 +17,22 @@ Time::Str::Calendar - Gregorian calendar validation and computation
     valid_ymd(2023, 2, 29);  # false
 
     # Rata Die Number
-    my $rdn = ymd_to_rdn(2024, 12, 24);  # 739244
+    my $rdn = ymd_to_rdn(2024, 12, 24);      # 739244
 
     # Day of week (1=Mon .. 7=Sun)
-    my $dow = ymd_to_dow(2024, 12, 24);  # 2 (Tuesday)
+    my $dow = ymd_to_dow(2024, 12, 24);      # 2 (Tuesday)
+
+    # Day of year (1-366)
+    my $doy = ymd_to_doy(2024, 12, 24);      # 359
+
+    # Day of year to date
+    my ($y, $m, $d) = yd_to_ymd(2024, 359);  # (2024, 12, 24)
 
     # Rata Die to date
-    my ($y, $m, $d) = rdn_to_ymd(739244);  # (2024, 12, 24)
+    my ($y, $m, $d) = rdn_to_ymd(739244);    # (2024, 12, 24)
 
     # Resolve two-digit year
-    my $year = resolve_century(24, 1950);  # 2024
+    my $year = resolve_century(24, 1950);    # 2024
 
 =head1 DESCRIPTION
 
@@ -86,6 +93,30 @@ Returns the day of week for the given Rata Die Number as an integer
 (1=Monday .. 7=Sunday).
 
 Croaks if C<rdn> is out of range [1, 3652059].
+
+=head2 ymd_to_doy
+
+    my $doy = ymd_to_doy($year, $month, $day);
+
+Returns the day of year (1-366) for the given date.
+
+Croaks if C<year> is out of range [1, 9999], C<month> is out of
+range [1, 12], or C<day> is out of range [1, 31].
+
+The date is not validated; use C<valid_ymd> first if the input is
+untrusted.
+
+=head2 yd_to_ymd
+
+    my ($year, $month, $day) = yd_to_ymd($year, $day);
+
+Converts a year and day of year (1-366) to a Gregorian date.
+
+Croaks if C<year> is out of range [1, 9999], or C<day> is out of 
+range [1, 366].
+
+The date is not validated; use C<valid_yd> first if the input is
+untrusted.
 
 =head2 ymd_to_dow
 
