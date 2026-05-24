@@ -342,6 +342,10 @@ transition and the C<overlap_policy> policy is set to C<'reject'>.
 
 =over 4
 
+=item C<Usage: %s>
+
+A method was called with an incorrect number of arguments.
+
 =item C<Parameter 'filename' is required>
 
 The C<new> constructor was called without the required C<filename>
