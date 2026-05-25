@@ -7,7 +7,8 @@ use Exporter qw[import];
 
 BEGIN {
   our $VERSION     = '0.86';
-  our @EXPORT_OK   = qw[ timegm_posix
+  our @EXPORT_OK   = qw[ gmtime_modern
+                         timegm_posix
                          timegm_modern
                          valid_hms
                          valid_hms60 ];

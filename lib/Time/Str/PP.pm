@@ -393,7 +393,8 @@ use Exporter qw[import];
   package
   Time::Str::PP::Time; # hide from PAUSE/indexers
 
-  our @EXPORT_OK = qw[ timegm_posix
+  our @EXPORT_OK = qw[ gmtime_modern
+                       timegm_posix
                        timegm_modern
                        valid_hms
                        valid_hms60 ];
@@ -401,7 +402,9 @@ use Exporter qw[import];
   use Carp     qw[croak];
   use Exporter qw[import];
 
-  use constant RDN_UNIX_EPOCH => 719163; # 1970-01-01
+  use constant MIN_TIME       => -62135596800; # 0001-01-01T00:00:00Z
+  use constant MAX_TIME       => 253402300799; # 9999-12-31T23:59:59Z
+  use constant RDN_UNIX_EPOCH => 719163;       # 1970-01-01
 
   sub valid_hms {
     @_ == 3 or croak q/Usage: valid_hms(hour, minute, second)/;
@@ -455,6 +458,19 @@ use Exporter qw[import];
     ($m >= 0 && $m <= 11)
       or croak q/Parameter 'month' is out of range [0, 11]/;
     return timegm_modern($S, $M, $H, $d, $m + 1, $y + 1900);
+  }
+
+  sub gmtime_modern {
+    @_ == 1 or croak q/Usage: gmtime_modern(time)/;
+    my ($time) = @_;
+
+    ($time >= MIN_TIME && $time <= MAX_TIME)
+      or croak q/Parameter 'time' is out of range/;
+
+    my @tm = gmtime($time);
+    $tm[5] += 1900;
+    $tm[4] += 1;
+    return @tm;
   }
 }
 

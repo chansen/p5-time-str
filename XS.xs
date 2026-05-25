@@ -598,6 +598,33 @@ timegm_modern(...)
 #endif
 
 void
+gmtime_modern(...)
+  PREINIT:
+    int y, m, d, H, M, S, wday, yday;
+    int64_t epoch;
+  PPCODE:
+    if (items != 1)
+      croak("Usage: gmtime_modern(time)");
+#if IVSIZE >= 8
+    epoch = (int64_t)SvIV(ST(0));
+#else
+    epoch = (int64_t)SvNV(ST(0));
+#endif
+    if (epoch < TSTR_TIME_EPOCH_MIN || epoch > TSTR_TIME_EPOCH_MAX)
+      croak("Parameter 'time' is out of range");
+    tstr_time_gmtime(epoch, &y, &m, &d, &H, &M, &S, &wday, &yday);
+    EXTEND(SP, 9);
+    mPUSHi(S);
+    mPUSHi(M);
+    mPUSHi(H);
+    mPUSHi(d);
+    mPUSHi(m);
+    mPUSHi(y);
+    mPUSHi(wday);
+    mPUSHi(yday);
+    mPUSHi(0);
+
+void
 timegm_posix(...)
   PREINIT:
     int y, m, d, H, M, S;
