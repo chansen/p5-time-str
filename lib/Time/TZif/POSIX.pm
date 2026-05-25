@@ -207,6 +207,52 @@ sub _parse {
     $self->{types_3y} = [$self->{dst_type},
                          ($self->{std_type}, $self->{dst_type}) x 3];
   }
+
+  # Detect whether transitions can fall outside the calendar year.
+  # For each rule, compute the worst-case calendar date and check
+  # whether rule_time - offset can push the UTC epoch past Jan 1.
+  #
+  # Forward (into next year):
+  #   UTC = midnight(Dec D) + time - offset >= midnight(Jan 1)
+  #      time - offset >= (32 - D) * 86400
+  #
+  # Backward (into previous year):
+  #   UTC = midnight(Jan D) + time - offset < midnight(Jan 1)
+  #      time - offset < -(D - 1) * 86400
+  my $cross_year = 0;
+  for my $pair (
+    [$self->{dst_start}, $self->{std_type}[0]],
+    [$self->{dst_end},   $self->{dst_type}[0]],
+  ) {
+    my ($r, $off) = @$pair;
+
+    # Forward: rule in December pushing into next year
+    my $max_day;
+    if ($r->{type} eq 'M' && $r->{month} == 12) {
+      $max_day = $r->{nth} == -1 ? 31 : $r->{nth} * 7;
+    }
+    elsif ($r->{type} ne 'M' && $r->{day} >= 359) {
+      $max_day = 31;
+    }
+    if (defined $max_day) {
+      $cross_year = 1 if $r->{time} - $off >= (32 - $max_day) * 86400;
+    }
+
+    # Backward: rule in January pushing into previous year
+    my $min_day;
+    if ($r->{type} eq 'M' && $r->{month} == 1) {
+      $min_day = $r->{nth} == -1 ? 25 : ($r->{nth} - 1) * 7 + 1;
+    }
+    elsif ($r->{type} ne 'M' && $r->{day} <= 7) {
+      $min_day = 1;
+    }
+    if (defined $min_day) {
+      $cross_year = 1 if $r->{time} - $off < -($min_day - 1) * 86400;
+    }
+
+    last if $cross_year;
+  }
+  $self->{cross_year} = $cross_year;
 }
 
 # Resolves a transition rule to a UTC epoch for the given year.
@@ -226,7 +272,9 @@ sub _rule_to_epoch {
     ($month, $day) = yd_to_md($year, $doy);
   }
   else {
-    ($month, $day) = yd_to_md($year, $rule->{day});
+    my $doy = $rule->{day};
+    $doy-- if $doy == 366 && !leap_year($year);
+    ($month, $day) = yd_to_md($year, $doy);
   }
 
   # rule time is wall clock; subtract offset to convert to UTC
@@ -249,9 +297,8 @@ sub _transitions_for_time {
   my ($self, $time) = @_;
 
   my $year = gmtime_year($time);
-
   my @times;
-  for my $y ($year - 1, $year, $year + 1) {
+  for my $y ($self->{cross_year} ? ($year - 1, $year, $year + 1) : $year) {
     my ($t_start, $t_end) = $self->_transitions_for_year($y);
     if ($t_start <= $t_end) {
       push @times, $t_start, $t_end;
