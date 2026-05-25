@@ -27,7 +27,7 @@ Time::Str::Calendar - Gregorian calendar validation and computation
     my $doy = ymd_to_doy(2024, 12, 24);      # 359
 
     # Day of year to date
-    my ($y, $m, $d) = yd_to_ymd(2024, 359);  # (2024, 12, 24)
+    my ($m, $d) = yd_to_md(2024, 359);       # (12, 24)
 
     # Rata Die to date
     my ($y, $m, $d) = rdn_to_ymd(739244);    # (2024, 12, 24)
@@ -109,7 +109,7 @@ untrusted.
 
 =head2 yd_to_md
 
-    my ($month, $day) = yd_to_ymd($year, $day);
+    my ($month, $day) = yd_to_md($year, $day);
 
 Converts a year and day of year (1-366) to a Gregorian date.
 
