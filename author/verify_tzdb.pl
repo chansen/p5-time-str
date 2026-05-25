@@ -61,14 +61,14 @@ foreach my $TZID (sort keys %{olson_canonical_names()}) {
 
       # One raised an exception, the other didn't
       if ($e1 || $e2) {
-        push @mismatches, sprintf "    GAP DISAGREE i:%d epoch:%d tzif:%s dt:%s",
+        push @mismatches, sprintf "    GAP DISAGREE i:%d epoch:%d tzif:%s dt:%s\n",
           $i, $epoch, ($e1 ? 'croaked' : $o1), ($e2 ? 'croaked' : $o2);
         next;
       }
 
       $tested++;
       next if $o1 == $o2;
-      push @mismatches, sprintf "    MISMATCH i:%d epoch:%d o1:%d o2:%d diff:%d",
+      push @mismatches, sprintf "    MISMATCH i:%d epoch:%d o1:%d o2:%d diff:%d\n",
         $i, $epoch, $o1, $o2, $o1 - $o2;
     }
   }
