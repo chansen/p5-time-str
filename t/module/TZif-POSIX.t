@@ -723,6 +723,108 @@ SKIP: {
     'cross-year forward: Jan 1 13:00 UTC after DST end = STD');
 }
 
+## Cross-year: n-rule differs between leap and non-leap years
+#
+# n=364 (day 365) resolves to Dec 30 in leap years but Dec 31 in
+# non-leap years. With a 26h rule time, the non-leap year transition
+# crosses into the next year while the leap year transition does not.
+
+{
+  my $tz = Time::TZif::POSIX->new(
+    tz_string      => 'STD5DST,59/2,364/26',
+    gap_policy     => 'later',
+    overlap_policy => 'earlier',
+  );
+  my $STD = -18000;
+  my $DST = -14400;
+
+  # 2024 (leap): day 365 = Dec 30, transition at Dec 31 06:00 UTC (within year)
+  {
+    my $before = timegm_modern(0, 0, 5, 31, 12, 2024);
+    is($tz->offset_for_utc($before), $DST,
+      'n-rule leap: Dec 31 2024 05:00 UTC = DST');
+
+    my $after = timegm_modern(0, 0, 7, 31, 12, 2024);
+    is($tz->offset_for_utc($after), $STD,
+      'n-rule leap: Dec 31 2024 07:00 UTC = STD');
+  }
+
+  # 2025 (non-leap): day 365 = Dec 31, transition at Jan 1 2026 06:00 UTC (crosses year)
+  {
+    my $before = timegm_modern(0, 0, 5, 1, 1, 2026);
+    is($tz->offset_for_utc($before), $DST,
+      'n-rule non-leap: Jan 1 2026 05:00 UTC = DST (before cross-year transition)');
+
+    my $after = timegm_modern(0, 0, 7, 1, 1, 2026);
+    is($tz->offset_for_utc($after), $STD,
+      'n-rule non-leap: Jan 1 2026 07:00 UTC = STD (after cross-year transition)');
+  }
+
+  # Local: overlap at cross-year DST end (01:00-02:00 local Jan 1 2026)
+  {
+    my $local_before = timegm_modern(0, 30, 0, 1, 1, 2026);
+    is($tz->offset_for_local($local_before), $DST,
+      'n-rule cross-year local: 00:30 Jan 1 2026 = DST');
+
+    my $local_after = timegm_modern(0, 30, 2, 1, 1, 2026);
+    is($tz->offset_for_local($local_after), $STD,
+      'n-rule cross-year local: 02:30 Jan 1 2026 = STD');
+
+    my $overlap = timegm_modern(0, 30, 1, 1, 1, 2026);
+    is($tz->offset_for_local($overlap, overlap_policy => 'earlier'), $DST,
+      'n-rule cross-year overlap: earlier = DST');
+    is($tz->offset_for_local($overlap, overlap_policy => 'later'), $STD,
+      'n-rule cross-year overlap: later = STD');
+  }
+}
+
+## Cross-year: Mm.w.d rule weekday alignment varies by year
+#
+# "Last Monday of December" (M12.5.1) falls on Dec 30 in 2024 but
+# Dec 31 in 2029. With a 26h rule time, 2029's transition crosses
+# into January 2030.
+
+{
+  my $tz = Time::TZif::POSIX->new(
+    tz_string      => 'STD5DST,M3.2.0/2,M12.5.1/26',
+    gap_policy     => 'later',
+    overlap_policy => 'earlier',
+  );
+  my $STD = -18000;
+  my $DST = -14400;
+
+  # 2024: last Mon Dec = Dec 30, transition at Dec 31 06:00 UTC (within year)
+  {
+    my $before = timegm_modern(0, 0, 5, 31, 12, 2024);
+    is($tz->offset_for_utc($before), $DST,
+      'Mm.w.d 2024: Dec 31 05:00 UTC = DST');
+
+    my $after = timegm_modern(0, 0, 7, 31, 12, 2024);
+    is($tz->offset_for_utc($after), $STD,
+      'Mm.w.d 2024: Dec 31 07:00 UTC = STD');
+  }
+
+  # 2029: last Mon Dec = Dec 31, transition at Jan 1 2030 06:00 UTC (crosses year)
+  {
+    my $before = timegm_modern(0, 0, 5, 1, 1, 2030);
+    is($tz->offset_for_utc($before), $DST,
+      'Mm.w.d 2029: Jan 1 2030 05:00 UTC = DST (before cross-year transition)');
+
+    my $after = timegm_modern(0, 0, 7, 1, 1, 2030);
+    is($tz->offset_for_utc($after), $STD,
+      'Mm.w.d 2029: Jan 1 2030 07:00 UTC = STD (after cross-year transition)');
+  }
+
+  # Local: overlap at cross-year DST end (01:00-02:00 local Jan 1 2030)
+  {
+    my $overlap = timegm_modern(0, 30, 1, 1, 1, 2030);
+    is($tz->offset_for_local($overlap, overlap_policy => 'earlier'), $DST,
+      'Mm.w.d cross-year overlap: earlier = DST');
+    is($tz->offset_for_local($overlap, overlap_policy => 'later'), $STD,
+      'Mm.w.d cross-year overlap: later = STD');
+  }
+}
+
 ## Year boundary: New Year's Eve / New Year's Day
 
 {
