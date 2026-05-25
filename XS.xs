@@ -512,6 +512,27 @@ ymd_to_dow(...)
     mPUSHi(tstr_calendar_ymd_to_dow(y, m, d));
 
 void
+nth_dow_in_month(...)
+  PREINIT:
+    int y, m, ord, dow, day;
+  PPCODE:
+    if (items != 4)
+      croak("Usage: nth_dow_in_month(year, month, ord, dow)");
+    y   = (int)SvIV(ST(0));
+    m   = (int)SvIV(ST(1));
+    ord = (int)SvIV(ST(2));
+    dow = (int)SvIV(ST(3));
+    if (y < 1 || y > 9999)
+      croak("Parameter 'year' is out of range [1, 9999]");
+    if (m < 1 || m > 12)
+      croak("Parameter 'month' is out of range [1, 12]");
+    if (ord < -4 || ord > 4 || ord == 0)
+      croak("Parameter 'ord' is out of range [-4, -1] or [1, 4]");
+    if (dow < 1 || dow > 7)
+      croak("Parameter 'dow' is out of range [1, 7]");
+    mPUSHi(tstr_calendar_nth_dow_in_month(y, m, ord, dow));
+
+void
 resolve_century(...)
   PREINIT:
     int year, pivot_year;

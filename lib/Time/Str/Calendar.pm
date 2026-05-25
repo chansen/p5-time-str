@@ -9,6 +9,7 @@ BEGIN {
   our $VERSION     = '0.86';
   our @EXPORT_OK   = qw[ leap_year
                          month_days
+                         nth_dow_in_month
                          valid_ymd
                          yd_to_ymd
                          ymd_to_doy

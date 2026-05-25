@@ -10,6 +10,7 @@ Time::Str::Calendar - Gregorian calendar validation and computation
 
     use Time::Str::Calendar qw( valid_ymd ymd_to_rdn ymd_to_dow
                                 ymd_to_doy yd_to_ymd
+                                nth_dow_in_month
                                 rdn_to_ymd resolve_century );
 
     # Validate a date
@@ -129,6 +130,42 @@ range [1, 12], or C<day> is out of range [1, 31].
 
 The date is not validated; use C<valid_ymd> first if the input is
 untrusted.
+
+=head2 nth_dow_in_month
+
+    my $day = nth_dow_in_month($year, $month, $ord, $dow);
+
+Returns the day of month for the I<ord>-th occurrence of weekday
+I<dow> in the given month and year.
+
+C<$dow> uses the ISO convention (1=Monday .. 7=Sunday).
+
+C<$ord> is a signed ordinal:
+
+=over 4
+
+=item * B<1> to B<4> count forward from the start of the month.
+
+=item * B<-1> to B<-4> count backward from the end of the month
+(C<-1> = last, C<-2> = second-to-last, etc.).
+
+=back
+
+    # 2nd Sunday of March 2024 (US spring forward)
+    nth_dow_in_month(2024, 3, 2, 7)    # 10
+
+    # Last Sunday of October 2024 (EU fall back)
+    nth_dow_in_month(2024, 10, -1, 7)  # 27
+
+    # 4th Thursday of November 2024 (US Thanksgiving)
+    nth_dow_in_month(2024, 11, 4, 4)   # 28
+
+    # Last Monday of May 2024 (US Memorial Day)
+    nth_dow_in_month(2024, 5, -1, 1)   # 27
+
+Croaks if C<year> is out of range [1, 9999], C<month> is out of
+range [1, 12], C<ord> is out of range [-4, -1] or [1, 4], or
+C<dow> is out of range [1, 7].
 
 =head2 resolve_century
 

@@ -93,6 +93,18 @@ static inline int tstr_calendar_ymd_to_dow(int y, int m, int d) {
   return 1 + (y + y / 4 - y / 100 + y / 400 + kDayOffset[m] + d) % 7;
 }
 
+static inline int tstr_calendar_nth_dow_in_month(int y, int m, int ord, int dow) {
+  if (ord > 0) {
+    int first_dow = tstr_calendar_ymd_to_dow(y, m, 1);
+    return 1 + (dow - first_dow + 7) % 7 + (ord - 1) * 7;
+  }
+  else {
+    int mdays = tstr_calendar_month_days(y, m);
+    int last_dow = tstr_calendar_ymd_to_dow(y, m, mdays);
+    return mdays - (last_dow - dow + 7) % 7 + (ord + 1) * 7;
+  }
+}
+
 static inline int tstr_calendar_resolve_century(int year, int pivot_year) {
   int century = pivot_year / 100;
   int base = century * 100;

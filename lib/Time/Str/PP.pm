@@ -19,6 +19,7 @@ use Exporter qw[import];
 
   our @EXPORT_OK = qw[ month_days
                        leap_year
+                       nth_dow_in_month
                        yd_to_ymd
                        rdn_to_dow
                        rdn_to_ymd
@@ -171,6 +172,30 @@ use Exporter qw[import];
          $y--;
        }
        return 1 + ($y + $y/4 - $y/100 + $y/400 + $DayOffset[$m] + $d) % 7;
+     }
+   }
+
+   sub nth_dow_in_month {
+     @_ == 4 or croak q/Usage: nth_dow_in_month(year, month, ord, dow)/;
+     my ($y, $m, $ord, $dow) = @_;
+
+     ($y >= 1 && $y <= 9999)
+       or croak q/Parameter 'year' is out of range [1, 9999]/;
+     ($m >= 1 && $m <= 12)
+       or croak q/Parameter 'month' is out of range [1, 12]/;
+     ($ord >= -4 && $ord <= 4 && $ord != 0)
+       or croak q/Parameter 'ord' is out of range [-4, -1] or [1, 4]/;
+     ($dow >= 1 && $dow <= 7)
+       or croak q/Parameter 'dow' is out of range [1, 7]/;
+
+     if ($ord > 0) {
+       my $days = 7 * --$ord;
+       return 1 + $days + ($dow - ymd_to_dow($y, $m, 1)) % 7;
+     }
+     else {
+       my $days  = 7 * ++$ord;
+       my $mdays = month_days($y, $m);
+       return $mdays + $days - (ymd_to_dow($y, $m, $mdays) - $dow) % 7;
      }
    }
 
