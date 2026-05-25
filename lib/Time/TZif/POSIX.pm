@@ -8,6 +8,7 @@ our $VERSION = '0.86';
 use Carp                qw[croak];
 use Time::Str::Calendar qw[leap_year
                            month_days
+                           nth_dow_in_month
                            ymd_to_dow 
                            yd_to_md 
                            rdn_to_ymd];
@@ -139,7 +140,9 @@ sub _parse_rule {
     my ($m, $w, $d) = @+{qw(month week wday)};
     ($m >= 1 && $m <= 12)
       or croak qq/Unable to parse POSIX TZ string: rule month out of range [1, 12]: $m/;
-    return { type => 'M', m => $m, w => $w, d => $d, time => $time };
+    my $nth = ($w == 5) ? -1 : $w;
+    my $dow = 1 + ($d + 6) % 7;
+    return { type => 'M', month => $m, nth => $nth, day => $dow, time => $time };
   }
   elsif (exists $+{jday}) {
     my $jday = $+{jday};
@@ -151,7 +154,7 @@ sub _parse_rule {
     my $nday = $+{nday};
     ($nday >= 0 && $nday <= 365)
       or croak qq/Unable to parse POSIX TZ string: zero-based day out of range [0, 365]: $nday/;
-    return { type => 'N', day => $nday, time => $time };
+    return { type => 'N', day => $nday + 1, time => $time };
   }
 }
 
@@ -205,22 +208,6 @@ sub _parse {
   }
 }
 
-# Returns day-of-month for the w-th occurrence of ISO weekday $dow
-# (1=Mon..7=Sun) in the given month. $week=5 means last occurrence.
-sub _nth_wday_of_month {
-  my ($year, $month, $week, $dow) = @_;
-
-  my $mdays = month_days($year, $month);
-
-  if ($week == 5) {
-    my $last_dow = ymd_to_dow($year, $month, $mdays);
-    return $mdays - ($last_dow - $dow) % 7;
-  }
-
-  my $first_dow = ymd_to_dow($year, $month, 1);
-  return 1 + ($dow - $first_dow) % 7 + ($week - 1) * 7;
-}
-
 # Resolves a transition rule to a UTC epoch for the given year.
 # $offset is the UTC offset in effect before the transition (wall clock).
 sub _rule_to_epoch {
@@ -229,9 +216,8 @@ sub _rule_to_epoch {
   my ($month, $day);
 
   if ($rule->{type} eq 'M') {
-    my $iso_dow = $rule->{d} == 0 ? 7 : $rule->{d};
-    $month = $rule->{m};
-    $day   = _nth_wday_of_month($year, $month, $rule->{w}, $iso_dow);
+    $month = $rule->{month};
+    $day = nth_dow_in_month($year, $month, $rule->{nth}, $rule->{day});
   }
   elsif ($rule->{type} eq 'J') {
     my $doy = $rule->{day};
@@ -239,7 +225,7 @@ sub _rule_to_epoch {
     ($month, $day) = yd_to_md($year, $doy);
   }
   else {
-    ($month, $day) = yd_to_md($year, $rule->{day} + 1);
+    ($month, $day) = yd_to_md($year, $rule->{day});
   }
 
   # rule time is wall clock; subtract offset to convert to UTC
