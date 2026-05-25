@@ -9,7 +9,7 @@ use Carp                qw[croak];
 use Time::Str::Calendar qw[leap_year
                            month_days
                            ymd_to_dow 
-                           yd_to_ymd 
+                           yd_to_md 
                            rdn_to_ymd];
 use Time::Str::Time     qw[timegm_modern];
 use Time::Str::Util     qw[upper_bound];
@@ -236,10 +236,10 @@ sub _rule_to_epoch {
   elsif ($rule->{type} eq 'J') {
     my $doy = $rule->{day};
     $doy++ if $doy >= 60 && leap_year($year);
-    (undef, $month, $day) = yd_to_ymd($year, $doy);
+    ($month, $day) = yd_to_md($year, $doy);
   }
   else {
-    (undef, $month, $day) = yd_to_ymd($year, $rule->{day} + 1);
+    ($month, $day) = yd_to_md($year, $rule->{day} + 1);
   }
 
   # rule time is wall clock; subtract offset to convert to UTC

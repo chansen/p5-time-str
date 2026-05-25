@@ -459,16 +459,15 @@ ymd_to_doy(...)
     mPUSHi(tstr_calendar_ymd_to_doy(y, m, d));
 
 void
-yd_to_ymd(...)
+yd_to_md(...)
   PREINIT:
     int y, doy, m, d;
   PPCODE:
     if (items != 2)
-      croak("Usage: yd_to_ymd(year, day)");
+      croak("Usage: yd_to_md(year, day)");
     tstr_sv_yd(aTHX_ ST(0), ST(1), &y, &doy);
     tstr_calendar_yd_to_md(y, doy, &m, &d);
-    EXTEND(SP, 3);
-    mPUSHi(y);
+    EXTEND(SP, 2);
     mPUSHi(m);
     mPUSHi(d);
 

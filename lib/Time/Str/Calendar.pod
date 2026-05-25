@@ -107,9 +107,9 @@ range [1, 12], or C<day> is out of range [1, 31].
 The date is not validated; use C<valid_ymd> first if the input is
 untrusted.
 
-=head2 yd_to_ymd
+=head2 yd_to_md
 
-    my ($year, $month, $day) = yd_to_ymd($year, $day);
+    my ($month, $day) = yd_to_ymd($year, $day);
 
 Converts a year and day of year (1-366) to a Gregorian date.
 

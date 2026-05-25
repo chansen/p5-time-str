@@ -11,7 +11,7 @@ BEGIN {
                          month_days
                          nth_dow_in_month
                          valid_ymd
-                         yd_to_ymd
+                         yd_to_md
                          ymd_to_doy
                          ymd_to_dow
                          ymd_to_rdn

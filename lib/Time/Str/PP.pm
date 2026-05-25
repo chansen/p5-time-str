@@ -20,7 +20,7 @@ use Exporter qw[import];
   our @EXPORT_OK = qw[ month_days
                        leap_year
                        nth_dow_in_month
-                       yd_to_ymd
+                       yd_to_md
                        rdn_to_dow
                        rdn_to_ymd
                        resolve_century
@@ -98,8 +98,8 @@ use Exporter qw[import];
      }
    }
 
-   sub yd_to_ymd {
-     @_ == 2 or croak q/Usage: yd_to_ymd(year, day)/;
+   sub yd_to_md {
+     @_ == 2 or croak q/Usage: yd_to_md(year, day)/;
      my ($y, $doy) = @_;
 
      ($y >= 1 && $y <= 9999)
@@ -110,16 +110,16 @@ use Exporter qw[import];
      use integer;
      my $jan_feb = 59 + leap_year($y);
      if ($doy <= 31) {
-       return ($y, 1, $doy);
+       return (1, $doy);
      }
      elsif ($doy <= $jan_feb) {
-       return ($y, 2, $doy - 31);
+       return (2, $doy - 31);
      }
      else {
        my $C = $doy - $jan_feb;
        my $m = (535 * $C + 48950) >> 14;
        my $d = $C - ((979 * $m - 2918) >> 5);
-       return ($y, $m, $d);
+       return ($m, $d);
      }
    }
 
