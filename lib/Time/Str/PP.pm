@@ -394,6 +394,7 @@ use Exporter qw[import];
   Time::Str::PP::Time; # hide from PAUSE/indexers
 
   our @EXPORT_OK = qw[ gmtime_modern
+                       gmtime_year
                        timegm_posix
                        timegm_modern
                        valid_hms
@@ -471,6 +472,16 @@ use Exporter qw[import];
     $tm[5] += 1900;
     $tm[4] += 1;
     return @tm;
+  }
+
+  sub gmtime_year {
+    @_ == 1 or croak q/Usage: gmtime_year(time)/;
+    my ($time) = @_;
+
+    ($time >= MIN_TIME && $time <= MAX_TIME)
+      or croak q/Parameter 'time' is out of range/;
+
+    return (gmtime($time))[5] + 1900;
   }
 }
 

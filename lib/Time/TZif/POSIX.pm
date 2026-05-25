@@ -9,10 +9,11 @@ use Carp                qw[croak];
 use Time::Str::Calendar qw[leap_year
                            month_days
                            nth_dow_in_month
-                           ymd_to_dow 
+                           ymd_to_dow
                            yd_to_md 
                            rdn_to_ymd];
-use Time::Str::Time     qw[timegm_modern];
+use Time::Str::Time     qw[ gmtime_year
+                            timegm_modern ];
 use Time::Str::Util     qw[upper_bound];
 
 my %ValidPolicy = (
@@ -243,20 +244,11 @@ sub _transitions_for_year {
   return ($t_start, $t_end);
 }
 
-sub _epoch_to_year {
-  my ($epoch) = @_;
-  use integer;
-  my $days = $epoch / 86400;
-  $days-- if $epoch < 0 && $epoch % 86400;
-  my ($year) = rdn_to_ymd($days + RDN_UNIX_EPOCH);
-  return $year;
-}
-
 # Returns (\@times, \@types) for the 3-year window around $time.
 sub _transitions_for_time {
   my ($self, $time) = @_;
 
-  my $year = _epoch_to_year($time);
+  my $year = gmtime_year($time);
 
   my @times;
   for my $y ($year - 1, $year, $year + 1) {
