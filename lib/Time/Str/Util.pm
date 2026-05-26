@@ -7,7 +7,7 @@ use Carp     qw[croak];
 use Exporter qw[import];
 
 BEGIN {
-  our $VERSION     = '0.86';
+  our $VERSION     = '0.87';
   our @EXPORT_OK   = qw[ lower_bound
                          range_bounds
                          upper_bound ];
