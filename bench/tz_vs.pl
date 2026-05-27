@@ -3,16 +3,21 @@ use strict;
 use warnings;
 use v5.10;
 
-use Benchmark     qw[:hireswallclock];
-use Getopt::Long  qw[GetOptions];
-use Time::Str     qw[str2time time2str];
-use Time::TZif    qw[];
+use Benchmark       qw[:hireswallclock];
+use Getopt::Long    qw[GetOptions];
+use Time::Str       qw[str2time time2str];
+use Time::Str::Util qw[find_tzdb_directory];
+use Time::TZif      qw[];
 
-my $TZDIR = '/usr/share/zoneinfo';
+my $TZDIR;
 my $TZID  = 'Europe/Stockholm';
 
 GetOptions('tzdir=s' => \$TZDIR, 'tzid=s' => \$TZID)
   or die "Usage: $0 [--tzdir DIR] [--tzid TZID] [timestamp]\n";
+
+$TZDIR //= find_tzdb_directory();
+(defined $TZDIR)
+  or die "Unable to locate zoneinfo directory; set --tzdir DIR\n";
 
 my $time     = str2time(shift @ARGV // '2024-12-24T12:30:45Z');
 my $filename = "${TZDIR}/${TZID}";
