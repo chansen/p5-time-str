@@ -30,12 +30,12 @@ my $total_zones      = 0;
 my @failed_zones;
 
 foreach my $TZID (sort keys %{olson_canonical_names()}) {
-  my $filename = olson_tzfile($TZID);
+  my $path = olson_tzfile($TZID);
   $total_zones++;
 
-  my $tz1 = DateTime::TimeZone::Tzfile->new(filename => $filename);
+  my $tz1 = DateTime::TimeZone::Tzfile->new(filename => $path);
   my $tz2 = Time::TZif->new(
-    filename       => $filename,
+    path           => $path,
     gap_policy     => 'reject',
     overlap_policy => 'later',
   );

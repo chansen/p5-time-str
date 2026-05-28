@@ -47,8 +47,8 @@ printf "DateTime::TimeZone IANA time zone database vesion: %s\n",
   DateTime::TimeZone::Catalog->OlsonVersion;
 
 foreach my $TZID (@TZIDS) {
-  my $filename = "${TZDIR}/${TZID}";
-  unless (-f $filename) {
+  my $path = "${TZDIR}/${TZID}";
+  unless (-f $path) {
     say "\n=== $TZID === (skipped, file not found)";
     next;
   }
@@ -57,7 +57,7 @@ foreach my $TZID (@TZIDS) {
 
   my $tz1 = DateTime::TimeZone->new(name => $TZID);
   my $tz2 = Time::TZif->new(
-    filename       => $filename,
+    path           => $path,
     gap_policy     => 'reject',
     overlap_policy => 'later',
   );

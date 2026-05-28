@@ -476,7 +476,7 @@ SKIP: {
     unless defined $tzdir && -f "$tzdir/America/New_York";
 
   my $tzif = Time::TZif->new(
-    filename       => "$tzdir/America/New_York",
+    path           => "$tzdir/America/New_York",
     gap_policy     => 'later',
     overlap_policy => 'earlier',
   );

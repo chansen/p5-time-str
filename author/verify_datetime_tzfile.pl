@@ -43,17 +43,17 @@ my @TZIDS = @ARGV ? @ARGV : qw[ America/New_York
                                 Europe/Stockholm ];
 
 foreach my $TZID (@TZIDS) {
-  my $filename = "${TZDIR}/${TZID}";
-  unless (-f $filename) {
+  my $path = "${TZDIR}/${TZID}";
+  unless (-f $path) {
     say "\n=== $TZID === (skipped, file not found)";
     next;
   }
 
   say "\n=== $TZID ===";
 
-  my $tz1 = DateTime::TimeZone::Tzfile->new(filename => $filename);
+  my $tz1 = DateTime::TimeZone::Tzfile->new(filename => $path);
   my $tz2 = Time::TZif->new(
-    filename       => $filename,
+    path           => $path,
     gap_policy     => 'reject',
     overlap_policy => 'later',
   );

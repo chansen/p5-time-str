@@ -19,8 +19,8 @@ $TZDIR //= find_tzdb_directory();
 (defined $TZDIR)
   or die "Unable to locate zoneinfo directory; set --tzdir DIR\n";
 
-my $time     = str2time(shift @ARGV // '2024-12-24T12:30:45Z');
-my $filename = "${TZDIR}/${TZID}";
+my $time = str2time(shift @ARGV // '2024-12-24T12:30:45Z');
+my $path = "${TZDIR}/${TZID}";
 
 say 'Time: ', time2str($time), " TZID: ${TZID}";
 
@@ -28,7 +28,7 @@ my (%UTC_Bench, %Local_Bench);
 
 # Time::TZif
 {
-  my $tz = Time::TZif->new(filename => $filename);
+  my $tz = Time::TZif->new(path => $path);
   $UTC_Bench{'Time::TZif'} = sub {
     $tz->offset_for_utc($time);
   };
@@ -55,7 +55,7 @@ eval {
 eval {
   require DateTime;
   require DateTime::TimeZone::Tzfile;
-  my $tz = DateTime::TimeZone::Tzfile->new($filename);
+  my $tz = DateTime::TimeZone::Tzfile->new($path);
   my $dt = DateTime->from_epoch(epoch => $time);
   $UTC_Bench{'DateTime::Tzfile'} = sub {
     $tz->offset_for_datetime($dt);

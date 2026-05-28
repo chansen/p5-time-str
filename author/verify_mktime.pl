@@ -58,8 +58,8 @@ my @TZIDS = @ARGV ? @ARGV : qw[ America/New_York
                                 Europe/Stockholm ];
 
 foreach my $TZID (@TZIDS) {
-  my $filename = "${TZDIR}/${TZID}";
-  unless (-f $filename) {
+  my $path = "${TZDIR}/${TZID}";
+  unless (-f $path) {
     say "\n=== $TZID === (skipped, file not found)";
     next;
   }
@@ -72,7 +72,7 @@ foreach my $TZID (@TZIDS) {
     my $policy = $isdst ? 'dst' : 'std';
 
     my $tz = Time::TZif->new(
-      filename       => $filename,
+      path           => $path,
       gap_policy     => $policy,
       overlap_policy => $policy,
     );

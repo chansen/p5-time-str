@@ -20,14 +20,14 @@ use constant TZIF_MAX_CHARS => 256;
 use constant HAS_QUAD => eval { my $x = pack('q>', 0); 1 };
 
 sub new {
-  (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(filename => $filename)/;
+  (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(path => $path)/;
   my ($class, %p) = @_;
 
-  my ($filename, $gap_policy, $overlap_policy);
+  my ($path, $gap_policy, $overlap_policy);
 
   while (my ($key, $v) = each %p) {
-    if ($key eq 'filename') {
-      $filename = $v;
+    if ($key eq 'path') {
+      $path = $v;
     }
     elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
@@ -44,17 +44,17 @@ sub new {
     }
   }
 
-  (defined $filename)
-    or croak q/Parameter 'filename' is required/;
+  (defined $path)
+    or croak q/Parameter 'path' is required/;
 
   $gap_policy     //= 'reject';
   $overlap_policy //= 'reject';
 
-  open(my $fh, '<:raw', $filename)
-    or croak qq/Unable to parse TZif: could not open '$filename': '$!'/;
+  open(my $fh, '<:raw', $path)
+    or croak qq/Unable to parse TZif: could not open '$path': '$!'/;
 
   my $self = bless {
-    filename       => $filename,
+    path           => $path,
     gap_policy     => $gap_policy,
     overlap_policy => $overlap_policy,
   }, $class;
@@ -64,7 +64,7 @@ sub new {
   return $self;
 }
 
-sub filename       { $_[0]->{filename}   }
+sub path           { $_[0]->{path}   }
 sub gap_policy     { $_[0]->{gap_policy}     }
 sub overlap_policy { $_[0]->{overlap_policy} }
 

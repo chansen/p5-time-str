@@ -9,7 +9,7 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
     use Time::TZif;
     
     my $tz = Time::TZif->new(
-      filename       => '/usr/share/zoneinfo/America/New_York',
+      path           => '/usr/share/zoneinfo/America/New_York',
       gap_policy     => 'later',      # default policy for gaps
       overlap_policy => 'earlier',    # default policy for overlaps
     );
@@ -65,7 +65,7 @@ that can be set as defaults in the constructor or overridden per call.
 =head2 new
 
     my $tz = Time::TZif->new(
-      filename       => $filename,
+      path           => $path,
       gap_policy     => 'reject',    # optional, default: 'reject'
       overlap_policy => 'reject',    # optional, default: 'reject'
     );
@@ -74,7 +74,7 @@ Creates a new C<Time::TZif> object by parsing the specified TZif file.
 
 =over 4
 
-=item C<filename> (required)
+=item C<path> (required)
 
 Path to a TZif binary timezone file (e.g., C</usr/share/zoneinfo/America/New_York>).
 
@@ -157,11 +157,11 @@ Returns the full type information for the given UTC epoch time:
 Returns the full type information for the given local epoch time. Accepts
 the same C<gap_policy> and C<overlap_policy> options as C<offset_for_local>.
 
-=head2 filename
+=head2 path
 
-    my $filename = $tz->filename;
+    my $path = $tz->path;
 
-Returns the filename used to construct the object.
+Returns the path used to construct the object.
 
 =head2 gap_policy
 
@@ -228,7 +228,7 @@ C<DateTime::TimeZone-E<gt>offset_for_local_datetime()> throws an exception
 on gaps and selects the later (post-transition) offset for overlaps:
 
     my $tz = Time::TZif->new(
-      filename       => $filename,
+      path           => $path,
       gap_policy     => 'reject',
       overlap_policy => 'later',
     );
@@ -240,7 +240,7 @@ period and likewise resolves overlaps to the earlier (pre-transition)
 offset:
 
     my $tz = Time::TZif->new(
-      filename       => $filename,
+      path           => $path,
       gap_policy     => 'earlier',
       overlap_policy => 'earlier',
     );
@@ -346,9 +346,9 @@ transition and the C<overlap_policy> policy is set to C<'reject'>.
 
 A method was called with an incorrect number of arguments.
 
-=item C<Parameter 'filename' is required>
+=item C<Parameter 'path' is required>
 
-The C<new> constructor was called without the required C<filename>
+The C<new> constructor was called without the required C<path>
 parameter.
 
 =item C<Invalid policy value for the parameter '%s'>
