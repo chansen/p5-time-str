@@ -301,6 +301,31 @@ The behaviour of C<POSIX::mktime()> with C<tm_isdst = -1> for
 non-existing (gap) and ambiguous (overlap) local times is unspecified
 by the C standard and varies across platforms.
 
+=head3 glibc (Linux)
+
+glibc resolves gaps to the pre-transition (earlier) offset and overlaps
+to the first occurrence (earlier), equivalent to:
+
+    my $tz = Time::TZif->new(
+      path           => $path,
+      gap_policy     => 'earlier',
+      overlap_policy => 'earlier',
+    );
+
+This produces zero mismatches against C<POSIX::mktime()> for all tested
+zones.
+
+=head3 BSD libc (macOS)
+
+BSD libc does not match any single policy combination consistently.
+No combination of gap and overlap policy produces zero mismatches
+across all transition points. The closest results use C<gap_policy>
+C<'earlier'> with C<overlap_policy> C<'earlier'> or C<'dst'>, but
+both still produce mismatches at some transitions.
+
+See F<author/check_mktime.pl> in the source repository for the
+brute-force comparison used to determine these results.
+
 =head1 DIAGNOSTICS
 
 All error messages are thrown as exceptions via C<Carp::croak>.
