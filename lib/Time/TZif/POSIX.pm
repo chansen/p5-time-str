@@ -14,7 +14,8 @@ use Time::Str::Calendar qw[leap_year
                            rdn_to_ymd];
 use Time::Str::Time     qw[ gmtime_year
                             timegm_modern ];
-use Time::Str::Util     qw[upper_bound];
+use Time::Str::Util     qw[upper_bound
+                           valid_tzdb_timezone];
 
 my %ValidPolicy = (
   earlier => 1, later => 1, std => 1, dst => 1, reject => 1
@@ -66,11 +67,16 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif::POSIX->new(tz_string => $string)/;
   my ($class, %p) = @_;
 
-  my ($tz_string, $gap_policy, $overlap_policy);
+  my ($tz_string, $name, $gap_policy, $overlap_policy);
 
   while (my ($key, $v) = each %p) {
     if ($key eq 'tz_string') {
       $tz_string = $v;
+    }
+    elsif ($key eq 'name') {
+      valid_tzdb_timezone($v)
+        or croak qq/Invalid value for the parameter 'name'/;
+      $name = $v;
     }
     elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
@@ -94,6 +100,7 @@ sub new {
   $overlap_policy //= 'reject';
 
   my $self = bless {
+    name           => $name,
     tz_string      => $tz_string,
     gap_policy     => $gap_policy,
     overlap_policy => $overlap_policy,
@@ -103,9 +110,59 @@ sub new {
   return $self;
 }
 
+sub _with {
+  my ($object, %with) = @_;
+  return bless { %{$object}, %with }, ref $object;
+}
+
+sub name           { $_[0]->{name}           }
 sub tz_string      { $_[0]->{tz_string}      }
 sub gap_policy     { $_[0]->{gap_policy}     }
 sub overlap_policy { $_[0]->{overlap_policy} }
+
+sub has_name {
+  @_ == 1 or croak q/Usage: $tz->has_name()/;
+  return defined $_[0]->{name};
+}
+
+sub with_name {
+  @_ == 2 or croak q/Usage: $tz->with_name($name)/;
+  my ($self, $name) = @_;
+
+  valid_tzdb_timezone($name)
+    or croak qq/Invalid name value/;
+
+  if ($name ne ($self->{name} // '')) {
+    return _with($self, name => $name);
+  }
+  return $self;
+}
+
+sub with_gap_policy {
+  @_ == 2 or croak q/Usage: $tz->with_gap_policy($policy)/;
+  my ($self, $policy) = @_;
+
+  (defined $policy && exists $ValidPolicy{$policy})
+    or croak qq/Invalid policy value/;
+
+  if ($policy ne $self->{gap_policy}) {
+    return _with($self, gap_policy => $policy);
+  }
+  return $self;
+}
+
+sub with_overlap_policy {
+  @_ == 2 or croak q/Usage: $tz->with_overlap_policy($policy)/;
+  my ($self, $policy) = @_;
+
+  (defined $policy && exists $ValidPolicy{$policy})
+    or croak qq/Invalid policy value/;
+
+  if ($policy ne $self->{overlap_policy}) {
+    return _with($self, overlap_policy => $policy);
+  }
+  return $self;
+}
 
 sub _parse_offset {
   my ($str) = @_;
