@@ -63,6 +63,9 @@ throws_ok { Time::TZif->new(path => "$TZDIR/UTC", overlap_policy => 'invalid') }
   my $utc = Time::TZif->new(path => "$TZDIR/UTC");
   isa_ok($utc, 'Time::TZif');
   is($utc->path, "$TZDIR/UTC", 'path accessor');
+  ok(defined $utc->modified_time, 'modified_time is defined');
+  is($utc->modified_time, (stat "$TZDIR/UTC")[9],
+    'modified_time matches stat mtime');
   is($utc->offset_for_utc(0), 0, 'UTC: offset_for_utc at epoch 0');
   is($utc->offset_for_utc(1_000_000_000), 0, 'UTC: offset_for_utc at 1e9');
   is($utc->offset_for_local(0), 0, 'UTC: offset_for_local at epoch 0');

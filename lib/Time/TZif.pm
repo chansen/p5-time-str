@@ -55,6 +55,7 @@ sub new {
 
   my $self = bless {
     path           => $path,
+    modified_time  => (stat $fh)[9],
     gap_policy     => $gap_policy,
     overlap_policy => $overlap_policy,
   }, $class;
@@ -64,7 +65,8 @@ sub new {
   return $self;
 }
 
-sub path           { $_[0]->{path}   }
+sub path           { $_[0]->{path}           }
+sub modified_time  { $_[0]->{modified_time}  }
 sub gap_policy     { $_[0]->{gap_policy}     }
 sub overlap_policy { $_[0]->{overlap_policy} }
 

@@ -163,6 +163,14 @@ the same C<gap_policy> and C<overlap_policy> options as C<offset_for_local>.
 
 Returns the path used to construct the object.
 
+=head2 modified_time
+
+    my $mtime = $tz->modified_time;
+
+Returns the last modification time of the TZif file at the time it was 
+parsed, as a Unix epoch value. This can be used to detect whether the 
+file has changed since parsing (e.g., after a tzdata package upgrade).
+
 =head2 gap_policy
 
     my $policy = $tz->gap_policy;
