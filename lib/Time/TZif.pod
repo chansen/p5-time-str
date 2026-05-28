@@ -201,6 +201,30 @@ Returns the default gap policy set in the constructor.
 
 Returns the default overlap policy set in the constructor.
 
+=head2 with_name
+
+    my $tz2 = $tz->with_name('Europe/Stockholm');
+
+Returns a new C<Time::TZif> object with the given timezone name, sharing
+the parsed TZif data with the original. Croaks if the name is not
+structurally valid. Returns the same object if the name is unchanged.
+
+=head2 with_gap_policy
+
+    my $tz2 = $tz->with_gap_policy('later');
+
+Returns a new C<Time::TZif> object with the given gap policy, sharing
+the parsed TZif data with the original. Croaks if the policy is not
+valid. Returns the same object if the policy is unchanged.
+
+=head2 with_overlap_policy
+
+    my $tz2 = $tz->with_overlap_policy('earlier');
+
+Returns a new C<Time::TZif> object with the given overlap policy, sharing
+the parsed TZif data with the original. Croaks if the policy is not
+valid. Returns the same object if the policy is unchanged.
+
 =head1 POLICIES
 
 The following policies control how C<offset_for_local> and

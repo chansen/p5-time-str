@@ -73,16 +73,59 @@ sub new {
   return $self;
 }
 
+sub _with {
+  my ($object, %with) = @_;
+  return bless { %{$object}, %with }, ref $object;
+}
+
 sub name           { $_[0]->{name}           }
 sub path           { $_[0]->{path}           }
 sub modified_time  { $_[0]->{modified_time}  }
 sub gap_policy     { $_[0]->{gap_policy}     }
 sub overlap_policy { $_[0]->{overlap_policy} }
 
-
 sub has_name {
   @_ == 1 or croak q/Usage: $tz->has_name()/;
   return defined $_[0]->{name};
+}
+
+sub with_name {
+  @_ == 2 or croak q/Usage: $tz->with_name($name)/;
+  my ($self, $name) = @_;
+
+  valid_tzdb_timezone($name)
+    or croak qq/Invalid name value/;
+
+  if ($name ne ($self->{name} // '')) {
+    return _with($self, name => $name);
+  }
+  return $self;
+}
+
+sub with_gap_policy {
+  @_ == 2 or croak q/Usage: $tz->with_gap_policy($policy)/;
+  my ($self, $policy) = @_;
+
+  (defined $policy && exists $ValidPolicy{$policy})
+    or croak qq/Invalid policy value/;
+
+  if ($policy ne $self->{gap_policy}) {
+    return _with($self, gap_policy => $policy);
+  }
+  return $self;
+}
+
+sub with_overlap_policy {
+  @_ == 2 or croak q/Usage: $tz->with_overlap_policy($policy)/;
+  my ($self, $policy) = @_;
+
+  (defined $policy && exists $ValidPolicy{$policy})
+    or croak qq/Invalid policy value/;
+
+  if ($policy ne $self->{overlap_policy}) {
+    return _with($self, overlap_policy => $policy);
+  }
+  return $self;
 }
 
 sub _readn {

@@ -71,6 +71,86 @@ throws_ok { Time::TZif->new(path => "$TZDIR/UTC", name => '') }
   ok($tz->has_name, 'has_name is true when name provided');
 }
 
+## with_name
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_name() }
+  qr/^Usage: /,
+  'with_name: no arguments';
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_name('123') }
+  qr/Invalid name value/,
+  'with_name: invalid name';
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC", name => 'UTC');
+  my $tz2 = $tz1->with_name('Etc/UTC');
+  isnt($tz2, $tz1, 'with_name: returns new object when name differs');
+  is($tz2->name, 'Etc/UTC', 'with_name: new object has updated name');
+  is($tz2->path, $tz1->path, 'with_name: shares path');
+  is($tz2->gap_policy, $tz1->gap_policy, 'with_name: shares gap_policy');
+}
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC", name => 'UTC');
+  my $tz2 = $tz1->with_name('UTC');
+  is($tz2, $tz1, 'with_name: returns same object when name unchanged');
+}
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC");
+  my $tz2 = $tz1->with_name('UTC');
+  isnt($tz2, $tz1, 'with_name: returns new object when name was undef');
+  is($tz2->name, 'UTC', 'with_name: sets name from undef');
+}
+
+## with_gap_policy
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_gap_policy() }
+  qr/^Usage: /,
+  'with_gap_policy: no arguments';
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_gap_policy('invalid') }
+  qr/Invalid policy value/,
+  'with_gap_policy: invalid policy';
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC");
+  my $tz2 = $tz1->with_gap_policy('later');
+  isnt($tz2, $tz1, 'with_gap_policy: returns new object when policy differs');
+  is($tz2->gap_policy, 'later', 'with_gap_policy: new object has updated policy');
+  is($tz2->overlap_policy, $tz1->overlap_policy, 'with_gap_policy: overlap_policy unchanged');
+}
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC");
+  my $tz2 = $tz1->with_gap_policy('reject');
+  is($tz2, $tz1, 'with_gap_policy: returns same object when policy unchanged');
+}
+
+## with_overlap_policy
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_overlap_policy() }
+  qr/^Usage: /,
+  'with_overlap_policy: no arguments';
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC")->with_overlap_policy('invalid') }
+  qr/Invalid policy value/,
+  'with_overlap_policy: invalid policy';
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC");
+  my $tz2 = $tz1->with_overlap_policy('earlier');
+  isnt($tz2, $tz1, 'with_overlap_policy: returns new object when policy differs');
+  is($tz2->overlap_policy, 'earlier', 'with_overlap_policy: new object has updated policy');
+  is($tz2->gap_policy, $tz1->gap_policy, 'with_overlap_policy: gap_policy unchanged');
+}
+
+{
+  my $tz1 = Time::TZif->new(path => "$TZDIR/UTC");
+  my $tz2 = $tz1->with_overlap_policy('reject');
+  is($tz2, $tz1, 'with_overlap_policy: returns same object when policy unchanged');
+}
+
 ## UTC timezone (no DST transitions)
 
 {
