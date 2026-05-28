@@ -292,11 +292,10 @@ sub _transitions_for_year {
   return ($t_start, $t_end);
 }
 
-# Returns (\@times, \@types) for the 3-year window around $time.
-sub _transitions_for_time {
-  my ($self, $time) = @_;
+# Returns \@times for the 3-year window around $time.
+sub _transitions_window_for_year {
+  my ($self, $year) = @_;
 
-  my $year = gmtime_year($time);
   my @times;
   for my $y ($self->{cross_year} ? ($year - 1, $year, $year + 1) : $year) {
     my ($t_start, $t_end) = $self->_transitions_for_year($y);
@@ -308,7 +307,25 @@ sub _transitions_for_time {
     }
   }
 
-  return (\@times, $self->{types_3y});
+  return \@times;
+}
+
+sub _transitions_for_time {
+  my ($self, $time) = @_;
+
+  my $year = gmtime_year($time);
+  my $year_index = $year - 1990;
+  my $cache = $self->{cache_years} //= [];
+  my $times;
+
+  if ($year_index >= 0 && $year_index < 50) {
+    $times = $cache->[$year_index] //= $self->_transitions_window_for_year($year);
+  }
+  else {
+    $times = $self->_transitions_window_for_year($year);
+  }
+
+  return ($times, $self->{types_3y});
 }
 
 sub _type_for_utc {
