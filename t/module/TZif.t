@@ -39,6 +39,14 @@ throws_ok { Time::TZif->new(path => "$TZDIR/UTC", overlap_policy => 'invalid') }
   qr/Invalid policy value for the parameter 'overlap_policy'/,
   'new: invalid overlap_policy policy';
 
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC", name => '123') }
+  qr/Invalid value for the parameter 'name'/,
+  'new: invalid name (starts with digit)';
+
+throws_ok { Time::TZif->new(path => "$TZDIR/UTC", name => '') }
+  qr/Invalid value for the parameter 'name'/,
+  'new: invalid name (empty string)';
+
 ## Constructor defaults
 
 {
@@ -57,12 +65,20 @@ throws_ok { Time::TZif->new(path => "$TZDIR/UTC", overlap_policy => 'invalid') }
   is($tz->overlap_policy, 'std',   'custom overlap_policy preserved');
 }
 
+{
+  my $tz = Time::TZif->new(path => "$TZDIR/UTC", name => 'UTC');
+  is($tz->name, 'UTC', 'name accessor returns provided name');
+  ok($tz->has_name, 'has_name is true when name provided');
+}
+
 ## UTC timezone (no DST transitions)
 
 {
   my $utc = Time::TZif->new(path => "$TZDIR/UTC");
   isa_ok($utc, 'Time::TZif');
   is($utc->path, "$TZDIR/UTC", 'path accessor');
+  is($utc->name, undef, 'name is undef when not provided');
+  ok(!$utc->has_name, 'has_name is false when not provided');
   ok(defined $utc->modified_time, 'modified_time is defined');
   is($utc->modified_time, (stat "$TZDIR/UTC")[9],
     'modified_time matches stat mtime');

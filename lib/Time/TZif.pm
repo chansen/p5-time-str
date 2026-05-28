@@ -6,7 +6,9 @@ use v5.10;
 our $VERSION = '0.87';
 
 use Carp            qw[croak];
-use Time::Str::Util qw[range_bounds upper_bound];
+use Time::Str::Util qw[range_bounds
+                       upper_bound
+                       valid_tzdb_timezone];
 
 my %ValidPolicy = (
   earlier => 1, later => 1, std => 1, dst => 1, reject => 1
@@ -23,11 +25,16 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(path => $path)/;
   my ($class, %p) = @_;
 
-  my ($path, $gap_policy, $overlap_policy);
+  my ($path, $name, $gap_policy, $overlap_policy);
 
   while (my ($key, $v) = each %p) {
     if ($key eq 'path') {
       $path = $v;
+    }
+    elsif ($key eq 'name') {
+      valid_tzdb_timezone($v)
+        or croak qq/Invalid value for the parameter 'name'/;
+      $name = $v;
     }
     elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
@@ -54,6 +61,7 @@ sub new {
     or croak qq/Unable to parse TZif: could not open '$path': '$!'/;
 
   my $self = bless {
+    name           => $name,
     path           => $path,
     modified_time  => (stat $fh)[9],
     gap_policy     => $gap_policy,
@@ -65,10 +73,17 @@ sub new {
   return $self;
 }
 
+sub name           { $_[0]->{name}           }
 sub path           { $_[0]->{path}           }
 sub modified_time  { $_[0]->{modified_time}  }
 sub gap_policy     { $_[0]->{gap_policy}     }
 sub overlap_policy { $_[0]->{overlap_policy} }
+
+
+sub has_name {
+  @_ == 1 or croak q/Usage: $tz->has_name()/;
+  return defined $_[0]->{name};
+}
 
 sub _readn {
   my ($fh, $len) = @_;

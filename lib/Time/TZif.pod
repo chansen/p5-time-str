@@ -66,8 +66,9 @@ that can be set as defaults in the constructor or overridden per call.
 
     my $tz = Time::TZif->new(
       path           => $path,
-      gap_policy     => 'reject',    # optional, default: 'reject'
-      overlap_policy => 'reject',    # optional, default: 'reject'
+      name           => 'America/New_York',  # optional
+      gap_policy     => 'reject',            # optional, default: 'reject'
+      overlap_policy => 'reject',            # optional, default: 'reject'
     );
 
 Creates a new C<Time::TZif> object by parsing the specified TZif file.
@@ -77,6 +78,10 @@ Creates a new C<Time::TZif> object by parsing the specified TZif file.
 =item C<path> (required)
 
 Path to a TZif binary timezone file (e.g., C</usr/share/zoneinfo/America/New_York>).
+
+=item C<name> (optional)
+
+IANA timezone name associated with this file (e.g., C<America/New_York>).
 
 =item C<gap_policy> (optional, default: C<'reject'>)
 
@@ -156,6 +161,19 @@ Returns the full type information for the given UTC epoch time:
 
 Returns the full type information for the given local epoch time. Accepts
 the same C<gap_policy> and C<overlap_policy> options as C<offset_for_local>.
+
+=head2 name
+
+    my $name = $tz->name;
+
+Returns the timezone name passed to the constructor, or C<undef> if
+none was provided.
+
+=head2 has_name
+
+    if ($tz->has_name) { ... }
+
+Returns true if a timezone name was provided to the constructor.
 
 =head2 path
 
@@ -358,6 +376,11 @@ A method was called with an incorrect number of arguments.
 
 The C<new> constructor was called without the required C<path>
 parameter.
+
+=item C<Invalid value for the parameter 'name'>
+
+The value given for C<name> is not structurally valid as an IANA Time 
+Zone Database timezone name.
 
 =item C<Invalid policy value for the parameter '%s'>
 
