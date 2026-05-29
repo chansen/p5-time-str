@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use v5.10;
 
-our $VERSION = '0.87';
+our $VERSION = '0.88';
 
 use Carp                qw[croak];
 use Time::Str::Calendar qw[leap_year
