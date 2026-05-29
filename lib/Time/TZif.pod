@@ -29,8 +29,6 @@ Time::TZif - TZif timezone file parser with configurable local time resolution
 
 =head1 DESCRIPTION
 
-B<Note:> This module is experimental and may change without prior notice.
-
 C<Time::TZif> parses TZif binary timezone files (RFC 8536) and
 provides methods for resolving UTC and local times to UTC offsets.
 

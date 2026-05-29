@@ -29,8 +29,6 @@ Time::TZif::POSIX - POSIX TZ string parser with configurable local time resoluti
 
 =head1 DESCRIPTION
 
-B<Note:> This module is experimental and may change without prior notice.
-
 C<Time::TZif::POSIX> parses POSIX TZ strings as defined in
 IEEE Std 1003.1 (POSIX.1) and RFC 8536 E<sect>3.3.1, and provides
 the same API as L<Time::TZif> for resolving UTC and local times to
