@@ -5,10 +5,11 @@ use v5.10;
 
 our $VERSION = '0.87';
 
-use Carp            qw[croak];
-use Time::Str::Util qw[range_bounds
-                       upper_bound
-                       valid_tzdb_timezone];
+use Carp              qw[croak];
+use Time::Str::Util   qw[range_bounds
+                         upper_bound
+                         valid_tzdb_timezone];
+use Time::TZif::POSIX qw[];
 
 my %ValidPolicy = (
   earlier => 1, later => 1, std => 1, dst => 1, reject => 1
@@ -110,7 +111,7 @@ sub with_gap_policy {
     or croak qq/Invalid policy value/;
 
   if ($policy ne $self->{gap_policy}) {
-    return _with($self, gap_policy => $policy);
+    return _with($self, gap_policy => $policy, _posix_tz => undef);
   }
   return $self;
 }
@@ -123,9 +124,18 @@ sub with_overlap_policy {
     or croak qq/Invalid policy value/;
 
   if ($policy ne $self->{overlap_policy}) {
-    return _with($self, overlap_policy => $policy);
+    return _with($self, overlap_policy => $policy, _posix_tz => undef);
   }
   return $self;
+}
+
+sub _posix_tz {
+  my ($self) = @_;
+  return $self->{_posix_tz} //= Time::TZif::POSIX->new(
+    tz_string      => $self->{posix_tz},
+    gap_policy     => $self->{gap_policy},
+    overlap_policy => $self->{overlap_policy},
+  );
 }
 
 sub _readn {
@@ -188,6 +198,16 @@ sub _parse {
   else {
     $self->_parse_data($fh, $timecnt, $typecnt, $charcnt,
                        $leapcnt, $isstdcnt, $isutcnt, 4);
+  }
+
+  my $times = $self->{times};
+  if ($self->{posix_tz} && @$times) {
+    $self->{max_time_utc}   = $times->[-1];
+    $self->{max_time_local} = $times->[-1] + 86400;
+  }
+  else {
+    $self->{max_time_utc}   = ~0;
+    $self->{max_time_local} = ~0;
   }
 }
 
@@ -283,30 +303,48 @@ sub transitions_times {
 sub offset_for_utc {
   @_ == 2 or croak q/Usage: $tz->offset_for_utc($time)/;
   my ($self, $time) = @_;
-  return $self->{types}[ upper_bound($self->{times}, $time) ][0];
+  if ($time <= $self->{max_time_utc}) {
+    return $self->{types}[ upper_bound($self->{times}, $time) ][0];
+  }
+  else {
+    return $self->_posix_tz->offset_for_utc($time);
+  }
 }
 
 sub type_info_for_utc {
   @_ == 2 or croak q/Usage: $tz->type_info_for_utc($time)/;
   my ($self, $time) = @_;
-  my $type = $self->{types}[ upper_bound($self->{times}, $time) ];
-  return @$type;
+  if ($time <= $self->{max_time_utc}) {
+    my $type = $self->{types}[ upper_bound($self->{times}, $time) ];
+    return @$type;
+  }
+  else {
+    return $self->_posix_tz->type_info_for_utc($time);
+  }
 }
 
 sub offset_for_local {
   @_ >= 2 or croak q/Usage: $tz->offset_for_local($time, %opts)/;
+  my ($self, $time) = @_;
+  if ($time > $self->{max_time_local}) {
+    return shift->_posix_tz->offset_for_local(@_);
+  }
   my $type = &_resolve_local;
   return $type->[0];
 }
 
 sub type_info_for_local {
   @_ >= 2 or croak q/Usage: $tz->type_info_for_local($time, %opts)/;
+  my ($self, $time) = @_;
+  if ($time > $self->{max_time_local}) {
+    return shift->_posix_tz->type_info_for_local(@_);
+  }
   my $type = &_resolve_local;
   return @$type;
 }
 
 sub _resolve_local {
-  ((@_ & 1) == 0 && @_ >= 2) or croak q/Usage: $tz->offset_for_local($time, %opts)/;
+  (@_ & 1) == 0 or croak q/Usage: $tz->offset_for_local($time, %opts)/;
   my ($self, $time, %p) = @_;
 
   my ($gap_policy, $overlap_policy);

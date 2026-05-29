@@ -434,6 +434,76 @@ SKIP: {
   }
 }
 
+## POSIX TZ footer fallback (times beyond last stored transition)
+
+SKIP: {
+  skip "America/New_York not available", 14
+    unless -f "$TZDIR/America/New_York";
+
+  my $tz = Time::TZif->new(
+    path           => "$TZDIR/America/New_York",
+    gap_policy     => 'earlier',
+    overlap_policy => 'earlier',
+  );
+
+  my $EST = -18000;  # UTC-5
+  my $EDT = -14400;  # UTC-4
+
+  # 2040-01-15 12:00:00 UTC (winter, beyond last transition ~2037)
+  {
+    my $utc = timegm(0, 0, 12, 15, 0, 2040);
+    is($tz->offset_for_utc($utc), $EST,
+      'POSIX fallback: offset_for_utc winter 2040 = EST');
+
+    my @info = $tz->type_info_for_utc($utc);
+    is($info[0], $EST,   'POSIX fallback: type_info_for_utc winter offset');
+    is($info[1], 0,      'POSIX fallback: type_info_for_utc winter is_dst=0');
+    is($info[2], 'EST',  'POSIX fallback: type_info_for_utc winter abbreviation');
+  }
+
+  # 2040-07-15 12:00:00 UTC (summer, beyond last transition)
+  {
+    my $utc = timegm(0, 0, 12, 15, 6, 2040);
+    is($tz->offset_for_utc($utc), $EDT,
+      'POSIX fallback: offset_for_utc summer 2040 = EDT');
+
+    my @info = $tz->type_info_for_utc($utc);
+    is($info[0], $EDT,   'POSIX fallback: type_info_for_utc summer offset');
+    is($info[1], 1,      'POSIX fallback: type_info_for_utc summer is_dst=1');
+    is($info[2], 'EDT',  'POSIX fallback: type_info_for_utc summer abbreviation');
+  }
+
+  # offset_for_local in 2040
+  {
+    my $winter = timegm(0, 0, 12, 15, 0, 2040);
+    is($tz->offset_for_local($winter), $EST,
+      'POSIX fallback: offset_for_local winter 2040 = EST');
+
+    my $summer = timegm(0, 0, 12, 15, 6, 2040);
+    is($tz->offset_for_local($summer), $EDT,
+      'POSIX fallback: offset_for_local summer 2040 = EDT');
+  }
+
+  # type_info_for_local in 2040
+  {
+    my $winter = timegm(0, 0, 12, 15, 0, 2040);
+    my @info = $tz->type_info_for_local($winter);
+    is($info[0], $EST,   'POSIX fallback: type_info_for_local winter offset');
+    is($info[1], 0,      'POSIX fallback: type_info_for_local winter is_dst=0');
+
+    my $summer = timegm(0, 0, 12, 15, 6, 2040);
+    @info = $tz->type_info_for_local($summer);
+    is($info[0], $EDT,   'POSIX fallback: type_info_for_local summer offset');
+  }
+
+  # with_gap_policy clears cached POSIX object
+  {
+    my $tz2 = $tz->with_gap_policy('later');
+    is($tz2->offset_for_utc(timegm(0, 0, 12, 15, 0, 2040)), $EST,
+      'POSIX fallback: with_gap_policy preserves future lookups');
+  }
+}
+
 ## Parameter validation
 
 {

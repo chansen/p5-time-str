@@ -38,6 +38,11 @@ Supports TZif version 1 (32-bit timestamps), version 2, and version 3
 (64-bit timestamps). When a v2/v3 file is detected and the platform
 supports 64-bit integers, the 64-bit data block is used automatically.
 
+For v2/v3 files that contain a POSIX TZ string footer (RFC 8536
+E<sect>3.3), times after the last stored transition are resolved using
+the footer rules. This allows correct handling of future dates beyond 
+the precomputed transition table.
+
 The key challenge in timezone handling is converting I<local> times to
 UTC, because DST transitions create two problematic cases:
 
@@ -106,7 +111,8 @@ Croaks if the file cannot be opened or is not a valid TZif file.
     my $offset = $tz->offset_for_utc($time);
 
 Returns the UTC offset in seconds for the given UTC epoch time. This is
-always unambiguous.
+always unambiguous. For times after the last stored transition,
+delegates to the POSIX TZ string footer if available.
 
 =head2 offset_for_local
 
@@ -143,7 +149,9 @@ Policy for ambiguous local times. See L</POLICIES>.
 
     my ($offset, $is_dst, $abbreviation) = $tz->type_info_for_utc($time);
 
-Returns the full type information for the given UTC epoch time:
+Returns the full type information for the given UTC epoch time. For
+times after the last stored transition, delegates to the POSIX TZ
+string footer if available.
 
 =over 4
 
