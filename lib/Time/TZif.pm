@@ -26,7 +26,7 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif->new(path => $path)/;
   my ($class, %p) = @_;
 
-  my ($path, $name, $gap_policy, $overlap_policy);
+  my (%state, $path);
 
   while (my ($key, $v) = each %p) {
     if ($key eq 'path') {
@@ -35,17 +35,17 @@ sub new {
     elsif ($key eq 'name') {
       valid_tzdb_timezone($v)
         or croak qq/Invalid value for the parameter 'name'/;
-      $name = $v;
+      $state{name} = $v;
     }
     elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
         or croak qq/Invalid policy value for the parameter 'gap_policy'/;
-      $gap_policy = $v;
+      $state{gap_policy} = $v;
     }
     elsif ($key eq 'overlap_policy') {
       (defined $v && exists $ValidPolicy{$v})
         or croak qq/Invalid policy value for the parameter 'overlap_policy'/;
-      $overlap_policy = $v;
+      $state{overlap_policy} = $v;
     }
     else {
       croak qq/Unrecognised named parameter: '$key'/;
@@ -55,20 +55,15 @@ sub new {
   (defined $path)
     or croak q/Parameter 'path' is required/;
 
-  $gap_policy     //= 'reject';
-  $overlap_policy //= 'reject';
-
   open(my $fh, '<:raw', $path)
     or croak qq/Unable to parse TZif: could not open '$path': '$!'/;
 
-  my $self = bless {
-    name           => $name,
-    path           => $path,
-    modified_time  => (stat $fh)[9],
-    gap_policy     => $gap_policy,
-    overlap_policy => $overlap_policy,
-  }, $class;
+  $state{path}             = $path;
+  $state{modified_time}    = (stat $fh)[9];
+  $state{gap_policy}     //= 'reject';
+  $state{overlap_policy} //= 'reject';
 
+  my $self = bless \%state, $class;
   $self->_parse($fh);
   close($fh);
   return $self;
@@ -79,15 +74,34 @@ sub _with {
   return bless { %{$object}, %with }, ref $object;
 }
 
-sub name           { $_[0]->{name}           }
-sub path           { $_[0]->{path}           }
-sub modified_time  { $_[0]->{modified_time}  }
-sub gap_policy     { $_[0]->{gap_policy}     }
-sub overlap_policy { $_[0]->{overlap_policy} }
+sub name { 
+  @_ == 1 or croak q/Usage: $tz->name()/;
+  return $_[0]->{name};
+}
+
+sub path {
+  @_ == 1 or croak q/Usage: $tz->path()/;
+  return $_[0]->{path};
+}
+
+sub modified_time {
+  @_ == 1 or croak q/Usage: $tz->modified_time()/;
+  return $_[0]->{modified_time};
+}
+
+sub gap_policy {
+  @_ == 1 or croak q/Usage: $tz->gap_policy()/;
+  return $_[0]->{gap_policy};
+}
+
+sub overlap_policy {
+  @_ == 1 or croak q/Usage: $tz->overlap_policy()/;
+  return $_[0]->{overlap_policy};
+}
 
 sub has_name {
   @_ == 1 or croak q/Usage: $tz->has_name()/;
-  return defined $_[0]->{name};
+  return exists $_[0]->{name};
 }
 
 sub with_name {
@@ -97,7 +111,7 @@ sub with_name {
   valid_tzdb_timezone($name)
     or croak qq/Invalid name value/;
 
-  if ($name ne ($self->{name} // '')) {
+  if (!exists $self->{name} || $name ne $self->{name}) {
     return _with($self, name => $name);
   }
   return $self;
