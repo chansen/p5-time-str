@@ -38,10 +38,9 @@ Supports TZif version 1 (32-bit timestamps), version 2, and version 3
 (64-bit timestamps). When a v2/v3 file is detected and the platform
 supports 64-bit integers, the 64-bit data block is used automatically.
 
-For v2/v3 files that contain a POSIX TZ string footer (RFC 8536
-E<sect>3.3), times after the last stored transition are resolved using
-the footer rules. This allows correct handling of future dates beyond 
-the precomputed transition table.
+For v2/v3 files that contain a POSIX TZ string footer, times after the 
+last stored transition are resolved using the footer rules. This allows 
+correct handling of future dates beyond the precomputed transition table.
 
 The key challenge in timezone handling is converting I<local> times to
 UTC, because DST transitions create two problematic cases:
@@ -88,13 +87,13 @@ Path to a TZif binary timezone file (e.g., C</usr/share/zoneinfo/America/New_Yor
 
 IANA timezone name associated with this file (e.g., C<America/New_York>).
 
-=item C<gap_policy> (optional, default: C<'reject'>)
+=item C<gap_policy> (optional, default: C<reject>)
 
 Default policy for resolving non-existing local times (during
 spring-forward gaps). See L</POLICIES>. Can be overridden per call in
 C<offset_for_local> and C<type_info_for_local>.
 
-=item C<overlap_policy> (optional, default: C<'reject'>)
+=item C<overlap_policy> (optional, default: C<reject>)
 
 Default policy for resolving ambiguous local times (during fall-back
 overlaps). See L</POLICIES>. Can be overridden per call in
@@ -118,20 +117,11 @@ delegates to the POSIX TZ string footer if available.
 
     my $offset = $tz->offset_for_local($time);
     my $offset = $tz->offset_for_local($time, %opts);
-    
-    use Time::Str::Time qw[timegm_modern];
-    
-    # Treat wall-clock 2024-03-10 02:30:00 as a UTC epoch
-    my $local  = timegm_modern(0, 30, 2, 10, 3, 2024);
-    my $offset = $tz->offset_for_local($local);
-    
-    # The actual UTC epoch is:
-    my $utc = $local - $offset;
 
 Returns the UTC offset in seconds for the given local epoch time (i.e.,
 the epoch value obtained by treating the wall-clock time as if it were UTC).
 
-=head3 Options
+B<Options>
 
 =over 4
 
@@ -144,6 +134,17 @@ Policy for non-existing local times. See L</POLICIES>.
 Policy for ambiguous local times. See L</POLICIES>.
 
 =back
+
+B<Eaxmple>
+
+    use Time::Str::Time qw[timegm_modern];
+    
+    # Treat wall-clock 2024-03-10 02:30:00 as a UTC epoch
+    my $local  = timegm_modern(0, 30, 2, 10, 3, 2024);
+    my $offset = $tz->offset_for_local($local);
+    
+    # The actual UTC epoch is:
+    my $utc = $local - $offset;
 
 =head2 type_info_for_utc
 
@@ -328,8 +329,8 @@ zones.
 BSD libc does not match any single policy combination consistently.
 No combination of gap and overlap policy produces zero mismatches
 across all transition points. The closest results use C<gap_policy>
-C<'earlier'> with C<overlap_policy> C<'earlier'> or C<'dst'>, but
-both still produce mismatches at some transitions.
+C<earlier> with C<overlap_policy> C<earlier>, but still produce 
+mismatches at some transitions.
 
 See F<author/check_mktime.pl> in the source repository for the
 brute-force comparison used to determine these results.
