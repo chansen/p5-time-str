@@ -65,7 +65,7 @@ foreach my $TZID (@TZIDS) {
     overlap_policy => 'earlier',
   );
 
-  my @times = $tz->transitions_times;
+  my @times = $tz->_transition_times;
 
   my @mismatches;
   my $tested = 0;

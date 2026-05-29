@@ -40,7 +40,7 @@ foreach my $TZID (sort keys %{olson_canonical_names()}) {
     overlap_policy => 'later',
   );
 
-  my @times = $tz2->transitions_times;
+  my @times = $tz2->_transition_times;
 
   my @mismatches;
   my $tested = 0;

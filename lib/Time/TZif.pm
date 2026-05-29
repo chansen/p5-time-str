@@ -308,8 +308,9 @@ sub _parse_data {
   $self->{types} = \@resolved;
 }
 
-sub transitions_times {
-  @_ == 1 or croak q/Usage: $tz->transitions_times()/;
+# Internal method - not part of the public API. May change or be removed without notice.
+sub _transition_times {
+  @_ == 1 or croak q/Usage: $tz->_transition_times()/;
   my ($self) = @_;
   return wantarray ? @{ $self->{times} } : [ @{ $self->{times} } ];
 }
