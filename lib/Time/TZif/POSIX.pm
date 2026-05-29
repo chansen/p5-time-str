@@ -67,7 +67,7 @@ sub new {
   (@_ & 1 && @_ >= 3) or croak q/Usage: Time::TZif::POSIX->new(tz_string => $string)/;
   my ($class, %p) = @_;
 
-  my ($tz_string, $name, $gap_policy, $overlap_policy);
+  my (%state, $tz_string);
 
   while (my ($key, $v) = each %p) {
     if ($key eq 'tz_string') {
@@ -76,17 +76,17 @@ sub new {
     elsif ($key eq 'name') {
       valid_tzdb_timezone($v)
         or croak qq/Invalid value for the parameter 'name'/;
-      $name = $v;
+      $state{name} = $v;
     }
     elsif ($key eq 'gap_policy') {
       (defined $v && exists $ValidPolicy{$v})
         or croak qq/Invalid policy value for the parameter 'gap_policy'/;
-      $gap_policy = $v;
+      $state{gap_policy} = $v;
     }
     elsif ($key eq 'overlap_policy') {
       (defined $v && exists $ValidPolicy{$v})
         or croak qq/Invalid policy value for the parameter 'overlap_policy'/;
-      $overlap_policy = $v;
+      $state{overlap_policy} = $v;
     }
     else {
       croak qq/Unrecognised named parameter: '$key'/;
@@ -96,16 +96,11 @@ sub new {
   (defined $tz_string)
     or croak q/Parameter 'tz_string' is required/;
 
-  $gap_policy     //= 'reject';
-  $overlap_policy //= 'reject';
+  $state{tz_string}        = $tz_string;
+  $state{gap_policy}     //= 'reject';
+  $state{overlap_policy} //= 'reject';
 
-  my $self = bless {
-    name           => $name,
-    tz_string      => $tz_string,
-    gap_policy     => $gap_policy,
-    overlap_policy => $overlap_policy,
-  }, $class;
-
+  my $self = bless \%state, $class;
   $self->_parse($tz_string);
   return $self;
 }
@@ -115,14 +110,29 @@ sub _with {
   return bless { %{$object}, %with }, ref $object;
 }
 
-sub name           { $_[0]->{name}           }
-sub tz_string      { $_[0]->{tz_string}      }
-sub gap_policy     { $_[0]->{gap_policy}     }
-sub overlap_policy { $_[0]->{overlap_policy} }
+sub name { 
+  @_ == 1 or croak q/Usage: $tz->name()/;
+  return $_[0]->{name};
+}
+
+sub tz_string {
+  @_ == 1 or croak q/Usage: $tz->tz_string()/;
+  return $_[0]->{tz_string};
+}
+
+sub gap_policy {
+  @_ == 1 or croak q/Usage: $tz->gap_policy()/;
+  return $_[0]->{gap_policy};
+}
+
+sub overlap_policy {
+  @_ == 1 or croak q/Usage: $tz->overlap_policy()/;
+  return $_[0]->{overlap_policy};
+}
 
 sub has_name {
   @_ == 1 or croak q/Usage: $tz->has_name()/;
-  return defined $_[0]->{name};
+  return exists $_[0]->{name};
 }
 
 sub with_name {
@@ -132,7 +142,7 @@ sub with_name {
   valid_tzdb_timezone($name)
     or croak qq/Invalid name value/;
 
-  if ($name ne ($self->{name} // '')) {
+  if (!exists $self->{name} || $name ne $self->{name}) {
     return _with($self, name => $name);
   }
   return $self;
