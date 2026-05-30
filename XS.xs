@@ -16,6 +16,18 @@
 #include "tstr_sv.h"
 #include "tstr_carp.h"
 
+#if IVSIZE >= 8
+typedef IV I64V;
+# define SvI64V(sv)         (I64V)SvIV(sv)
+# define newSVi64v(i64)     newSViv((IV)i64)
+# define XSRETURN_I64V(i64) XSRETURN_IV((IV)i64)
+#else
+typedef NV I64V;
+# define SvI64V(sv)         (I64V)SvNV(sv)
+# define newSVi64v(i64)     newSVnv((NV)i64)
+# define XSRETURN_I64V(i64) XSRETURN_NV((NV)i64)
+#endif
+
 #if NVSIZE > 8
 # define DEFAULT_PRECISION 9
 #else
@@ -684,14 +696,15 @@ void
 lower_bound(...)
   PREINIT:
     AV *av;
-    IV value, lo, hi, mid;
+    IV lo, hi, mid;
+    I64V value;
   PPCODE:
     if (items < 2 || items > 4)
       croak("Usage: lower_bound(array, value [, lo [, hi]])");
     if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
       croak("Parameter 'array' must be an array reference");
     av = (AV *)SvRV(ST(0));
-    value = SvIV(ST(1));
+    value = SvI64V(ST(1));
     {
       IV len = av_len(av) + 1;
       lo = (items >= 3) ? SvIV(ST(2)) : 0;
@@ -707,7 +720,7 @@ lower_bound(...)
       mid = (lo + hi) >> 1;
       {
         SV **elem = av_fetch(av, mid, 0);
-        if (elem && SvIV(*elem) < value)
+        if (elem && SvI64V(*elem) < value)
           lo = mid + 1;
         else
           hi = mid;
@@ -719,15 +732,16 @@ void
 range_bounds(...)
   PREINIT:
     AV *av;
-    IV min_value, max_value, lo, hi, mid, len;
+    IV lo, hi, mid, len;
+    I64V min_value, max_value;
   PPCODE:
     if (items != 3)
       croak("Usage: range_bounds(array, min_value, max_value)");
     if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
       croak("Parameter 'array' must be an array reference");
     av = (AV *)SvRV(ST(0));
-    min_value = SvIV(ST(1));
-    max_value = SvIV(ST(2));
+    min_value = SvI64V(ST(1));
+    max_value = SvI64V(ST(2));
     if (min_value > max_value)
       croak("Parameter 'min_value' must not exceed 'max_value'");
     len = av_len(av) + 1;
@@ -738,7 +752,7 @@ range_bounds(...)
       mid = (lo + hi) >> 1;
       {
         SV **elem = av_fetch(av, mid, 0);
-        if (elem && SvIV(*elem) < min_value)
+        if (elem && SvI64V(*elem) < min_value)
           lo = mid + 1;
         else
           hi = mid;
@@ -748,7 +762,7 @@ range_bounds(...)
     hi = lo;
     while (hi < len) {
       SV **elem = av_fetch(av, hi, 0);
-      if (elem && SvIV(*elem) <= max_value)
+      if (elem && SvI64V(*elem) <= max_value)
         hi++;
       else
         break;
@@ -761,14 +775,15 @@ void
 upper_bound(...)
   PREINIT:
     AV *av;
-    IV value, lo, hi, mid;
+    IV lo, hi, mid;
+    I64V value;
   PPCODE:
     if (items < 2 || items > 4)
       croak("Usage: upper_bound(array, value [, lo [, hi ]])");
     if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
       croak("Parameter 'array' must be an array reference");
     av = (AV *)SvRV(ST(0));
-    value = SvIV(ST(1));
+    value = SvI64V(ST(1));
     {
       IV len = av_len(av) + 1;
       lo = (items >= 3) ? SvIV(ST(2)) : 0;
@@ -784,10 +799,10 @@ upper_bound(...)
       mid = (lo + hi) >> 1;
       {
         SV **elem = av_fetch(av, mid, 0);
-        if (elem && SvIV(*elem) <= value)
-          lo = mid + 1;
-        else
+        if (elem && value < SvI64V(*elem))
           hi = mid;
+        else
+          lo = mid + 1;
       }
     }
     mPUSHi(lo);
