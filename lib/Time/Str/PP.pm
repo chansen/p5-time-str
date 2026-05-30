@@ -489,15 +489,29 @@ use Exporter qw[import];
   package
   Time::Str::PP::Util; # hide from PAUSE/indexers
 
-  our @EXPORT_OK = qw[ lower_bound
+  our @EXPORT_OK = qw[ binary_search
+                       lower_bound
                        range_bounds
                        upper_bound ];
 
   use Carp     qw[croak];
   use Exporter qw[import];
 
+  sub binary_search {
+    (@_ >= 2 && @_ <= 4) or croak q/Usage: binary_search(array, value [, lo [, hi]])/;
+    my ($array, $value, $lo, $hi) = @_;
+
+    ref $array eq 'ARRAY'
+      or croak q/Parameter 'array' must be an array reference/;
+
+    $lo //= 0;
+    $hi //= @$array;
+    $lo = lower_bound($array, $value, $lo, $hi);
+    return ($lo != $hi && !($value < $array->[$lo]));
+  }
+
   sub lower_bound {
-    (@_ >= 2 && @_ <= 4) or croak q/Usage: lower_bound(array, value [, lo [, h i]])/;
+    (@_ >= 2 && @_ <= 4) or croak q/Usage: lower_bound(array, value [, lo [, hi]])/;
     my ($array, $value, $lo, $hi) = @_;
 
     ref $array eq 'ARRAY'

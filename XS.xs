@@ -28,6 +28,10 @@ typedef NV I64V;
 # define XSRETURN_I64V(i64) XSRETURN_NV((NV)i64)
 #endif
 
+#ifndef XSRETURN_BOOL
+#define XSRETURN_BOOL(v) STMT_START { ST(0) = boolSV(v); XSRETURN(1); } STMT_END
+#endif
+
 #if NVSIZE > 8
 # define DEFAULT_PRECISION 9
 #else
@@ -691,6 +695,48 @@ timegm_posix(...)
 MODULE = Time::Str  PACKAGE = Time::Str::Util
 
 PROTOTYPES: DISABLE
+
+void
+binary_search(...)
+  PREINIT:
+    AV *av;
+    IV len, lo, hi, mid, hi_orig;
+    I64V value;
+    bool found = false;
+  PPCODE:
+    if (items < 2 || items > 4)
+      croak("Usage: binary_search(array, value [, lo [, hi]])");
+    if (!SvROK(ST(0)) || SvTYPE(SvRV(ST(0))) != SVt_PVAV)
+      croak("Parameter 'array' must be an array reference");
+    av = (AV *)SvRV(ST(0));
+    value = SvI64V(ST(1));
+    len = av_len(av) + 1;
+    {
+      lo  = (items >= 3) ? SvIV(ST(2)) : 0;
+      hi  = (items >= 4) ? SvIV(ST(3)) : len;
+      if (lo < 0 || lo > len)
+        croak("Parameter 'lo' is out of range [0, %" IVdf "]", len);
+      if (hi < 0 || hi > len)
+        croak("Parameter 'hi' is out of range [0, %" IVdf "]", len);
+      if (lo > hi)
+        croak("Parameter 'lo' must not exceed 'hi'");
+    }
+    hi_orig = hi;
+    while (lo < hi) {
+      mid = (lo + hi) >> 1;
+      {
+        SV **elem = av_fetch(av, mid, 0);
+        if (elem && SvI64V(*elem) < value)
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+    }
+    if (lo != hi_orig) {
+      SV **elem = av_fetch(av, lo, 0);
+      found = elem && !(value < SvI64V(*elem));
+    }
+    XSRETURN_BOOL(found);
 
 void
 lower_bound(...)
