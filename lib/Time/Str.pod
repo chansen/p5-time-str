@@ -1910,7 +1910,7 @@ to resolve them, leaving interpretation to the caller.
 
 =head1 SEE ALSO
 
-L<Time::Str::Regexp>, L<Time::Str::Token>, L<Time::Str::Calendar>,
+L<Time::Str::Regexp>, L<Time::Str::Token>, L<Time::Str::Calendar>, L<Time::Str::Time>, L<Time::Str::Util>,
 L<Time::Moment>, L<DateTime>, L<Time::Piece>
 
 =head1 AUTHOR
