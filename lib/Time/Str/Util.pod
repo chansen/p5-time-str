@@ -16,7 +16,7 @@ Time::Str::Util - Binary search and time zone database utilities
     my $tzdir = find_tzdb_directory();  # /usr/share/zoneinfo or undef
 
     # Validate timezone names
-    valid_tzdb_timezone('America/New_York');           # true
+    valid_tzdb_timezone('America/New_York');          # true
     valid_posix_timezone('EST5EDT,M3.2.0,M11.1.0');   # true
 
     my @sorted = (10, 20, 30, 40, 50);
@@ -153,8 +153,8 @@ A POSIX TZ string has the form:
 Examples:
 
     EST5EDT,M3.2.0,M11.1.0          # US Eastern
-    CET-1CEST,M3.5.0/2,M10.5.0/3   # Central European
-    UTC0                             # Fixed UTC
+    CET-1CEST,M3.5.0/2,M10.5.0/3    # Central European
+    UTC0                            # Fixed UTC
 
 Transition rules may use C<Mm.w.d> (month/week/weekday), C<Jn>
 (Julian day excluding Feb 29), or C<n> (zero-based Julian day

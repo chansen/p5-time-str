@@ -114,8 +114,8 @@ Hours may range up to 167 (RFC 8536 E<sect>3.3.1 extension).
     my $tz = Time::TZif::POSIX->new(
       tz_string      => $string,
       name           => 'America/New_York',  # optional
-      gap_policy     => 'reject',            # optional, default: 'reject'
-      overlap_policy => 'reject',            # optional, default: 'reject'
+      gap_policy     => 'reject',            # optional, default: reject
+      overlap_policy => 'reject',            # optional, default: reject
     );
 
 Creates a new C<Time::TZif::POSIX> object by parsing the given POSIX
