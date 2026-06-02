@@ -767,22 +767,42 @@ sub str2date {
   return wantarray ? %r : \%r;
 }
 
+BEGIN {
+  if ($^V ge v5.40) {
+    builtin->import(qw(blessed));
+  }
+  else {
+    require Scalar::Util; Scalar::Util->import(qw(blessed));
+  }
+}
+
 sub str2time {
   @_ & 1 or croak q/Usage: str2time(string [, format => 'RFC3339' ])/;
   my ($string, %p) = @_;
 
-  my $precision;
+  my ($precision, $timezone);
 
   if (exists $p{precision}) {
     $precision = delete $p{precision};
     ($precision >= 0 && $precision <= 9)
       or croak q/Parameter 'precision' is out of range [0, 9]/;
   }
+  if (exists $p{timezone}) {
+    $timezone = delete $p{timezone};
+    (blessed($timezone) && $timezone->can('offset_for_local'))
+      or croak q/Parameter 'timezone' is not an object with an 'offset_for_local' method/;
+  }
 
   my $r = str2date($string, %p);
 
-  (exists $r->{tz_offset})
+  (defined $timezone || exists $r->{tz_offset})
     or croak q/Unable to convert: timestamp string without a UTC designator or numeric offset/;
+
+  # A timezone object resolves an offset-less local time, but it cannot
+  # interpret a zone abbreviation in the string (which may name a
+  # different zone than the object). Reject rather than guess.
+  (!defined $timezone || !exists $r->{tz_abbrev})
+    or croak q/Unable to convert: cannot resolve abbreviated timezone/;
 
   my ($Y, $M, $D, $h, $m, $s) = @$r{qw(year month day hour minute second)};
   $m //= 0;
@@ -799,7 +819,16 @@ sub str2time {
 
   my $rdn  = ymd_to_rdn($Y, $M, $D);
   my $sod  = ($h * 60 + $m) * 60 + $s;
-  my $time = ($rdn - 719163) * 86400 + $sod - $r->{tz_offset} * 60;
+  my $time = ($rdn - 719163) * 86400 + $sod;
+
+  # A string offset is in minutes; a timezone object resolves the local
+  # time and returns its UTC offset in seconds.
+  if (exists $r->{tz_offset}) {
+    $time -= $r->{tz_offset} * 60;
+  }
+  else {
+    $time -= $timezone->offset_for_local($time);
+  }
 
   if ($leap_second) {
     my $days = int($time / 86400);

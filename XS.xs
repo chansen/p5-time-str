@@ -117,6 +117,38 @@ static void load_regexps(pTHX_ my_cxt_t *cxt) {
   LEAVE;
 }
 
+/* Calls $timezone->offset_for_local($local) and returns the UTC offset
+ * in seconds. The argument is a local time expressed as a pseudo-epoch
+ * (seconds since the Unix epoch with no offset applied). */
+static int64_t tstr_offset_for_local(pTHX_ SV *obj, int64_t local) {
+  dSP;
+  int count;
+  int64_t offset;
+  SV *ret;
+
+  ENTER;
+  SAVETMPS;
+
+  PUSHMARK(SP);
+  EXTEND(SP, 2);
+  PUSHs(obj);
+  mPUSHs(newSVi64v(local));
+  PUTBACK;
+
+  count = call_method("offset_for_local", G_SCALAR);
+
+  SPAGAIN;
+  if (count != 1)
+    croak("panic: offset_for_local returned %d values", count);
+  ret = POPs;
+  offset = SvIV(ret);
+  PUTBACK;
+
+  FREETMPS;
+  LEAVE;
+
+  return offset;
+}
 
 MODULE = Time::Str  PACKAGE = Time::Str
 
@@ -240,6 +272,7 @@ str2time(...)
     tstr_format_t fmt = TSTR_FORMAT_RFC3339;
     int pivot_year = -1;
     int precision = -1;
+    SV *timezone = NULL;
     tstr_parsed_t parsed;
     int i;
   PPCODE:
@@ -264,6 +297,12 @@ str2time(...)
         case TSTR_PARAM_PRECISION:
           precision = tstr_sv_precision(aTHX_ val);
           break;
+        case TSTR_PARAM_TIMEZONE:
+          if (!sv_isobject(val) ||
+              !gv_fetchmethod_autoload(SvSTASH(SvRV(val)), "offset_for_local", FALSE))
+            croak("Parameter 'timezone' is not an object with an 'offset_for_local' method");
+          timezone = val;
+          break;
         default:
           croak("Unrecognised named parameter: '%"SVf"'", ST(i));
       }
@@ -272,8 +311,14 @@ str2time(...)
     tstr_parse(aTHX_ ST(0), fmt, pivot_year,
                MY_CXT.regexps, &MY_CXT.keys, &parsed);
 
-    if (!(parsed.flags & TSTR_PARSED_HAS_OFFSET))
+    if (!(parsed.flags & TSTR_PARSED_HAS_OFFSET) && !timezone)
       tstr_croak("Unable to convert: timestamp string without a UTC designator or numeric offset");
+
+    /* A timezone object resolves an offset-less local time, but it cannot
+     * interpret a zone abbreviation in the string (which may name a
+     * different zone than the object). Reject rather than guess. */
+    if (timezone && (parsed.flags & TSTR_PARSED_HAS_TZ_ABBREV))
+      tstr_croak("Unable to convert: cannot resolve abbreviated timezone");
 
     {
       int hour = parsed.hour;
@@ -293,8 +338,14 @@ str2time(...)
 
       uint32_t rdn = tstr_calendar_ymd_to_rdn(parsed.year, parsed.month, parsed.day);
       int64_t sod  = ((int64_t)hour * 60 + parsed.minute) * 60 + second;
-      int64_t epoch = ((int64_t)rdn - TSTR_CALENDAR_RDN_UNIX_EPOCH) * 86400
-                    + sod - (int64_t)parsed.offset * 60;
+      int64_t epoch = ((int64_t)rdn - TSTR_CALENDAR_RDN_UNIX_EPOCH) * 86400 + sod;
+
+      /* A string offset is in minutes; a timezone object resolves the
+       * local time and returns its UTC offset in seconds. */
+      if (parsed.flags & TSTR_PARSED_HAS_OFFSET)
+        epoch -= (int64_t)parsed.offset * 60;
+      else
+        epoch -= tstr_offset_for_local(aTHX_ timezone, epoch);
 
       if (leap_second) {
         switch (tstr_time_leap_check(epoch)) {
