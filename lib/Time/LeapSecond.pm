@@ -5,6 +5,7 @@ use v5.10.1;
 
 use Carp                qw[croak];
 use Exporter            qw[import];
+use List::Util          qw[min];
 use Time::Str::Calendar qw[ymd_to_rdn];
 use Time::Str::Token    qw[parse_month];
 use Time::Str::Util     qw[upper_bound
@@ -41,13 +42,11 @@ use constant NTP_UNIX_DELTA => 2208988800;  # 1900-01-01T00:00:00Z
 #                  negative leap second, the removed) 23:59:xx second. Kept as
 #                  plain epochs so it can be reused from XS.
 #   @TAI_TIMES   - TAI epoch at which each offset step takes effect, used by
-#                  tai_to_posix(). It is $TIMES[$i] plus the new offset, so an
-#                  inserted 23:59:60 folds onto the following 00:00:00 (the
-#                  same POSIX value as that midnight, which it repeats),
-#                  consistent with the POSIX "seconds since the Epoch" formula
-#                  that evaluates 23:59:60 to the next day's midnight. For a
-#                  negative leap second the removed 23:59:59 simply leaves a
-#                  gap in POSIX.
+#                  tai_to_posix(). It is $TIMES[$i] plus the smaller of the
+#                  two surrounding offsets: for a positive leap second that is
+#                  the old offset, so the inserted 23:59:60 folds onto the
+#                  preceding 23:59:59 (matching tz/TZif); for a negative one
+#                  it is the new offset, leaving a gap at the removed second.
 #   @OFFSETS     - cumulative TAI-UTC offset in seconds, with one more entry
 #                  than @TIMES: $OFFSETS[0] is the base offset before the
 #                  first leap second and $OFFSETS[$k] the offset after $k leap
@@ -61,28 +60,32 @@ use constant NTP_UNIX_DELTA => 2208988800;  # 1900-01-01T00:00:00Z
 #                  second, so rdn_leap_correction() can index it directly.
 #
 
-our (@TIMES, @OFFSETS, @TAI_TIMES, @DAYS, @CORRECTIONS);
+our (
+  @TIMES, @OFFSETS, @CORRECTIONS, # Part of the public API
+  @TAI_TIMES, @DAYS
+);
 
 # Build the leap second tables from a parsed (days, corrections) pair: @$days
 # holds the Rata Die day number of each leap day in ascending order and
 # @$corrections the +1/-1 change carried by each. Accumulates the running
 # TAI-UTC offset (so @OFFSETS gets one more entry than @DAYS/@TIMES, with the
 # base offset at index 0), derives the UTC transition epoch of each leap
-# second and the TAI instant at which its offset step takes effect (using the
-# new offset, so a positive leap second folds onto the following 00:00:00 as
-# the POSIX formula does), and installs all five tables. Returns the number of
-# leap seconds installed.
+# second and the TAI instant at which its offset step takes effect (the
+# smaller of the surrounding offsets, so a positive leap second folds onto the
+# preceding 23:59:59 as tz/TZif does), and installs all five tables. Returns
+# the number of leap seconds installed.
 sub _load_tables {
   my ($days, $corrections) = @_;
   my (@times, @offsets, @tai_times);
   my $offset = TAI_UTC_BASE;
   push @offsets, $offset;
   for my $i (0 .. $#$days) {
+    my $prev = $offset;
     $offset += $corrections->[$i];
     my $time = ($days->[$i] + 1 - RDN_UNIX_EPOCH) * SECS_PER_DAY;
     push @times,     $time;
     push @offsets,   $offset;
-    push @tai_times, $time + $offset;
+    push @tai_times, $time + min($prev, $offset);
   }
   @DAYS        = @$days;
   @TIMES       = @times;
@@ -198,9 +201,7 @@ sub rdn_leap_correction {
     # be ascending), anchor on that base row, and turn each subsequent change
     # into a +1/-1 correction on the day that carries the leap second. The base
     # row must state TAI_UTC_BASE so that reconstructing absolute offsets from
-    # corrections is exact; a truncated file would not. Validation happens as
-    # each line is read, and errors name the NTP timestamp - the only machine
-    # field on the line - so the offending entry can be found in the file.
+    # corrections is exact; a truncated file would not.
     my (@days, @corrections);
     my $base     = TAI_UTC_BASE;
     my $prev     = $base;

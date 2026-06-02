@@ -84,12 +84,11 @@ TAI-UTC offset in effect at C<$tai>.
 
 This is the inverse of C<posix_to_tai> for representable instants. A TAI
 epoch that falls within an inserted (positive) leap second folds onto
-the following C<00:00:00> (the same POSIX value as that midnight, which
-it effectively repeats), because POSIX time cannot represent
-C<23:59:60>. This is consistent with the POSIX "seconds since the Epoch"
-formula, which evaluates C<23:59:60> to the next day's midnight. A 
-removed (negative) leap second leaves a gap instead: the POSIX value of
-the deleted C<23:59:59> never occurs.
+the preceding C<23:59:59> (the same POSIX value as that second, which it
+effectively repeats), because POSIX time cannot represent C<23:59:60>.
+This matches the convention used by the IANA C<tz> code and its TZif
+C<right/> zones. A removed (negative) leap second leaves a gap instead:
+the POSIX value of the deleted C<23:59:59> never occurs.
 
 =head2 rdn_leap_correction
 
@@ -133,8 +132,8 @@ the other functions.
 Parses an IERS/NIST F<leap-seconds.list> file and returns the same
 C<($days, $corrections)> pair as C<parse_leapseconds_tzdb>. This file is
 keyed on NTP time (seconds since 1900-01-01) and lists the I<absolute>
-TAI-UTC offset at each transition; epochs are converted to Unix time
-and each change is turned into a C<+1>/C<-1> correction on the
+TAI-UTC offset at each transition; epochs are converted to Rata Die day 
+number and each change is turned into a C<+1>/C<-1> correction on the
 preceding day. The leading base row anchors the table and is dropped.
 
 Croaks if the file cannot be opened, if a data line is malformed, if an

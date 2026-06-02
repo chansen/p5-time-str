@@ -109,21 +109,19 @@ sub midnight_after {
   ok($rt, 'posix_to_tai/tai_to_posix round-trip across positive and negative leaps');
   is(posix_to_tai($e3), $e3 + 11, 'posix_to_tai: uses the lowered offset after negative leap');
 
-  ## Leap-second fold direction (POSIX "seconds since the Epoch" formula).
-  ## Positive leap: the inserted 23:59:60 folds onto the following 00:00:00,
-  ## so the leap second and the real midnight share the same POSIX second.
-  ## TAI_TIMES uses the new offset.
-  is($Time::LeapSecond::TAI_TIMES[0], $e1 + 11,
-    'TAI_TIMES uses the new offset at a positive leap');
+  ## Leap-second fold direction (matches tz/TZif). Positive leap: the
+  ## inserted 23:59:60 folds onto the preceding 23:59:59, so both share the
+  ## same POSIX second. TAI_TIMES uses the smaller (old) offset.
+  is($Time::LeapSecond::TAI_TIMES[0], $e1 + 10,
+    'TAI_TIMES uses the smaller (old) offset at a positive leap');
   is(tai_to_posix($e1 + 9),  $e1 - 1, 'positive leap: real 23:59:59 maps to e1-1');
-  is(tai_to_posix($e1 + 10), $e1,     'positive leap: inserted 23:59:60 folds onto following 00:00:00');
-  is(tai_to_posix($e1 + 11), $e1,     'positive leap: real 00:00:00 maps to the same midnight');
+  is(tai_to_posix($e1 + 10), $e1 - 1, 'positive leap: inserted 23:59:60 folds onto 23:59:59');
 
   ## Negative leap: 23:59:59 is removed, so its POSIX value is a gap; the last
   ## real second (23:59:58) and the following midnight bracket it. TAI_TIMES
-  ## uses the new offset.
+  ## uses the smaller (new) offset.
   is($Time::LeapSecond::TAI_TIMES[2], $e3 + 11,
-    'TAI_TIMES uses the new offset at a negative leap');
+    'TAI_TIMES uses the smaller (new) offset at a negative leap');
   is(tai_to_posix($e3 + 10), $e3 - 2, 'negative leap: last real second is 23:59:58');
   is(tai_to_posix($e3 + 11), $e3,     'negative leap: midnight maps cleanly (e3-1 is a gap)');
 
