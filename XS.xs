@@ -277,14 +277,35 @@ str2time(...)
 
     {
       int hour = parsed.hour;
+      int leap_second;
+      int second;
 
       if (parsed.flags & TSTR_PARSED_HAS_MERIDIEM)
         hour = hour % 12 + parsed.meridiem;
 
+      /* A leap second (23:59:60 UTC) cannot be represented as a POSIX
+       * time, so fold it onto the preceding 23:59:59 and validate that
+       * it lands on a real leap-second slot. The error messages are
+       * worded to hold equally if a Time::LeapSecond table lookup is
+       * used instead. */
+      leap_second = (parsed.second == 60);
+      second      = parsed.second - leap_second;
+
       uint32_t rdn = tstr_calendar_ymd_to_rdn(parsed.year, parsed.month, parsed.day);
-      int64_t sod  = ((int64_t)hour * 60 + parsed.minute) * 60 + parsed.second;
+      int64_t sod  = ((int64_t)hour * 60 + parsed.minute) * 60 + second;
       int64_t epoch = ((int64_t)rdn - TSTR_CALENDAR_RDN_UNIX_EPOCH) * 86400
                     + sod - (int64_t)parsed.offset * 60;
+
+      if (leap_second) {
+        switch (tstr_time_leap_check(epoch)) {
+          case 1:
+            tstr_croak("Unable to convert: a leap second must occur at 23:59:60 UTC");
+            break;
+          case 2:
+            tstr_croak("Unable to convert: no leap second on this UTC date");
+            break;
+        }
+      }
 
       if (parsed.flags & TSTR_PARSED_HAS_NANOSECOND) {
         int scale_exp = (precision >= 0) ? precision : DEFAULT_PRECISION;
