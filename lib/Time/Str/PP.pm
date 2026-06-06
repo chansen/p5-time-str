@@ -538,23 +538,6 @@ BEGIN {
     return $lo;
   }
 
-  sub range_bounds {
-    @_ == 3 or croak q/Usage: range_bounds(array, min_value, max_value)/;
-    my ($array, $min_value, $max_value) = @_;
-
-    ref $array eq 'ARRAY'
-      or croak q/Parameter 'array' must be an array reference/;
-    ($min_value <= $max_value)
-      or croak q/Parameter 'min_value' must not exceed 'max_value'/;
-
-    my $lo = lower_bound($array, $min_value);
-    my $hi = $lo;
-    while ($hi < @$array && $array->[$hi] <= $max_value) {
-      $hi++;
-    }
-    return ($lo, $hi);
-  }
-
   sub upper_bound {
     (@_ >= 2 && @_ <= 4) or croak q/Usage: upper_bound(array, value [, lo [, hi ]])/;
     my ($array, $value, $lo, $hi) = @_;
@@ -570,6 +553,23 @@ BEGIN {
       else                            { $hi = $mid     }
     }
     return $lo;
+  }
+
+  sub range_bounds {
+    @_ == 3 or croak q/Usage: range_bounds(array, min_value, max_value)/;
+    my ($array, $min_value, $max_value) = @_;
+
+    ref $array eq 'ARRAY'
+      or croak q/Parameter 'array' must be an array reference/;
+    ($min_value <= $max_value)
+      or croak q/Parameter 'min_value' must not exceed 'max_value'/;
+
+    my $lo = lower_bound($array, $min_value);
+    my $hi = $lo;
+    while ($hi < @$array && $array->[$hi] <= $max_value) {
+      $hi++;
+    }
+    return ($lo, $hi);
   }
 }
 
