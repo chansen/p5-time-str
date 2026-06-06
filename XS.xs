@@ -2,6 +2,7 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include <limits.h>
 
 #include "tstr_param.h"
 #include "tstr_format.h"
@@ -192,11 +193,13 @@ time2str(...)
   PREINIT:
     dXSTARG;
     int64_t epoch;
-    int offset = 0;
+    int offset = INT_MAX;
     int nanosecond = -1;
     int precision = -1;
     tstr_format_t fmt = TSTR_FORMAT_RFC3339;
     tstr_datetime_t dt;
+    GV *method = NULL;
+    SV *timezone = NULL;
     int i;
   PPCODE:
     if (items < 1 || !(items & 1))
@@ -218,12 +221,21 @@ time2str(...)
           break;
         case TSTR_PARAM_OFFSET:
           offset = tstr_sv_offset(aTHX_ val);
+          if (timezone)
+            croak("Parameter 'offset' is mutually exclusive with 'timezone'");
           break;
         case TSTR_PARAM_PRECISION:
           precision = tstr_sv_precision(aTHX_ val);
           break;
         case TSTR_PARAM_NANOSECOND:
           nanosecond = tstr_sv_nanosecond(aTHX_ val);
+          break;
+        case TSTR_PARAM_TIMEZONE:
+          if (!tstr_fetch_method(aTHX_ val, "offset_for_utc", &method))
+            croak("Parameter 'timezone' is not an object with an 'offset_for_utc' method");
+          if (offset != INT_MAX)
+            croak("Parameter 'timezone' is mutually exclusive with 'offset'");
+          timezone = val;
           break;
         default:
           croak("Unrecognised named parameter: '%"SVf"'", ST(i));
@@ -252,6 +264,11 @@ time2str(...)
 
     if (nanosecond < 0)
       nanosecond = 0;
+
+    if (timezone)
+      offset = tstr_call_offset_method(aTHX_ timezone, method, epoch) / 60;
+    else if (offset == INT_MAX)
+      offset = 0;
 
     if (offset) {
       int64_t local = epoch + (int64_t)offset * 60;

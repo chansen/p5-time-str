@@ -1087,34 +1087,45 @@ use constant MAX_TIME => 253402300799; # 9999-12-31T23:59:59Z
 
 sub time2str {
   @_ & 1 or croak(q/Usage: time2str(time [, format => 'RFC3339' ])/);
-  my ($time, %p) = @_;
+  my $time = shift;
 
   # Rejects NaN and Inf
   ($time >= MIN_TIME && $time < MAX_TIME + 1)
     or croak q/Parameter 'time' is out of range/;
 
-  my ($formatter, $offset, $precision, $nanosecond) = (\&format_RFC3339, 0);
+  my ($formatter, $timezone, $offset, $precision, $nanosecond) = (\&format_RFC3339);
 
-  while (my ($name, $v) = each %p) {
+  while (@_) {
+    my $name = shift;
     if ($name eq 'format') {
-      $formatter = $FormatMap{lc $v};
+      my $format = shift;
+      $formatter = $FormatMap{lc $format};
       (defined $formatter)
-        or croak qq/Parameter 'format' is unknown: '$v'/;
+        or croak qq/Parameter 'format' is unknown: '$format'/;
     }
     elsif ($name eq 'precision') {
-      $precision = $v;
+      $precision = shift;
       ($precision >= 0 && $precision <= 9)
         or croak q/Parameter 'precision' is out of range [0, 9]/;
     }
     elsif ($name eq 'nanosecond') {
-      $nanosecond = $v;
+      $nanosecond = shift;
       ($nanosecond >= 0 && $nanosecond <= 999_999_999)
         or croak q/Parameter 'nanosecond' is out of range [0, 999_999_999]/;
     }
+    elsif ($name eq 'timezone') {
+      $timezone = shift;
+      (blessed($timezone) && $timezone->can('offset_for_utc'))
+        or croak q/Parameter 'timezone' is not an object with an 'offset_for_utc' method/;
+      (!defined $offset)
+        or croak q/Parameter 'timezone' is mutually exclusive with 'offset'/;
+    }
     elsif ($name eq 'offset') {
-      $offset = $v;
+      $offset = shift;
       ($offset >= -1439 && $offset <= 1439)
         or croak q/Parameter 'offset' is out of range [-1439, 1439]/;
+      (!defined $timezone)
+        or croak q/Parameter 'offset' is mutually exclusive with 'timezone'/;
     }
     else {
       croak qq/Unrecognised named parameter: '$name'/;
@@ -1134,6 +1145,13 @@ sub time2str {
       $nanosecond -= NANOS_PER_SECOND;
       $time++;
     }
+  }
+
+  if (defined $timezone) {
+    $offset = int($timezone->offset_for_utc($time) / 60);
+  }
+  else {
+    $offset //= 0;
   }
 
   if ($offset) {
