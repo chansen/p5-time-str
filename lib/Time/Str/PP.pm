@@ -10,8 +10,19 @@ our @EXPORT_OK = qw[ time2str
 our @CARP_NOT  = qw[ Time::Str::PP::Calendar
                      Time::Str::PP::Token ];
 
-use Carp     qw[croak];
-use Exporter qw[import];
+use Carp              qw[croak];
+use Exporter          qw[import];
+use Time::Str::Regexp qw[];
+
+BEGIN {
+  if ($^V ge v5.40) {
+    builtin->import(qw(floor blessed));
+  }
+  else {
+    require Scalar::Util; Scalar::Util->import(qw(blessed));
+    require POSIX; POSIX->import(qw(floor));
+  }
+}
 
 {
   package
@@ -615,7 +626,6 @@ my %CanonicalFormatName = (
 my (%RegexpMap, $RFC2616_Rx, $RFC3339_Rx);
 
 BEGIN {
-  require Time::Str::Regexp;
   %RegexpMap = Time::Str::Regexp::mapping();
 
   $RFC2616_Rx = $RegexpMap{rfc2616};
@@ -765,15 +775,6 @@ sub str2date {
     $_ += 0 for values %r;
   }
   return wantarray ? %r : \%r;
-}
-
-BEGIN {
-  if ($^V ge v5.40) {
-    builtin->import(qw(blessed));
-  }
-  else {
-    require Scalar::Util; Scalar::Util->import(qw(blessed));
-  }
 }
 
 sub str2time {
@@ -1080,15 +1081,6 @@ my %FormatMap = (
   w3cdtf     => \&format_RFC3339,
   x509       => \&format_RFC5280,
 );
-
-BEGIN {
-  if ($^V ge v5.40) {
-    builtin->import(qw(floor));
-  }
-  else {
-    require POSIX; POSIX->import(qw(floor));
-  }
-}
 
 use constant MIN_TIME => -62135596800; # 0001-01-01T00:00:00Z
 use constant MAX_TIME => 253402300799; # 9999-12-31T23:59:59Z
