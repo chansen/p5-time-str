@@ -806,6 +806,9 @@ sub str2time {
     or croak q/Unable to convert: cannot resolve abbreviated timezone/;
 
   my ($Y, $M, $D, $h, $m, $s) = @$r{qw(year month day hour minute second)};
+  $M //= 1;
+  $D //= 1;
+  $h //= 0;
   $m //= 0;
   $s //= 0;
 

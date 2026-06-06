@@ -350,9 +350,16 @@ str2time(...)
       tstr_croak("Unable to convert: cannot resolve abbreviated timezone");
 
     {
+      int month = parsed.month;
+      int day = parsed.day;
       int hour = parsed.hour;
       int leap_second;
       int second;
+      
+      if (!(parsed.flags & TSTR_PARSED_HAS_MONTH))
+        month = 1;
+      if (!(parsed.flags & TSTR_PARSED_HAS_DAY))
+        day = 1;
 
       if (parsed.flags & TSTR_PARSED_HAS_MERIDIEM)
         hour = hour % 12 + parsed.meridiem;
@@ -365,7 +372,7 @@ str2time(...)
       leap_second = (parsed.second == 60);
       second      = parsed.second - leap_second;
 
-      uint32_t rdn = tstr_calendar_ymd_to_rdn(parsed.year, parsed.month, parsed.day);
+      uint32_t rdn = tstr_calendar_ymd_to_rdn(parsed.year, month, day);
       int64_t sod  = ((int64_t)hour * 60 + parsed.minute) * 60 + second;
       int64_t epoch = ((int64_t)rdn - TSTR_CALENDAR_RDN_UNIX_EPOCH) * 86400 + sod;
 
