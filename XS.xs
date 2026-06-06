@@ -117,10 +117,22 @@ static void load_regexps(pTHX_ my_cxt_t *cxt) {
   LEAVE;
 }
 
-/* Calls $timezone->offset_for_local($local) and returns the UTC offset
- * in seconds. The argument is a local time expressed as a pseudo-epoch
- * (seconds since the Unix epoch with no offset applied). */
-static int64_t tstr_offset_for_local(pTHX_ SV *obj, int64_t local) {
+static bool tstr_fetch_method(pTHX_ SV *sv, const char *name, GV **method) {
+  SvGETMAGIC(sv);
+  if (!SvROK(sv))
+    return false;
+  sv = SvRV(sv);
+  SvGETMAGIC(sv);
+  if (!SvOBJECT(sv))
+    return false;
+
+  HV *stash = SvSTASH(sv);
+  if ((*method = gv_fetchmethod_autoload (stash, name, 0)))
+    return true;
+  return false;
+}
+
+static int64_t tstr_call_offset_method(pTHX_ SV *obj, GV *method, int64_t value) {
   dSP;
   int count;
   int64_t offset;
@@ -132,14 +144,14 @@ static int64_t tstr_offset_for_local(pTHX_ SV *obj, int64_t local) {
   PUSHMARK(SP);
   EXTEND(SP, 2);
   PUSHs(obj);
-  mPUSHs(newSVi64v(local));
+  mPUSHs(newSVi64v(value));
+
   PUTBACK;
-
-  count = call_method("offset_for_local", G_SCALAR);
-
+  count = call_sv((SV *)GvCV(method), G_SCALAR);
   SPAGAIN;
+
   if (count != 1)
-    croak("panic: offset_for_local returned %d values", count);
+    croak("panic: method returned %d values", count);
   ret = POPs;
   offset = SvIV(ret);
   PUTBACK;
@@ -272,6 +284,7 @@ str2time(...)
     tstr_format_t fmt = TSTR_FORMAT_RFC3339;
     int pivot_year = -1;
     int precision = -1;
+    GV *method;
     SV *timezone = NULL;
     tstr_parsed_t parsed;
     int i;
@@ -298,8 +311,7 @@ str2time(...)
           precision = tstr_sv_precision(aTHX_ val);
           break;
         case TSTR_PARAM_TIMEZONE:
-          if (!sv_isobject(val) ||
-              !gv_fetchmethod_autoload(SvSTASH(SvRV(val)), "offset_for_local", FALSE))
+          if (!tstr_fetch_method(aTHX_ val, "offset_for_local", &method))
             croak("Parameter 'timezone' is not an object with an 'offset_for_local' method");
           timezone = val;
           break;
@@ -345,7 +357,7 @@ str2time(...)
       if (parsed.flags & TSTR_PARSED_HAS_OFFSET)
         epoch -= (int64_t)parsed.offset * 60;
       else
-        epoch -= tstr_offset_for_local(aTHX_ timezone, epoch);
+        epoch -= tstr_call_offset_method(aTHX_ timezone, method, epoch);
 
       if (leap_second) {
         switch (tstr_time_leap_check(epoch)) {
