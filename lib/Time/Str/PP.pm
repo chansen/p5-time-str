@@ -836,17 +836,17 @@ sub str2time {
 
   if ($leap_second) {
     my $days = int($time / 86400);
-    my $usod = $time - $days * 86400;
-    if ($usod < 0) {
-      $usod += 86400;
+    $sod = $time - $days * 86400;
+    if ($sod < 0) {
+      $sod += 86400;
       $days--;
     }
 
-    ($usod == 86399)
+    ($sod == 86399)
       or croak q/Unable to convert: a leap second must occur at 23:59:60 UTC/;
 
-    my ($uy, $um, $ud) = rdn_to_ymd($days + 719163);
-    ($uy >= 1972 && (($um == 6 && $ud == 30) || ($um == 12 && $ud == 31)))
+    ($Y, $M, $D) = rdn_to_ymd($days + 719163);
+    ($Y >= 1972 && (($M == 6 && $D == 30) || ($M == 12 && $D == 31)))
       or croak q/Unable to convert: no leap second on this UTC date/;
   }
 
