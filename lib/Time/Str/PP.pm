@@ -781,7 +781,7 @@ sub str2time {
   @_ & 1 or croak q/Usage: str2time(string [, format => 'RFC3339' ])/;
   my ($string, %p) = @_;
 
-  my ($precision, $timezone);
+  my ($precision, $timezone, $timezone_map);
 
   if (exists $p{precision}) {
     $precision = delete $p{precision};
@@ -793,17 +793,28 @@ sub str2time {
     (blessed($timezone) && $timezone->can('offset_for_local'))
       or croak q/Parameter 'timezone' is not an object with an 'offset_for_local' method/;
   }
+  if (exists $p{timezone_map}) {
+    $timezone_map = delete $p{timezone_map};
+    (defined $timezone_map && ref $timezone_map eq 'HASH')
+      or croak q/Parameter 'timezone_map' is not a HASH reference/;
+  }
 
   my $r = str2date($string, %p);
 
+  if (exists $r->{tz_abbrev}) {
+    my $name = $r->{tz_abbrev};
+    if (defined $timezone_map && exists $timezone_map->{$name}) {
+      $timezone = $timezone_map->{$name};
+      (blessed $timezone && $timezone->can('offset_for_local'))
+        or croak qq/timezone_map value for '$name' is not an object with an 'offset_for_local' method/;
+    }
+    else {
+      croak qq/Unable to convert: cannot resolve abbreviated timezone '$name'/;
+    }
+  }
+
   (defined $timezone || exists $r->{tz_offset})
     or croak q/Unable to convert: timestamp string without a UTC designator or numeric offset/;
-
-  # A timezone object resolves an offset-less local time, but it cannot
-  # interpret a zone abbreviation in the string (which may name a
-  # different zone than the object). Reject rather than guess.
-  (!defined $timezone || !exists $r->{tz_abbrev})
-    or croak q/Unable to convert: cannot resolve abbreviated timezone/;
 
   my ($Y, $M, $D, $h, $m, $s) = @$r{qw(year month day hour minute second)};
   $M //= 1;

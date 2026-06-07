@@ -118,6 +118,17 @@ static void load_regexps(pTHX_ my_cxt_t *cxt) {
   LEAVE;
 }
 
+static bool tstr_is_hashref(pTHX_ SV *sv) {
+  SvGETMAGIC(sv);
+  if (!SvROK(sv))
+    return false;
+  sv = SvRV(sv);
+  SvGETMAGIC(sv);
+  if (SvOBJECT(sv))
+    return false;
+  return SvTYPE(sv) == SVt_PVHV;
+}
+
 static bool tstr_fetch_method(pTHX_ SV *sv, const char *name, GV **method) {
   SvGETMAGIC(sv);
   if (!SvROK(sv))
@@ -303,6 +314,7 @@ str2time(...)
     int precision = -1;
     GV *method;
     SV *timezone = NULL;
+    HV *timezone_map = NULL;
     tstr_parsed_t parsed;
     int i;
   PPCODE:
@@ -332,6 +344,11 @@ str2time(...)
             croak("Parameter 'timezone' is not an object with an 'offset_for_local' method");
           timezone = val;
           break;
+        case TSTR_PARAM_TIMEZONE_MAP:
+          if (!tstr_is_hashref(aTHX_ val))
+            croak("Parameter 'timezone_map' is not a HASH reference");
+          timezone_map = (HV *)SvRV(val);
+          break;
         default:
           croak("Unrecognised named parameter: '%"SVf"'", ST(i));
       }
@@ -340,14 +357,25 @@ str2time(...)
     tstr_parse(aTHX_ ST(0), fmt, pivot_year,
                MY_CXT.regexps, &MY_CXT.keys, &parsed);
 
+    if (parsed.flags & TSTR_PARSED_HAS_TZ_ABBREV) {
+      SV **svp = NULL;
+      if (timezone_map)
+        svp = hv_fetch(timezone_map, parsed.tz_abbrev, (I32)parsed.tz_abbrev_len, 0);
+      if (timezone_map && svp) {
+        SV *obj = *svp;
+        if (!tstr_fetch_method(aTHX_ obj, "offset_for_local", &method))
+          tstr_croakf("timezone_map value for '%.*s' is not an object with an 'offset_for_local' method",
+                      (int)parsed.tz_abbrev_len, parsed.tz_abbrev);
+        timezone = obj;
+      }
+      else {
+        tstr_croakf("Unable to convert: cannot resolve abbreviated timezone '%.*s'", 
+                    (int)parsed.tz_abbrev_len, parsed.tz_abbrev);
+      }
+    }
+
     if (!(parsed.flags & TSTR_PARSED_HAS_OFFSET) && !timezone)
       tstr_croak("Unable to convert: timestamp string without a UTC designator or numeric offset");
-
-    /* A timezone object resolves an offset-less local time, but it cannot
-     * interpret a zone abbreviation in the string (which may name a
-     * different zone than the object). Reject rather than guess. */
-    if (timezone && (parsed.flags & TSTR_PARSED_HAS_TZ_ABBREV))
-      tstr_croak("Unable to convert: cannot resolve abbreviated timezone");
 
     {
       int month = parsed.month;
