@@ -152,9 +152,10 @@ A POSIX TZ string has the form:
 
 Examples:
 
-    EST5EDT,M3.2.0,M11.1.0          # US Eastern
-    CET-1CEST,M3.5.0/2,M10.5.0/3    # Central European
-    UTC0                            # Fixed UTC
+    EST5EDT,M3.2.0,M11.1.0            US Eastern
+    CET-1CEST,M3.5.0/2,M10.5.0/3      Central European
+    <+05>-5                           Fixed UTC+5 (no DST)
+    NZST-12NZDT,M9.5.0,M4.1.0/3       New Zealand
 
 Transition rules may use C<Mm.w.d> (month/week/weekday), C<Jn>
 (Julian day excluding Feb 29), or C<n> (zero-based Julian day
@@ -162,8 +163,6 @@ including Feb 29) forms.
 
 This validates the syntactic structure of the string only, not the
 semantic validity of field values (e.g., month ranges, day ranges).
-Quoted timezone designations (C<< <+05> >>) as used in TZif extensions
-are not part of the POSIX standard and are not accepted.
 
 =head1 SEE ALSO
 
