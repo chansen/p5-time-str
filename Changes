@@ -1,4 +1,9 @@
-0.91
+0.91 2026-06-09
+  - Add Time::Str::TimeZone for resolving IANA Time Zone Database
+    names (and the special name 'local') to cached Time::TZif
+    objects via the exported timezone function. Lookups dispatch
+    through an overridable provider and the cache is cleared with
+    the reset method.
   - Track the leap second table expiration in Time::LeapSecond.
     parse_leapseconds_tzdb and parse_leapseconds_iers now return
     (\@days, \@corrections, $expires), reading the TZDB #expires line
