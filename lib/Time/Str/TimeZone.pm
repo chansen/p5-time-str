@@ -11,7 +11,7 @@ use Time::Str::Util   qw[find_local_timezone
 use Time::TZif        qw[];
 
 BEGIN {
-  our $VERSION   = '0.90';
+  our $VERSION   = '0.91';
   our @EXPORT_OK = qw[timezone];
 }
 
