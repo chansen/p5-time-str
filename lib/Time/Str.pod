@@ -627,7 +627,7 @@ B<Formatting>:
   time2str(1735052445.5, format => 'CLF', precision => 3, offset => 60)
   # '24/Dec/2024:16:30:45.500 +0100'
 
-=head2 DateTime
+=head2 DateTime (alias: Generic)
 
 A permissive parser that accepts a wide variety of real-world date/time
 representations, restricted to those that can be parsed deterministically.
@@ -664,10 +664,6 @@ B<Formatting>:
 
 B<Limitations>: Fractional seconds are not supported. Parenthesized
 comment is not preserved in formatting.
-
-=head2 Generic
-
-Deprecated. Use C<DateTime> instead.
 
 =head2 GitDate (alias: Git)
 
