@@ -25,6 +25,7 @@
   action restore_mark_day {
     mark = mark_day;
   }
+
   DayNameShort      = 'Mon'i | 'Tue'i | 'Tues'i | 'Wed'i | 'Thu'i | 'Thurs'i |'
                        Fri'i | 'Sat'i | 'Sun'i;
   DayNameLong       = 'Monday'i | 'Tuesday'i | 'Wednesday'i | 'Thursday'i |
